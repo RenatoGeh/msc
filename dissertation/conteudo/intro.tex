@@ -1,0 +1,100 @@
+\chapter{Introduction}
+
+%As the field of Machine Learning (ML) broadens its scope, achieving evermore success in
+%surprisingly many complex real-world applications, so have the challenges of faithfully
+%representing reality and accurately estimating uncertainties. This is made especially clear by the
+%advent of deep models/learning: the impressive surge in both capacity and compute capabilities,
+%made evident by the sheer number of available models for an increasingly wide range of
+%interdisciplinary tasks \citep{bommasani21}, has shown that despite the seemingly impressive
+%empirical results, most deep models struggle when
+
+
+
+%As the field of Machine Learning (ML) broadens its scope, achieving evermore success in
+%surprisingly many complex real-world applications, so have the challenges of faithfully
+%representing reality and accurately estimating uncertainties. Even more pronounced in unsupervised
+%arguably the latest frontier The advent of deep models has caused
+%a surge in both capacity and compute capabilities, as made quite evident by the sheer number of
+%available models for an increasingly wide range of interdisciplinary tasks \citep{bommasani21}.
+%Remarkably, most of these so-called deep models fail to provide accurate or reliable estimates on
+%their uncertainty \citep{gawlikowski21}.
+
+%this is even more noticeable when it comes to unsupervised learning
+
+When reasoning about the world, rarely can we find a realistic model that perfectly subsumes all of
+the needed relationships for flawless prediction. As such, the presence of a reliable uncertainty
+quantifier in intelligent systems is essential in developing performant yet diagnostible agents.
+This is made explicitly clear in the case of high-risk settings, such as autonomous vehicles or
+automated power plant systems, where a wrong prediction could cause disastrous consequences. A well
+known example in the case of the former is obstacle avoidance: while the agent should be capable of
+accurately identifying obstructions in its way during normal conditions, so should it be able to
+identify its own lack of confidence in high uncertainty situations like ones brought by
+environmental factors, such as severe blizzard or heavy rain, that could result in unreliable
+predictions, in which case calling out for human help may turn out to be the safest option. Other
+interesting applications of uncertainty quantification include out-of-distribution detection, which
+in our previous example could be visualized as the agent identifying a human's driving as
+abnormally irregular (due to inebriation, infirmity, etc.) and appropriately taking control of the
+vehicle before a potential accident takes place.
+
+One popular approach to quantifying uncertainty is through probability theory. By abstracting the
+world as a probability distribution with a finite number of observable random variables that encode
+a possibly incomplete knowledge of the environment, we are, in theory, able to answer a diverse set
+of complex queries as long as we have access to the (approximate) true data distribution. Practice
+is far different from theory, however, as most machine learning models either lie within a very
+limited range in the tractability spectrum in terms of inference \citep{pctutorial} or are too
+simplistic for complex real-world problems. Besides, although the majority of recent advances in
+deep learning claim some probabilistic meaning from the model's output, they are often uncalibrated
+distributions, a result of focusing on maximizing predictive accuracy at the expense of predictive
+uncertainty \citep{guo17,yaniv19,chernikova19}, ultimately producing overconfident and peculiar
+results \citep{szegedy13,wei18,su19,chernikova19}. Crucially, mainstream deep models (i.e. standard
+neural networks) usually optimize a conditional distribution over the to-be-predicted random
+variables -- and are thus often called \emph{discriminative} models -- and do not model the actual
+joint distribution of the data, limiting inference capabilities and uncertainty estimation.
+
+In contrast, \emph{generative} models seek to extract information from the joint (in varying
+capacities), and have lately seen a sharp rise in interest within deep learning. Despite this, most
+popular models do not admit either exact or tractable querying of key inference scenarios. For
+instance, although Generative Adversarial Networks (GANs) allow for efficient sampling
+\citep{goodfellow14}, basic queries such as likelihood or marginals are outside of their
+capabilities.  Similarly, Normalizing Flows (NF) also permit access to efficient sampling, with the
+added feature of computing likelihoods, but are severely limited by the base distribution when it
+comes to discrete data \citep{rezende15,papamakarios21} albeit recent works on discretizing NFs
+have shown empirically good results \citep{lippe21,ziegler19}. Variational Auto-Encoders (VAEs) are
+(under certain conditions) a generalization of NFs \citep{yu20,gritsenko19} with known extensions
+for categorical data \citep{rolfe17,vahdat18a,vahdat18b}, but only permit access to sampling and an
+upper-bound on the likelihood, with the latter available only after solving a complex optimization
+task \citep{kingma14}.
+
+Despite the impressive achievements of the aforementioned generative models on realistically
+producing samples consistent with evidence, in none of the previous models are complex queries like
+structured prediction under partial observations, \emph{maximum a posteriori} (MAP), conditional or
+marginal probabilities tractable. An obvious alternative would be Probabilistic Graphical Models
+(PGMs), although they too suffer from intractability when dealing with high treewidth networks
+\citep{dechter98,koller09}, severely limiting expressivity (cite here). Instead, we draw our
+attention to an expressive class of models that subsumes several families of probabilistic models
+with tractable inference capabilities.
+
+Probabilistic Circuits (PCs) define a superclass of probabilistic models distincly specified by
+recursive compositions of distributions through graphical formalisms. Vaguely speaking, PCs are
+computational graphs akin to neural networks, but whose network structure and computational units
+abide by special constraints. Within these specific conditions span a wide range of subclasses,
+each establishing a distinct set of restrictions on their structure in order to enable different
+segments within the tractability spectrum. As an example, Sum-Product Networks (SPNs,
+\cite{poon11}) are usually loosely defined over a couple of constraints: namely \emph{smoothness}
+and \emph{decomposability}, which in turn enables likelihood, marginal and conditional
+computations. Arithmetic Circuits (ACs, \cite{darwiche03}) add \emph{determinism} to the mix,
+allowing for tractable computation of MAP probabilities. Similarly, Cutset Networks (CNets,
+\cite{rahman14}) employ the same constraints as ACs, but accept more expressive distributions as
+part of their computational units. Probabilistic Sentential Decision Diagrams (PSDDs,
+\cite{kisa14}), Probabilistic Decision Graphs (PDGs, \cite{jaeger04}) and And/Or-Graphs (AOGs,
+\cite{dechter07}) all require \emph{smoothness} and \emph{determinism}, but also call for a
+stronger version of \emph{decomposability}, permitting all queries previously mentioned as well as
+computation of the Kullback-Leibler divergence and expectation between two circuits \citep{choi20}.
+
+Interestingly, PCs are sufficiently expressive for generative \emph{and} discriminative modeling
+\citep{khosravi19,rashwan18a,rooshenas16,gens12,shao20}. In this dissertation though, we shall
+focus on the generative side of PCs.
+
+\section{Contributions and Dissertation Outline}
+
+referenced structural constraints in passing

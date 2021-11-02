@@ -1,0 +1,40 @@
+\usepackage{amsthm}
+
+\usetikzlibrary{shapes,arrows,positioning,fit,circuits.logic.US}
+
+\newcommand{\bigo}{\mathcal{O}}
+\newcommand{\set}[1]{\mathbf{#1}}
+\DeclareMathOperator*{\argmin}{\normalfont{arg\,min}}
+\DeclareMathOperator*{\argmax}{\normalfont{arg\,max}}
+\DeclareMathOperator*{\Val}{\normalfont{Val}}
+\DeclareMathOperator*{\Ch}{\normalfont{Ch}}
+\DeclareMathOperator*{\Pa}{\normalfont{Pa}}
+\DeclareMathOperator*{\Sc}{\normalfont{Sc}}
+\DeclareMathOperator*{\Root}{\normalfont{Root}}
+\DeclareMathOperator{\Sum}{\normalfont{S}}
+\DeclareMathOperator{\Sums}{\mathbf{S}}
+\DeclareMathOperator{\Prod}{\normalfont{P}}
+\DeclareMathOperator{\Prods}{\mathbf{P}}
+\DeclareMathOperator{\Leaf}{\normalfont{L}}
+\DeclareMathOperator{\Leaves}{\mathbf{L}}
+\DeclareMathOperator{\Node}{n}
+\DeclareMathOperator{\Nodes}{\mathbf{N}}
+\DeclareMathOperator{\Child}{\normalfont{C}}
+\DeclareMathOperator{\Children}{\mathbf{C}}
+\DeclareMathOperator{\Conj}{\otimes}
+\DeclareMathOperator{\Disj}{\oplus}
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\newcommand{\defeq}{\vcentcolon=}
+\DeclareMathOperator*{\ind}{\mathbbm{1}}
+\DeclareMathOperator*{\True}{\normalfont{true}}
+\DeclareMathOperator*{\False}{\normalfont{false}}
+\DeclareMathOperator{\vtree}{\mathcal{V}}
+\DeclareMathOperator{\Forget}{\normalfont{Forget}}
+\newcommand{\ov}{\overline}
+\newcommand{\tsup}{\textsuperscript}
+\newcommand{\newGraphNode}[4]{\node[#4] (#1) at (#2) {\rotatebox{-90}{#3}}}
+\newcommand{\newAndNode}[4]{\node[#4,and gate,fill=blue!50!red!30] (#1) at (#2) {\rotatebox{-90}{#3}}}
+\newcommand{\newOrNode}[4]{\node[#4,or gate,fill=blue!50!green!30] (#1) at (#2) {\rotatebox{-90}{#3}}}
+
+\definecolor{LightGray}{gray}{0.85}
+\definecolor{Red}{rgb}{0.75,0,0}

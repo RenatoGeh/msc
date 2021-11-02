@@ -1,280 +1,1420 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%% INSERINDO COMENTÁRIOS EM ARQUIVOS .bib %%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% 1. Como em outros arquivos LaTeX, comentários são iniciados por "%" e,
-%    portanto, é preciso usar "\%" para imprimir o caractere "%". Esquecer
-%    disso pode gerar erros difíceis de encontrar!
-%
-% 2. Não é possível inserir comentários dentro de uma entrada, apenas fora.
-%
-% 3. Não é possível incluir o caractere arroba em um comentário.
-%
-% 4. Se quiser desabilitar temporariamente um campo ("comentar" o campo),
-%    troque seu nome para algum nome inválido, como "author-disable".
-%    Se quiser fazer alguma observação permanente dentro de uma entrada,
-%    você também pode usar algum nome de campo inválido, como "lembrete",
-%    ou usar o campo "annotation", que normalmente é ignorado.
-%
-% 5. Se quiser desabilitar temporariamente uma entrada inteira ("comentar" a
-%    entrada), não basta colocar "%" nas linhas correspondentes por causa do
-%    caractere arroba; também é preciso remover a arroba.
-%
-% 6. Na verdade, as regras não são bem essas, mas segui-las é uma boa ideia:
-%    https://tex.stackexchange.com/a/262282
-
-
-% Esta entrada está comentada, ou seja, não tem efeito: se houvesse uma
-% referência a ela no texto, a referência ficaria inválida. Observe que,
-% para isso, o caractere arroba foi apagado!
-%Book{JW82,
-% author    = {Richard A. Johnson and Dean W. Wichern},
-% title     = {Applied Multivariate Statistical Analysis},
-% publisher = {Prentice-Hall},
-% year      = {1983}
-%}
-
-% Esta entrada não está em uso em tese.tex, apenas em
-% apresentacao.tex, mas isso não é um problema: você pode
-% ter um banco de dados com todos os papers que são de seu
-% interesse e, em um dado texto, citar apenas alguns deles.
-@Manual{CORBA:spec,
- title       = {{CORBA} v3.0 Specification},
- author      = {{Object Management Group}},
- shortauthor = {OMG},
- month       = Jul,
- year        = {2002},
- note        = {OMG Document 02-06-33}
+@book{ bayesian-theory,
+ author = {Bernardo, J. M. and Smith, A. F. M.},
+ title = {Bayesian theory},
+ publisher = {Wiley},
+ year = {1994}
 }
 
-@Book{eco:09,
- author   = {Umberto Eco},
- title    = {Como se Faz uma Tese},
- edition  = 22,
- publisher= {Perspectiva},
- note     = {Tradução Gilson Cesar Cardoso de Souza},
- year     = {2009},
+@inproceedings{ zhao16a,
+ author = {Zhao, Han and Poupart, Pascal and Gordon, Geoffrey J},
+ booktitle = {Advances in Neural Information Processing Systems},
+ pages = {},
+ series = {NeurIPS},
+ title = {A Unified Approach for Learning the Parameters of Sum-Product Networks},
+ year = {2016}
 }
 
-@Book{zobel:04,
- author   = {Justin Zobel},
- title    = {Writing for Computer Science: The Art of Effective Communication},
- publisher= {Springer},
- edition  = 2,
- year     = {2004},
+@inproceedings{ randomspn,
+ title = {Random Sum-Product Networks: A Simple and Effective Approach to Probabilistic Deep Learning},
+ author = {Robert Peharz and Antonio Vergari and  Karl Stelzner and Alejandro Molina and Xiaoting Shao and Martin Trapp and Kristian Kersting and  Zoubin Ghahramani},
+ booktitle = {Proceedings of The 35th Uncertainty in Artificial Intelligence Conference ({UAI})},
+ year = {2020}
 }
 
-@Book{waz:09,
- author   = {Raul S. Wazlawick},
- title    = {Metodologia de Pesquisa em Ciência da Computação},
- publisher= {Campus},
- edition  = 1,
- year     = {2009},
+@article{ atlas,
+      title={A Compositional Atlas of Tractable Circuit Operations: From Simple Transformations to Complex Information-Theoretic Queries}, 
+      author={Antonio Vergari and YooJung Choi and Anji Liu and Stefano Teso and Guy Van den Broeck},
+      year={2021},
+  journal   = {CoRR},
+  volume    = {abs/2102.06137},
+  archivePrefix = {arXiv},
+   eprint={2102.06137} 
 }
 
-@Book{Higham:98,
- author   = {Nicholas J. Higham},
- title    = {Handbook of Writing for the Mathematical Sciences},
- edition  = 2,
- publisher= {SIAM: Society for Industrial and Applied Mathematics},
- month    = Aug,
- year     = {1998},
+@article{ Clarke03,
+ author = {Bertrand Clarke},
+ title = {Comparing {B}ayes Model Averaging and Stacking When Model Approximation Error Cannot be Ignored},
+ journal = {Journal of Machine Learning Research},
+ volume = {4},
+ number = {},
+ year = {2003},
+ pages = {683--712}
 }
 
-@book{Knuth:96,
- author   = {Donald E. Knuth and Tracy Larrabee and Paul M. Roberts},
- title    = {Mathematical Writing},
- publisher= {The Mathematical Association of America},
- month    = Sep,
- year     = {1996}
+@inproceedings{ domingos-icml,
+  author = {Pedro Domingos}, 
+  title = {Bayesian averaging of classifiers and the overfitting problem},
+  booktitle = {Proceedings of the Seventeenth International Conference on Machine Learning}, 
+  year = {2000}
+ }
+ 
+ @book{ DeGroot,
+	author = {M. H. DeGroot}, 
+	title = {Optimal Statistical Decisions},
+	publisher = {McGraw-Hill},
+	year = {1970}
+}
+ 
+ @misc{ Minka,
+ 	author = {T. Minka}, 
+	title = {Bayesian model averaging is not model combination},
+	note = {MIT Media Lab Note},
+	year = {2000}
 }
 
-@InProceedings{alves03:simi,
- author   = {Carlos E. R. Alves and Edson N. Cáceres and Frank Dehne and Siang W. Song},
- title    = {A Parallel Wavefront Algorithm for Efficient Biological Sequence Comparison},
- booktitle= {ICCSA'03: The 2003 International Conference on Computational Science and its Applications},
- year     = {2003},
- pages    = {249-258},
- month    = May,
- publisher= {Springer-Verlag}
+@article{ bma,
+ author = {Jennifer A. Hoeting and David Madigan and Adrian E. Raftery and Chris T. Volinsky},
+ title = {Bayesian Model Averaging: A Tutorial},
+ journal = {Statistical Science},
+ volume = {14},
+ number = {4},
+ year = {1999},
+ pages = {382--401}
 }
 
-@Article{MenaChalco08,
- author   = {Jesús P. Mena-Chalco and Helaine Carrer and Yossi Zana and Roberto M. Cesar-Jr.},
- title    = {Identification of Protein Coding Regions Using the Modified {G}abor-Wavelet Transform},
- journal  = {IEEE/ACM Transactions on Computational Biology and Bioinformatics},
- volume   = {5},
- pages    = {198-207},
- year     = {2008},
+@inproceedings{correia20,
+  author = {Alvaro H. C. Correia and Robert Peharz and Cassio de Campos},
+  title = {Joints in Random Forests},
+  booktitle = {Advances in Neural Information Processing Systems 33 (NeurIPS)},
+  year = {2020}
 }
 
-@Article{floats2014,
- author    = {Frank Mittelbach},
- title     = {How to influence the position of float environments like figure and table in {\LaTeX}?},
- journal   = {{TUGboat}},
- journalsubtitle = {Communications of the \TeX\ Users Group},
- volume    = {35},
- number    = {3},
- year      = 2014,
- url       = {tug.org/TUGboat/tb35-3/tb111mitt-float.pdf},
- urldate   = {2020-01-09},
- publisher = {\TeX\ {Users} {Group}},
- address   = {Portland ({OR}), {USA}},
+@inproceedings{nishino16,
+	author = {Masaaki Nishino and Norihito Yasuda and Shin-ichi Minato and Masaaki Nagata},
+	title = {Zero-Suppressed Sentential Decision Diagrams},
+	booktitle = {{AAAI} Conference on Artificial Intelligence},
+	year = {2016}
 }
 
-@Techreport{alvisi99:analysisCIC,
- author      = {Lorenzo Alvisi and Elmootazbellah Elnozahy and Sriram S. Rao and Syed A. Husain and Asanka Del Mel},
- title       = {An Analysis of Comunication-Induced Checkpointing},
- institution = {Department of Computer Science, University of Texas at Austin},
- year        = {1999},
- number      = {TR-99-01},
- address     = {Austin, USA}
+@inproceedings{ Shen2016,
+ author = {Shen, Yujia and Choi, Arthur and Darwiche, Adnan},
+ booktitle = {Advances in Neural Information Processing Systems},
+ title = {Tractable Operations for Arithmetic Circuits of Probabilistic Models},
+ year = {2016}
 }
 
-@Misc{gridftp,
- author   = {William Allcock},
- title    = {{GridFTP} Protocol Specification. {Global Grid Forum} Recommendation ({GFD}.20)},
- year     = {2003}
+
+@article{arnold80,
+  author = {Arnold, D. B. and Sleep, M. R.},
+  title = {Uniform Random Generation of Balanced Parenthesis Strings},
+  year = {1980},
+  volume = {2},
+  number = {1},
+  journal = {ACM Trans. Program. Lang. Syst.},
+  month = {January},
+  pages = {122--128},
 }
 
-% A entrada "year" eh usada por bibtex;
-% biblatex pode usar "year" ou "date"
-@Manual{natbib,
- title       = "Reference sheet for \texttt{natbib} usage",
- author      = "Patrick W. Daly",
- year        = {2010},
- date        = {2010-09-13},
- urldate     = {2018-12-20},
- url         = {mirrors.ctan.org/macros/latex/contrib/natbib/natnotes.pdf},
+@article{darwiche01,
+  author = {Adnan Darwiche},
+  title = {On the Tractable Counting of Theory Models and its Application to Truth Maintenance and Belief Revision},
+  journal = {Journal of Applied Non-Classical Logics},
+  volume = {11},
+  number = {1--2},
+  pages = {11--34},
+  year  = {2001}
 }
 
-@Manual{biblatex,
- title       = "The \texttt{biblatex} Package",
- author      = "Philipp Lehman and Philip Kime and Moritz Wemheuer and Audrey Boruvka and Joseph Wright",
- year        = 2018,
- date        = {2018-10-30},
- urldate     = {2018-12-20},
- url         = {mirrors.ctan.org/macros/latex/contrib/biblatex/doc/biblatex.pdf},
+@inproceedings{pipa08,
+  author = {Pipatsrisawat, Knot and Darwiche, Adnan},
+  title = {New Compilation Languages Based on Structured Decomposability},
+  year = {2008},
+  booktitle = {Proceedings of the Twenty-Third {AAAI} Conference on Artificial Intelligence},
+  pages = {517--522},
+  series = {AAAI’08}
 }
 
-@PhdThesis{garcia01:PhD,
- author   = {Islene C. Garcia},
- title    = {Visões Progressivas de Computações Distribuídas},
- school   = {Instituto de Computação, Universidade de Campinas},
- address  = {Campinas, Brasil},
- year     = {2001},
- month    = Dec
+@inproceedings{mattei19,
+  title={Exploring the space of probabilistic sentential decision diagrams},
+  author={Mattei, Lilith and Soares, D{\'e}cio L. and Antonucci, Alessandro and Mau{\'a}, Denis D. and Facchini, Alessandro},
+  booktitle={3rd Workshop of Tractable Probabilistic Modeling},
+  year={2019}
 }
 
-@Conference{bronevetsky02,
- author     = {Greg Bronevetsky and Daniel Marques and Keshav Pingali and Paul Stodghill},
- title      = {Automated Application-Level Checkpointing of {MPI} Programs},
- booktitle  = {PPoPP'03: Proceedings of the 9th ACM SIGPLAN Symposium on Principles and Practice of Parallel Programming},
- year       = {2003},
- pages      = {84-89},
- eventdate  = {2003-06-11/2003-06-13},
- venue      = {San Diego, California}
+@inproceedings{pipa10,
+  author = {Pipatsrisawat, Knot and Darwiche, Adnan},
+  title = {A Lower Bound on the Size of Decomposable Negation Normal Form},
+  year = {2010},
+  booktitle = {Proceedings of the Twenty-Fourth {AAAI} Conference on Artificial Intelligence},
+  pages = {345--350}
 }
 
-@InCollection{bobaoglu93:concepts,
- author   = {Ozalp Babaoglu and Keith Marzullo},
- title    = {Consistent Global States of Distributed Systems: Fundamental Concepts and Mechanisms},
- editor   = {Sape Mullender},
- booktitle= {Distributed Systems},
- edition  = 2,
- year     = {1993},
- pages    = {55-96}
+@inproceedings{darwiche11,
+  author = {Darwiche, Adnan},
+  title = {{SDD}: A New Canonical Representation of Propositional Knowledge Bases},
+  year = {2011},
+  booktitle = {Proceedings of the Twenty-Second International Joint Conference on Artificial Intelligence},
+  pages = {819--826}
 }
 
-@MastersThesis{schmidt03:MSc,
- author   = {Rodrigo M. Schmidt},
- title    = {Coleta de Lixo para Protocolos de \emph{Checkpointing}},
- school   = {Instituto de Computação, Universidade de Campinas},
- address  = {Campinas, Brasil},
- year     = {2003},
- month    = Oct
+@article{julissa20,
+ author = {Julissa Villanueva Llerena and Denis Deratani Mau{\'a}},
+ journal = {International Journal of Approximate Reasoning},
+ pages = {158--180},
+ title = {Efficient Algorithms for Robustness Analysis of Maximum A Posteriori Inference in Selective Sum-Product Networks},
+ volume = {126},
+ year = {2020}
 }
 
-@online{fowler04:designDead,
- author   = {Martin Fowler},
- title    = {Is Design Dead?},
- year     = {2004},
- month    = May,
- urldate  = {2010-01-30},
- url      = {martinfowler.com/articles/designDead.html},
+@inproceedings{trapp16,
+  title = "Structure Inference in Sum-Product Networks using Infinite Sum-Product Trees",
+  author = "Martin Trapp and Robert Peharz and M. Skowron and Tamas Madl and Franz Pernkopf and R. Trappl",
+  year = "2016",
+  booktitle = "Neural Information Processing Systems workshop",
 }
 
-@online{FSF:GNU-GPL,
- author      = {{Free Software Foundation}},
- shortauthor = {FSF},
- title       = {{GNU} General Public License},
- year        = 2007,
- urldate     = {2010-01-30},
- url         = {www.gnu.org/copyleft/gpl.html},
+@article{desana16,
+  title={Learning Arbitrary Sum-Product Network Leaves with Expectation-Maximization},
+  author={Desana, Mattia and Schn{\"o}rr, Christoph},
+  journal={arXiv preprint arXiv:1604.07243},
+  year={2016}
 }
 
-@article{alon09:how,
- author   = {Uri Alon},
- title    = {How To Choose a Good Scientific Problem},
- journal  = {Molecular Cell},
- year     = {2009},
- volume   = {35},
- number   = {6},
- pages    = {726--728},
- publisher= {Cell Press},
- month    = sep,
- doi      = {10.1016/j.molcel.2009.09.013},
+@article{peharz16,
+  title={On the latent variable interpretation in sum-product networks},
+  author={Peharz, Robert and Gens, Robert and Pernkopf, Franz and Domingos, Pedro},
+  journal={{IEEE} transactions on pattern analysis and machine intelligence},
+  volume={39},
+  number={10},
+  pages={2030--2044},
+  year={2016}
 }
 
-@book{tufte01:visualDisplay,
- author   = {Edward Tufte},
- title    = {The Visual Display of Quantitative Information},
- year     = {2001},
- edition  = 2,
- publisher= {Graphics Press},
- month    = may,
+@inproceedings{butz19,
+  title={Deep convolutional sum-product networks},
+  author={Butz, Cory J and Oliveira, Jhonatan S and dos Santos, Andr{\'e} E and Teixeira, Andr{\'e} L},
+  booktitle={Proceedings of the {AAAI} Conference on Artificial Intelligence},
+  volume={33},
+  pages={3248--3255},
+  year={2019}
 }
 
-@Manual{usp:guidelines,
- author      = {{Universidade de São Paulo --- Sistema Integrado de Bibliotecas}},
- shortauthor = {SIBiUSP},
- title       = {Diretrizes para Apresentação de
-	        Dissertações e Teses da {USP}:
-	        Documento Eletrônico e Impresso},
- year        = 2009,
- url         = {www.teses.usp.br/index.php?option=com_content&view=article&id=52&Itemid=67},
- urldate     = {2017-11-10},
+@inproceedings{peharz19,
+  author    = {Robert Peharz and
+               Antonio Vergari and
+               Karl Stelzner and
+               Alejandro Molina and
+               Martin Trapp and
+               Xiaoting Shao and
+               Kristian Kersting and
+               Zoubin Ghahramani},
+  editor    = {Amir Globerson and
+               Ricardo Silva},
+  title     = {Random Sum-Product Networks: {A} Simple and Effective Approach to
+               Probabilistic Deep Learning},
+  booktitle = {Proceedings of the Thirty-Fifth Conference on Uncertainty in Artificial
+               Intelligence},
+  year      = {2019}
 }
 
-@online{carlis:09,
- author  = {John V. Carlis},
- title   = {Design: The Key to Writing
-            (and Advising) a One-Draft {Ph.D} Dissertation},
- year    = 2009,
- url     = {www-users.cs.umn.edu/~carlis/one-draft.pdf},
- urldate = {2017-11-10},
+@inproceedings{chan06,
+  author    = {Hei Chan and
+               Adnan Darwiche},
+  title     = {On the Robustness of Most Probable Explanations},
+  booktitle = {Proceedings of the 22nd Conference in Uncertainty in Artificial
+               Intelligence},
+  year      = {2006},
 }
 
-@book{craftresearch,
- author    = {Wayne C. Booth and Gregory G. Colomb and Joseph M. Williams},
- title     = {The Craft of Research},
- publisher = {The University of Chicago Press},
- year      = 2008,
+@inproceedings{dennis15,
+  author = {Dennis, Aaron and Ventura, Dan},
+  title = {Greedy Structure Search for Sum-Product Networks},
+  year = {2015},
+  booktitle = {Proceedings of the 24th International Conference on Artificial Intelligence},
+  pages = {932--938},
 }
 
-@book{dissertjourney,
- author    = {Carol M. Roberts},
- title     = {The Dissertation Journey},
- publisher = {Corwin},
- year      = 2010,
- edition   = 2,
- location  = {Thousand Oaks, CA},
+@InProceedings{peharz15,
+  title = 	 {On Theoretical Properties of Sum-Product Networks},
+  author = 	 {Robert Peharz and Sebastian Tschiatschek and Franz Pernkopf and Pedro Domingos},
+  booktitle = {Proceedings of the Eighteenth International Conference on Artificial Intelligence and Statistics},
+  pages = 	 {744--752},
+  year = 	 {2015}
 }
 
-@manual{sbctemplate,
- author  = {Luciana P. Nedel and Rafael H. Bordini and Flávio Rech Wagner and Jomi F. H\"{u}bner},
- title   = {Instructions for Authors of {SBC} Conferences Papers and Abstracts},
- year    = 2017,
- url     = {www.sbc.org.br/documentos-da-sbc/category/169-templates-para-artigos-e-capitulos-de-livros},
- urldate = {2018-12-13},
+@article{darwiche03,
+  author = {Darwiche, Adnan},
+  title = {A Differential Approach to Inference in Bayesian Networks},
+  year = {2003},
+  volume = {50},
+  number = {3},
+  journal = {Journal of the {ACM}},
+  pages = {280--305},
+}
+
+@incollection{delalleau11,
+  title = {Shallow vs. Deep Sum-Product Networks},
+  author = {Olivier Delalleau and Bengio, Yoshua},
+  booktitle = {Advances in Neural Information Processing Systems 24},
+  pages = {666--674},
+  year = {2011},
+}
+
+@InProceedings{zhao15,
+  title = 	 {On the Relationship between Sum-Product Networks and {B}ayesian Networks},
+  author = 	 {Han Zhao and Mazen Melibari and Pascal Poupart},
+  booktitle =  {Proceedings of the 32nd International Conference on Machine Learning},
+  pages = 	 {116--124},
+  year = 	 {2015},
+  volume = 	 {37},
+  series = 	 {Proceedings of Machine Learning Research},
+}
+
+@InProceedings{ranganath14,
+  title = 	 {Black Box Variational Inference},
+  author = 	 {Rajesh Ranganath and Sean Gerrish and David Blei},
+  booktitle = {Proceedings of the Seventeenth International Conference on Artificial Intelligence and Statistics},
+  pages = 	 {814--822},
+  year = 	 {2014},
+  volume = 	 {33},
+  series = 	 {Proceedings of Machine Learning Research}
+}
+
+@book{bishop06,
+  author    = "Bishop, Christopher M",
+  title     = "{Pattern recognition and machine learning}",
+  publisher = "Springer",
+  address   = "New York, NY",
+  series    = "Information science and statistics",
+  year      = "2006",
+  url       = "https://cds.cern.ch/record/998831",
+  note      = "Softcover published in 2016",
+}
+
+@article{hoffman13,
+  author  = {Matthew D. Hoffman and David M. Blei and Chong Wang and John Paisley},
+  title   = {Stochastic Variational Inference},
+  journal = {Journal of Machine Learning Research},
+  year    = {2013},
+  volume  = {14},
+  number  = {4},
+  pages   = {1303-1347},
+  url     = {http://jmlr.org/papers/v14/hoffman13a.html}
+}
+
+@article{kullback51,
+  title={On information and sufficiency},
+  author={Kullback, Solomon and Leibler, Richard A},
+  journal={The annals of mathematical statistics},
+  volume={22},
+  number={1},
+  pages={79--86},
+  year={1951},
+  publisher={JSTOR}
+}
+
+@book{robert13,
+  title={Monte Carlo statistical methods},
+  author={Robert, Christian and Casella, George},
+  year={2013},
+  publisher={Springer Science \& Business Media}
+}
+
+@article{wainwright08,
+  title={Graphical models, exponential families, and variational inference},
+  author={Wainwright, Martin J and Jordan, Michael I and others},
+  journal={Foundations and Trends{\textregistered} in Machine Learning},
+  volume={1},
+  number={1--2},
+  pages={1--305},
+  year={2008},
+  publisher={Now Publishers, Inc.}
+}
+
+@article{jordan99,
+  title={An introduction to variational methods for graphical models},
+  author={Jordan, Michael I and Ghahramani, Zoubin and Jaakkola, Tommi S and Saul, Lawrence K},
+  journal={Machine learning},
+  volume={37},
+  number={2},
+  pages={183--233},
+  year={1999},
+  publisher={Springer}
+}
+
+@article{geman84,
+  author={S. {Geman} and D. {Geman}},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  title={Stochastic Relaxation, Gibbs Distributions, and the Bayesian Restoration of Images},
+  year={1984},
+  volume={PAMI-6},
+  number={6},
+  pages={721-741}
+}
+
+@article{metropolis53,
+  author = {Metropolis, Nicholas  and Rosenbluth, Arianna W.  and Rosenbluth, Marshall N.  and Teller, Augusta H.  and Teller, Edward },
+  title = {Equation of State Calculations by Fast Computing Machines},
+  journal = {The Journal of Chemical Physics},
+  volume = {21},
+  number = {6},
+  pages = {1087-1092},
+  year = {1953}
+  }
+
+@book{gelman13,
+  title={Bayesian Data Analysis, Third Edition},
+  author={Gelman, A. and Carlin, J.B. and Stern, H.S. and Dunson, D.B. and Vehtari, A. and Rubin, D.B.},
+  isbn={9781439840955},
+  series={Chapman \& Hall/CRC Texts in Statistical Science},
+  url={https://books.google.com.br/books?id=ZXL6AQAAQBAJ},
+  year={2013},
+  publisher={Taylor \& Francis}
+}
+
+@inproceedings{liang17,
+  author    = {Yitao Liang and
+               Jessa Bekker and
+               Guy Van den Broeck},
+  title     = {Learning the Structure of Probabilistic Sentential Decision Diagrams},
+  booktitle = {Proceedings of the Thirty-Third Conference on Uncertainty in Artificial
+               Intelligence},
+  year      = {2017},
+}
+
+@article{kisa14,
+  author = {Doga Kisa and Guy Van den Broeck and Arthur Choi and Adnan Darwiche},
+  title = {Probabilistic Sentential Decision Diagrams},
+  journal = {Knowledge Representation and Reasoning Conference},
+  year = {2014},
+  abstract = {We propose the Probabilistic Sentential Decision Diagram (PSDD): A complete and canonical representation of probability distributions defined over the models of a given propositional theory.  Each parameter of a PSDD can be viewed as the (conditional) probability of making a decision in a corresponding Sentential Decision Diagram (SDD). The SDD itself is a recently proposed complete and canonical representation of propositional theories.  We explore a number of interesting properties of PSDDs, including the independencies that underlie them.  We show that the PSDD is a tractable representation.  We further show how the parameters of a PSDD can be efficiently estimated, in closed form, from complete data.  We empirically evaluate the quality of PSDDs learned from data, when we have knowledge, a priori, of the domain logical constraints.},
+}
+
+@inproceedings{fierens11,
+  author    = {Daan Fierens and
+               Guy Van den Broeck and
+               Ingo Thon and
+               Bernd Gutmann and
+               Luc De Raedt},
+  title     = {Inference in Probabilistic Logic Programs using Weighted {CNF}s},
+  booktitle = {Proceedings of the Twenty-Seventh Conference on Uncertainty
+               in Artificial Intelligence},
+  pages     = {211--220},
+  year      = {2011}
+}
+
+@inproceedings{broeck11,
+  author = {Van Den Broeck, Guy and Taghipour, Nima and Meert, Wannes and Davis, Jesse and De Raedt, Luc},
+  title = {Lifted Probabilistic Inference by First-Order Knowledge Compilation},
+  year = {2011},
+  booktitle = {Proceedings of the Twenty-Second International Joint Conference on Artificial Intelligence},
+  pages = {2178--2185},
+  series = {IJCAI}
+}
+
+@inproceedings{ randomdensitytrees,
+author = {Ram, Parikshit and Gray, Alexander G.},
+title = {Density Estimation Trees},
+year = {2011},
+booktitle = {Proceedings of the 17th {ACM} {SIGKDD} International Conference on Knowledge Discovery and Data Mining},
+pages = {627--635},
+series = {KDD}
+}
+
+@article{ forestpgms, 
+ author = {Liu, Han and Xu, Min and Gu, Haijie and Gupta, Anupam and Lafferty, John and Wasserman, Larry}, 
+ title = {Forest Density Estimation}, 
+ year = {2011}, 
+ volume = {12}, 
+ number = {}, 
+ issn = {1532-4435}, 
+ journal = {Journal of Machine Learning Research}, 
+ pages = {907--951}
+}
+
+@article{ kdtrees,
+ title = {Multidimensional Binary Search Trees in Database Applicatoins},
+ author = {Jon L. Bentley},
+ journal = {{IEEE} Transactions on Software Engineering},
+ volume = {5},
+ pages = {4},
+ year = {1979}
+
+}
+
+@inproceedings{ KernelTrees,
+title = {Retrofitting Decision Tree Classifiers Using Kernel Density Estimation},
+author = {Smyth, Padhraic and Gray, Alexander and Fayyad, Usama},
+booktitle = {Proceedings of the Twelfth International Conference on Machine Learning},
+series = {ICML},
+pages = {506-514},
+year = {1995},
+}
+
+@inproceedings{ boundedbns,
+ author = {Elidan, Gal and Gould, Stephen},
+ booktitle = {Advances in Neural Information Processing Systems},
+ series = {NeurIPS},
+ pages = {},
+ title = {Learning Bounded Treewidth Bayesian Networks},
+ volume = {21},
+ year = {2009}
+}
+
+@inproceedings{ thin,
+author = {Bach, Francis R. and Jordan, Michael I.},
+title = {Thin Junction Trees},
+year = {2001},
+booktitle = {Proceedings of the 14th International Conference on Neural Information Processing Systems},
+pages = {569–576},
+series = {NeurIPS}
+}
+
+@InProceedings{ xcutnets,
+author="Di Mauro, Nicola
+and Vergari, Antonio
+and Basile, Teresa M. A.
+and Esposito, Floriana",
+editor="Ceci, Michelangelo
+and Hollm{\'e}n, Jaakko
+and Todorovski, Ljup{\v{c}}o
+and Vens, Celine
+and D{\v{z}}eroski, Sa{\v{s}}o",
+title="Fast and Accurate Density Estimation with Extremely Randomized Cutset Networks",
+booktitle="Machine Learning and Knowledge Discovery in Databases",
+year="2017",
+pages="203--219"
+}
+
+@article{chavira06,
+  title={Compiling relational Bayesian networks for exact inference},
+  author={Chavira, Mark and Darwiche, Adnan and Jaeger, Manfred},
+  journal={International Journal of Approximate Reasoning},
+  volume={42},
+  number={1-2},
+  pages={4--20},
+  year={2006}
+}
+
+@article{randomforests,
+ author = {Leo Breiman},
+ title = {Random Forests},
+ journal = {Machine Learning},
+ volume = {45},
+ pages = {5--32},
+ year = {2001}
+}
+
+@inproceedings{ rptrees,
+ author = {Freund, Yoav and Dasgupta, Sanjoy and Kabra, Mayank and Verma, Nakul},
+ booktitle = {Advances in Neural Information Processing Systems},
+ pages = {},
+ series = {NeurIPS},
+ title = {Learning the structure of manifolds using random projections},
+ volume = {20},
+ year = {2008}
+}
+
+@inproceedings{ rpmax,
+ author = {Sanjoy Dasgupta and Yoav Freund},
+ title = {Random projection trees and low dimensional manifolds},
+ booktitle = {Proceedings of the fortieth annual {ACM} symposium on Theory of computing},
+ series = {STOC},
+ pages = {537--546},
+ year = {2008}
+}
+
+@inproceedings{ dhesi,
+ author = {Dhesi, Aman and Kar, Purushottam},
+ booktitle = {Advances in Neural Information Processing Systems},
+ series = {NeurIPS},
+ pages = {},
+ title = {Random Projection Trees Revisited},
+ volume = {23},
+ year = {2010}
+}
+
+@inproceedings{jaini18,
+  title={Prometheus: Directly learning acyclic directed graph structures for sum-product networks},
+  author={Jaini, Priyank and Ghose, Amur and Poupart, Pascal},
+  booktitle={International Conference on Probabilistic Graphical Models},
+  series = {PGM},
+  pages={181--192},
+  year={2018}
+}
+
+@incollection{trapp19,
+  title = {Bayesian Learning of Sum-Product Networks},
+  author = {Trapp, Martin and Peharz, Robert and Ge, Hong and Pernkopf, Franz and Ghahramani, Zoubin},
+  booktitle = {Advances in Neural Information Processing Systems 32},
+  pages = {6347--6358},
+  year = {2019}
+}
+
+@InProceedings{rashwan16,
+  title = 	 {Online and Distributed Bayesian Moment Matching for Parameter Learning in Sum-Product Networks},
+  author = 	 {Abdullah Rashwan and Han Zhao and Pascal Poupart},
+  booktitle = 	 {Proceedings of the 19th International Conference on Artificial Intelligence and Statistics},
+  pages = 	 {1469--1477},
+  year = 	 {2016},
+  editor = 	 {Arthur Gretton and Christian C. Robert},
+  volume = 	 {51},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {Cadiz, Spain},
+  month = 	 {09--11 May},
+  publisher = 	 {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v51/rashwan16.pdf},
+  url = 	 {http://proceedings.mlr.press/v51/rashwan16.html},
+  abstract = 	 {Probabilistic graphical models provide a general and flexible framework for reasoning about complex dependencies in noisy domains with many variables.  Among the various types of probabilistic graphical models, sum-product networks (SPNs) have recently generated some interest because exact inference can always be done in linear time with respect to the size of the network. This is particularly attractive since it means that learning an SPN from data always yields a tractable model for inference. However, existing parameter learning algorithms for SPNs operate in batch mode and do not scale easily to large datasets. In this work, we explore online algorithms to ensure that parameter learning can also be done tractably with respect to the amount of data.  More specifically, we propose a new Bayesian moment matching (BMM) algorithm that operates naturally in an online fashion and that can be easily distributed. We demonstrate the effectiveness and scalability of BMM in comparison to online extensions of gradient descent, exponentiated gradient and expectation maximization on 20 classic benchmarks and 4 large scale datasets.}
+}
+
+@InProceedings{zhao16b,
+  title = 	 {Collapsed Variational Inference for Sum-Product Networks},
+  author = 	 {Han Zhao and Tameem Adel and Geoff Gordon and Brandon Amos},
+  booktitle = 	 {Proceedings of The 33rd International Conference on Machine Learning},
+  pages = 	 {1310--1318},
+  year = 	 {2016},
+  editor = 	 {Maria Florina Balcan and Kilian Q. Weinberger},
+  volume = 	 {48},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {New York, New York, USA},
+  month = 	 {20--22 Jun},
+  publisher = 	 {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v48/zhaoa16.pdf},
+  url = 	 {http://proceedings.mlr.press/v48/zhaoa16.html},
+  abstract = 	 {Sum-Product Networks (SPNs) are probabilistic inference machines that admit exact inference in linear time in the size of the network. Existing parameter learning approaches for SPNs are largely based on the maximum likelihood principle and are subject to overfitting compared to more Bayesian approaches. Exact Bayesian posterior inference for SPNs is computationally intractable. Even approximation techniques such as standard variational inference and posterior sampling for SPNs are computationally infeasible even for networks of moderate size due to the large number of local latent variables per instance. In this work, we propose a novel deterministic collapsed variational inference algorithm for SPNs that is computationally efficient, easy to implement and at the same time allows us to incorporate prior information into the optimization formulation. Extensive experiments show a significant improvement in accuracy compared with a maximum likelihood based approach.}
+}
+
+@InProceedings{butz18,
+  author="Butz, Cory J.  and dos Santos, Andr{\'e} E.  and Oliveira, Jhonatan S.  and Stavrinides, John",
+  editor="Mouhoub, Malek and Sadaoui, Samira and Ait Mohamed, Otmane and Ali, Moonis",
+  title="Efficient Examination of Soil Bacteria Using Probabilistic Graphical Models",
+  booktitle="Recent Trends and Future Technology in Applied Intelligence",
+  year="2018",
+  publisher="Springer International Publishing",
+  address="Cham",
+  pages="315--326",
+  abstract="This paper describes a novel approach to study bacterial relationships in soil datasets using probabilistic graphical models. We demonstrate how to access and reformat publicly available datasets in order to apply machine learning techniques. We first learn a Bayesian network in order to read independencies in linear time between bacterial community characteristics. These independencies are useful in understanding the semantic relationships between bacteria within communities. Next, we learn a Sum-Product network in order to perform inference in linear time. Here, inference can be conducted to answer traditional queries, involving posterior probabilities, or MPE queries, requesting the most likely values of the non-evidence variables given evidence. Our results extend the literature by showing that known relationships between soil bacteria holding in one or a few datasets in fact hold across at least 3500 diverse datasets. This study paves the way for future large-scale studies of agricultural, health, and environmental applications, for which data are publicly available.",
+  isbn="978-3-319-92058-0"
+}
+
+@article{ratajczak18,
+  title={Sum-product networks for sequence labeling},
+  author={Ratajczak, Martin and Tschiatschek, Sebastian and Pernkopf, Franz},
+  journal={arXiv preprint arXiv:1807.02324},
+  year={2018}
+}
+
+@inproceedings{zheng18,
+  title={Learning graph-structured sum-product networks for probabilistic semantic maps},
+  author={Zheng, Kaiyu and Pronobis, Andrzej and Rao, Rajesh PN},
+  booktitle={Thirty-Second AAAI Conference on Artificial Intelligence},
+  year={2018}
+}
+
+@incollection{gens12,
+  title = {Discriminative Learning of Sum-Product Networks},
+  author = {Gens, Robert and Domingos, Pedro},
+  booktitle = {Advances in Neural Information Processing Systems 25},
+  publisher = {NIPS},
+  pages = {3239--3247},
+  year = {2012},
+}
+
+@InProceedings{gens13,
+  title = 	 {Learning the Structure of Sum-Product Networks},
+  author = 	 {Gens, Robert and Domingos, Pedro},
+  booktitle = 	 {Proceedings of the 30th International Conference on Machine Learning},
+  series = {ICML},
+  pages = 	 {873--880},
+  year = 	 {2013},
+  }
+
+@incollection{dennis12,
+  title = {Learning the Architecture of Sum-Product Networks Using Clustering on Variables},
+  author = {Aaron Dennis and Dan Ventura},
+  booktitle = {Advances in Neural Information Processing Systems 25},
+  publisher = {NIPS},
+  pages = {2033--2041},
+  year = {2012}
+}
+
+@article{peharz18,
+  author    = {Robert Peharz and Antonio Vergari and Karl Stelzner and Alejandro Molina and Martin Trapp and Kristian Kersting and Zoubin Ghahramani},
+  title     = {Probabilistic Deep Learning using Random Sum-Product Networks},
+  journal   = {CoRR},
+  volume    = {abs/1806.01910},
+  year      = {2018},
+  archivePrefix = {arXiv},
+  eprint    = {1806.01910}
+}
+
+@INPROCEEDINGS{sguerra16,
+  author={B. M. {Sguerra} and F. G. {Cozman}},
+  booktitle={2016 5th Brazilian Conference on Intelligent Systems (BRACIS)},
+  title={Image Classification Using Sum-Product Networks for Autonomous Flight of Micro Aerial Vehicles},
+  year={2016},
+  pages={139-144}
+}
+
+@inproceedings{vergari15,
+  title={Simplifying, Regularizing and Strengthening Sum-Product Network Structure Learning},
+  author={Antonio Vergari and Nicola Di Mauro and Floriana Esposito},
+  booktitle={ECML/PKDD},
+  year={2015}
+}
+
+
+
+@phdthesis{peharz15_phd,
+author = {Peharz, Robert},
+year = {2015},
+title = {Foundations of Sum-Product Networks for Probabilistic
+         Modeling},
+school = {Graz University of Technology}
+}
+
+@inproceedings{conaty17,
+  author    = {Diarmaid Conaty and
+               Cassio Polpo de Campos and
+               Denis Deratani Mau{\'{a}}},
+  title     = {Approximation Complexity of Maximum {A} Posteriori Inference in Sum-Product
+               Networks},
+  booktitle = {Proceedings of the Thirty-Third Conference on Uncertainty in Artificial
+               Intelligence},
+  year      = {2017},
+}
+
+@inproceedings{mei18,
+  author = {Jun Mei and Yong Jiang and Kewei Tu},
+  title = {Maximum A Posteriori Inference in Sum-Product Networks},
+  booktitle = {AAAI Conference on Artificial Intelligence},
+  year = {2018},
+}
+
+@article{szegedy13,
+  title={Intriguing properties of neural networks},
+  author={Szegedy, Christian and Zaremba, Wojciech and Sutskever, Ilya and Bruna, Joan and Erhan, Dumitru and Goodfellow, Ian and Fergus, Rob},
+  journal={arXiv preprint arXiv:1312.6199},
+  year={2013}
+}
+
+@article{wei18,
+  title={Adversarial Examples in Deep Learning: Characterization and Divergence},
+  author={Wei, Wenqi and Liu, Ling and Loper, Margaret and Truex, Stacey and Yu, Lei and Emre Gursoy, Mehmet and Wu, Yanzhao},
+  journal={arXiv preprint arXiv:1807.00051},
+  year={2018}
+}
+
+@article{su19,
+  title={One pixel attack for fooling deep neural networks},
+  author={Su, Jiawei and Vargas, Danilo Vasconcellos and Sakurai, Kouichi},
+  journal={IEEE Transactions on Evolutionary Computation},
+  volume={23},
+  number={5},
+  pages={828--841},
+  year={2019},
+  publisher={IEEE}
+}
+
+@inproceedings{guo17,
+  title={On calibration of modern neural networks},
+  author={Guo, Chuan and Pleiss, Geoff and Sun, Yu and Weinberger, Kilian Q},
+  booktitle={Proceedings of the 34th International Conference on Machine Learning-Volume 70},
+  pages={1321--1330},
+  year={2017},
+  organization={JMLR. org}
+}
+
+@inproceedings{peharz14,
+  title={Learning selective sum-product networks},
+  author={Peharz, Robert and Gens, Robert and Domingos, Pedro},
+  booktitle={Workshop on Learning Tractable Probabilistic Models},
+  year={2014}
+}
+
+@inproceedings{poon11,
+  author = {Poon, Hoifung and Domingos, Pedro},
+  title = {Sum-Product Networks: A New Deep Architecture},
+  year = {2011},
+  booktitle = {Proceedings of the Twenty-Seventh Conference on Uncertainty in Artificial Intelligence},
+  pages = {337--346}
+}
+
+@book{pearl1988,
+  title = "Probabilistic Reasoning in Intelligent Systems",
+  author = "Judea Pearl",
+  publisher = "Morgan Kaufmann",
+  year = "1988",
+}
+
+@InCollection{mccarthy1969,
+  author = "John McCarthy and Patrick J. Hayes",
+  title = "Some Philosophical Problems from the Standpoint of
+  Artificial Intelligence",
+  booktitle = "Machine Intelligence 4",
+  editor = "B. Meltzer and D. Michie",
+  pages = "463--502",
+  publisher = "Edinburgh University Press",
+  year = "1969",
+  note = "reprinted in McC90",
+},
+
+@incollection{goodfellow14,
+  title = {Generative Adversarial Nets},
+  author = {Goodfellow, Ian and Pouget-Abadie, Jean and Mirza, Mehdi and Xu, Bing and Warde-Farley, David and Ozair, Sherjil and Courville, Aaron and Bengio, Yoshua},
+  booktitle = {Advances in Neural Information Processing Systems 27},
+  editor = {Z. Ghahramani and M. Welling and C. Cortes and N. D. Lawrence and K. Q. Weinberger},
+  pages = {2672--2680},
+  year = {2014},
+  publisher = {Curran Associates, Inc.},
+  url = {http://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf}
+},
+
+@inproceedings{kingma14,
+  author    = {Diederik P. Kingma and
+               Max Welling},
+  editor    = {Yoshua Bengio and
+               Yann LeCun},
+  title     = {Auto-Encoding Variational Bayes},
+  booktitle = {2nd International Conference on Learning Representations, {ICLR} 2014,
+               Banff, AB, Canada, April 14-16, 2014, Conference Track Proceedings},
+  year      = {2014},
+  url       = {http://arxiv.org/abs/1312.6114},
+  timestamp = {Thu, 04 Apr 2019 13:20:07 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/KingmaW13.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+},
+
+@inproceedings{rahman14,
+  author = {Rahman, Tahrima and Kothalkar, Prasanna and Gogate, Vibhav},
+  title = {Cutset Networks: A Simple, Tractable, and Scalable Approach for Improving the Accuracy of Chow-Liu Trees},
+  year = {2014},
+  booktitle = {Proceedings of the 2014th European Conference on Machine Learning and Knowledge Discovery in Databases},
+  pages = {630--645}
+}
+
+@inproceedings{choi15,
+  author    = {Arthur Choi and
+               Guy Van den Broeck and
+               Adnan Darwiche},
+  title     = {Tractable Learning for Structured Probability Spaces: {A} Case Study
+               in Learning Preference Distributions},
+  booktitle = {Proceedings of the Twenty-Fourth International Joint Conference on
+               Artificial Intelligence},
+  pages     = {2861--2868},
+  year      = {2015},
+}
+
+@article{shen19,
+  author = {Shen, Yujia and Goyanka, Anchal and Darwiche, Adnan and Choi, Arthur},
+  year = {2019},
+  pages = {7957--7965},
+  title = {Structured {B}ayesian Networks: From Inference to Learning with Routes},
+  journal = {Proceedings of the AAAI Conference on Artificial Intelligence},
+}
+
+@INPROCEEDINGS{chernikova19,
+  author={A. {Chernikova} and A. {Oprea} and C. {Nita-Rotaru} and B. {Kim}},
+  booktitle={2019 {IEEE} Security and Privacy Workshops},
+  title={Are Self-Driving Cars Secure? Evasion Attacks Against Deep Neural Networks for Steering Angle Prediction},
+  year={2019},
+  volume={},
+  number={},
+  pages={132--137}
+}
+
+@InProceedings{rashwan18a,
+  title = 	 {Discriminative Training of Sum-Product Networks by Extended Baum-Welch},
+  author = 	 {Abdullah Rashwan and Pascal Poupart and Chen Zhitang},
+  booktitle = 	 {Proceedings of the Ninth International Conference on Probabilistic Graphical Models},
+  pages = 	 {356--367},
+  year = 	 {2018},
+  volume = 	 {72},
+  series = 	 {Proceedings of Machine Learning Research}
+}
+
+
+@article{bryant86,
+  author = {Bryant, Randal E.},
+  title = {Graph-Based Algorithms for Boolean Function Manipulation},
+  year = {1986},
+  volume = {35},
+  number = {8},
+  journal = {{IEEE} Transactions on Computers},
+  pages = {677--691}
+}
+
+@ARTICLE{lee59,
+  author={C. Y. {Lee}},
+  journal={The Bell System Technical Journal},
+  title={Representation of switching circuits by binary-decision programs},
+  year={1959},
+  volume={38},
+  number={4},
+  pages={985--999}
+}
+
+@article{akers78,
+  author = {Akers, S. B.},
+  title = {Binary Decision Diagrams},
+  year = {1978},
+  volume = {27},
+  number = {6},
+  journal = {IEEE Transactions on Computers},
+  pages = {509--516}
+}
+
+@article{floyd87,
+  author = {Bentley, Jon and Floyd, Bob},
+  title = {Programming Pearls: A Sample of Brilliance},
+  year = {1987},
+  volume = {30},
+  number = {9},
+  journal = {Commun. ACM},
+  pages = {754–757},
+}
+
+@ARTICLE{chow68,
+  author={C. {Chow} and C. {Liu}},
+  journal={IEEE Transactions on Information Theory},
+  title={Approximating discrete probability distributions with dependence trees},
+  year={1968},
+  volume={14},
+  number={3},
+  pages={462--467},
+}
+
+@article{mattei20,
+  title = "Tractable inference in credal sentential decision diagrams",
+  journal = "International Journal of Approximate Reasoning",
+  volume = "125",
+  pages = "26--48",
+  year = "2020",
+  author = "Lilith Mattei and Alessandro Antonucci and Denis Deratani Mau{\'a} and Alessandro Facchini and Julissa {Villanueva Llerena}"
+}
+
+@inproceedings{mei20,
+  author    = {Meihua Dang and
+               Antonio Vergari and
+               Guy Van den Broeck},
+  title     = {Strudel: Learning Structured-Decomposable Probabilistic Circuits},
+  booktitle   = {Proceedings of the 10th International Conference on Probabilistic Graphical Models},
+  series = {PGM},
+  year      = {2020}
+}
+
+@inproceedings{bekker15,
+ author = {Bekker, Jessa and Davis, Jesse and Choi, Arthur and Darwiche, Adnan and Van den Broeck, Guy},
+ booktitle = {Advances in Neural Information Processing Systems},
+ pages = {2242--2250},
+ title = {Tractable Learning for Complex Probability Queries},
+ year = {2015}
+}
+
+@inproceedings{shen17,
+  author    = {Yujia Shen and
+               Arthur Choi and
+               Adnan Darwiche},
+  title     = {A Tractable Probabilistic Model for Subset Selection},
+  booktitle = {Proceedings of the Thirty-Third Conference on Uncertainty in Artificial
+               Intelligence},
+  year      = {2017},
+}
+
+
+@inproceedings{choi17,
+ author = {Choi, Arthur and Shen, Yujia and Darwiche, Adnan},
+ booktitle = {Advances in Neural Information Processing Systems},
+ pages = {3477--3485},
+ title = {Tractability in Structured Probability Spaces},
+ volume = {30},
+ year = {2017}
+}
+
+@inproceedings{choi16,
+author = {Choi, Arthur and Tavabi, Nazgol and Darwiche, Adnan},
+title = {Structured Features in Naive {B}ayes Classification},
+year = {2016},
+booktitle = {Proceedings of the Thirtieth {AAAI} Conference on Artificial Intelligence},
+pages = {3233--3240},
+}
+
+@inproceedings{choi13,
+author = {Choi, Arthur and Darwiche, Adnan},
+title = {Dynamic Minimization of Sentential Decision Diagrams},
+year = {2013},
+abstract = {The Sentential Decision Diagram (SDD) is a recently proposed representation of Boolean functions, containing Ordered Binary Decision Diagrams (OBDDs) as a distinguished subclass. While OBDDs are characterized by total variable orders, SDDs are characterized more generally by vtrees. As both OBDDs and SDDs have canonical representations, searching for OBDDs and SDDs of minimal size simplifies to searching for variable orders and vtrees, respectively. For OBDDs, there are effective heuristics for dynamic reordering, based on locally swapping variables. In this paper, we propose an analogous approach for SDDs which navigates the space of vtrees via two operations: one based on tree rotations and a second based on swapping children in a vtree. We propose a particular heuristic for dynamically searching the space of vtrees, showing that it can find SDDs that are an order-of-magnitude more succinct than OBDDs found by dynamic reordering.},
+booktitle = {Proceedings of the Twenty-Seventh {AAAI} Conference on Artificial Intelligence},
+pages = {187--194}
+}
+
+@inproceedings{oztok15,
+author = {Oztok, Umut and Darwiche, Adnan},
+title = {A Top-down Compiler for Sentential Decision Diagrams},
+year = {2015},
+booktitle = {Proceedings of the 24th International Conference on Artificial Intelligence},
+pages = {3141--3148},
+}
+
+@article{gatterbauer14,
+  author = {Gatterbauer, Wolfgang and Suciu, Dan},
+  title = {Oblivious Bounds on the Probability of Boolean Functions},
+  year = {2014},
+  volume = {39},
+  number = {1},
+  journal = {ACM Transactions on Database Systems}
+}
+
+@inproceedings{karl91,
+  author = {Brace, Karl S. and Rudell, Richard L. and Bryant, Randal E.},
+  title = {Efficient Implementation of a {BDD} Package},
+  year = {1991},
+  booktitle = {Proceedings of the 27th {ACM}/{IEEE} Design Automation Conference},
+}
+
+@inproceedings{geh20,
+ author = {Renato Geh and Denis Mau{\'a} and Alessandro Antonucci},
+ title = {Learning Probabilistic Sentential Decision Diagrams by Sampling},
+ booktitle = {Proceedings of the VIII Symposium on Knowledge Discovery, Mining and Learning},
+ year = {2020},
+ publisher = {SBC},
+}
+
+@inproceedings{kamishima03,
+  author = {Kamishima, Toshihiro},
+  title = {Nantonac Collaborative Filtering: Recommendation Based on Order Responses},
+  year = {2003},
+  publisher = {Association for Computing Machinery},
+  booktitle = {Proceedings of the Ninth {ACM} {SIGKDD} International Conference on Knowledge Discovery and Data Mining},
+}
+
+@inproceedings{aloul02,
+  author = {Aloul, Fadi A. and Ramani, Arathi and Markov, Igor L. and Sakallah, Karem A.},
+  title = {Generic {ILP} versus Specialized 0-1 {ILP}: An Update},
+  year = {2002},
+  booktitle = {Proceedings of the 2002 {IEEE}/{ACM} International Conference on Computer-Aided Design},
+}
+
+@article{een06,
+  title={Translating pseudo-boolean constraints into {SAT}},
+  author={E{\'e}n, Niklas and S{\"o}rensson, Niklas},
+  journal={Journal on Satisfiability, Boolean Modeling and Computation},
+  year={2006}
+}
+
+@inproceedings{carsten05,
+  author = {Sinz, Carsten},
+  title = {Towards an Optimal {CNF} Encoding of Boolean Cardinality Constraints},
+  year = {2005},
+  booktitle = {Proceedings of the 11th International Conference on Principles and Practice of Constraint Programming},
+}
+
+@inproceedings{smyth98,
+ author = {Smyth, Padhraic and Wolpert, David},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {M. Jordan and M. Kearns and S. Solla},
+ pages = {},
+ publisher = {MIT Press},
+ title = {Stacked Density Estimation},
+ volume = {10},
+ year = {1998}
+}
+
+@inproceedings{kristine11,
+  author={Monteith, Kristine and Carroll, James L. and Seppi, Kevin and Martinez, Tony},
+  booktitle={The 2011 International Joint Conference on Neural Networks},
+  title={Turning Bayesian model averaging into Bayesian model combination},
+  year={2011},
+}
+
+@inproceedings{dang21,
+  title   = {Juice: A Julia Package for Logic and Probabilistic Circuits},
+  author = {Dang, Meihua and Khosravi, Pasha and Liang, Yitao and Vergari, Antonio and Van den Broeck, Guy},
+  booktitle = {Proceedings of the 35th AAAI Conference on Artificial Intelligence (Demo Track)},
+  year    = {2021},
+  code = "https://github.com/Juice-jl",
+}
+
+@INPROCEEDINGS{lowd10,
+  author={Lowd, Daniel and Davis, Jesse},
+  booktitle={2010 IEEE International Conference on Data Mining}, 
+  title={Learning Markov Network Structure with Decision Trees}, 
+  year={2010},
+}
+
+@inproceedings{haaren12,
+author = {Van Haaren, Jan and Davis, Jesse},
+title = {Markov Network Structure Learning: A Randomized Feature Generation Approach},
+year = {2012},
+booktitle = {Proceedings of the Twenty-Sixth AAAI Conference on Artificial Intelligence},
+}
+
+@inproceedings{dimauro21,
+author = {Nicola Di Mauro and Gennaro Gala and Marco Iannotta and Teresa M. A. Basile},
+title = {Random Probabilistic Circuits},
+year = {2021},
+booktitle = {Proceedings of the Thirty-Seventh Conference on Uncertainty in Artificial Intelligence}
+}
+
+@misc{khosravi20,
+  title={Handling Missing Data in Decision Trees: A Probabilistic Approach},
+  author={Pasha Khosravi and Antonio Vergari and YooJung Choi and Yitao Liang and Guy Van den Broeck},
+  year={2020},
+  booktitle={ICML 2020 Artemiss Workshop}
+}
+
+@misc{bommasani21,
+      title={On the Opportunities and Risks of Foundation Models}, 
+      author={Rishi Bommasani and Drew A. Hudson and Ehsan Adeli and Russ Altman and Simran Arora and Sydney von Arx and Michael S. Bernstein and Jeannette Bohg and Antoine Bosselut and Emma Brunskill and Erik Brynjolfsson and Shyamal Buch and Dallas Card and Rodrigo Castellon and Niladri Chatterji and Annie Chen and Kathleen Creel and Jared Quincy Davis and Dora Demszky and Chris Donahue and Moussa Doumbouya and Esin Durmus and Stefano Ermon and John Etchemendy and Kawin Ethayarajh and Li Fei-Fei and Chelsea Finn and Trevor Gale and Lauren Gillespie and Karan Goel and Noah Goodman and Shelby Grossman and Neel Guha and Tatsunori Hashimoto and Peter Henderson and John Hewitt and Daniel E. Ho and Jenny Hong and Kyle Hsu and Jing Huang and Thomas Icard and Saahil Jain and Dan Jurafsky and Pratyusha Kalluri and Siddharth Karamcheti and Geoff Keeling and Fereshte Khani and Omar Khattab and Pang Wei Koh and Mark Krass and Ranjay Krishna and Rohith Kuditipudi and Ananya Kumar and Faisal Ladhak and Mina Lee and Tony Lee and Jure Leskovec and Isabelle Levent and Xiang Lisa Li and Xuechen Li and Tengyu Ma and Ali Malik and Christopher D. Manning and Suvir Mirchandani and Eric Mitchell and Zanele Munyikwa and Suraj Nair and Avanika Narayan and Deepak Narayanan and Ben Newman and Allen Nie and Juan Carlos Niebles and Hamed Nilforoshan and Julian Nyarko and Giray Ogut and Laurel Orr and Isabel Papadimitriou and Joon Sung Park and Chris Piech and Eva Portelance and Christopher Potts and Aditi Raghunathan and Rob Reich and Hongyu Ren and Frieda Rong and Yusuf Roohani and Camilo Ruiz and Jack Ryan and Christopher Ré and Dorsa Sadigh and Shiori Sagawa and Keshav Santhanam and Andy Shih and Krishnan Srinivasan and Alex Tamkin and Rohan Taori and Armin W. Thomas and Florian Tramèr and Rose E. Wang and William Wang and Bohan Wu and Jiajun Wu and Yuhuai Wu and Sang Michael Xie and Michihiro Yasunaga and Jiaxuan You and Matei Zaharia and Michael Zhang and Tianyi Zhang and Xikun Zhang and Yuhui Zhang and Lucia Zheng and Kaitlyn Zhou and Percy Liang},
+      year={2021},
+      eprint={2108.07258},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+
+@misc{gawlikowski21,
+      title={A Survey of Uncertainty in Deep Neural Networks}, 
+      author={Jakob Gawlikowski and Cedrique Rovile Njieutcheu Tassi and Mohsin Ali and Jongseok Lee and Matthias Humt and Jianxiang Feng and Anna Kruspe and Rudolph Triebel and Peter Jung and Ribana Roscher and Muhammad Shahzad and Wen Yang and Richard Bamler and Xiao Xiang Zhu},
+      year={2021},
+      eprint={2107.03342},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+
+
+@inproceedings{eykholt18,
+  title={Robust physical-world attacks on deep learning visual classification},
+  author={Eykholt, Kevin and Evtimov, Ivan and Fernandes, Earlence and Li, Bo and Rahmati, Amir and Xiao, Chaowei and Prakash, Atul and Kohno, Tadayoshi and Song, Dawn},
+  booktitle={Proceedings of the IEEE conference on computer vision and pattern recognition},
+  pages={1625--1634},
+  year={2018}
+}
+
+@inproceedings{ribeiro16,
+author = {Ribeiro, Marco Tulio and Singh, Sameer and Guestrin, Carlos},
+title = {"Why Should I Trust You?": Explaining the Predictions of Any Classifier},
+year = {2016},
+isbn = {9781450342322},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2939672.2939778},
+doi = {10.1145/2939672.2939778},
+abstract = {Despite widespread adoption, machine learning models remain mostly black boxes. Understanding
+the reasons behind predictions is, however, quite important in assessing trust, which
+is fundamental if one plans to take action based on a prediction, or when choosing
+whether to deploy a new model. Such understanding also provides insights into the
+model, which can be used to transform an untrustworthy model or prediction into a
+trustworthy one.In this work, we propose LIME, a novel explanation technique that
+explains the predictions of any classifier in an interpretable and faithful manner,
+by learning an interpretable model locally varound the prediction. We also propose
+a method to explain models by presenting representative individual predictions and
+their explanations in a non-redundant way, framing the task as a submodular optimization
+problem. We demonstrate the flexibility of these methods by explaining different models
+for text (e.g. random forests) and image classification (e.g. neural networks). We
+show the utility of explanations via novel experiments, both simulated and with human
+subjects, on various scenarios that require trust: deciding if one should trust a
+prediction, choosing between models, improving an untrustworthy classifier, and identifying
+why a classifier should not be trusted.},
+booktitle = {Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining},
+pages = {1135–1144},
+numpages = {10},
+keywords = {interpretability, black box classifier, explaining machine learning, interpretable machine learning},
+location = {San Francisco, California, USA},
+series = {KDD '16}
+}
+
+@misc{yu20,
+      title={A Tutorial on VAEs: From Bayes' Rule to Lossless Compression}, 
+      author={Ronald Yu},
+      year={2020},
+      eprint={2006.10273},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+
+@misc{pctutorial,
+  title = {Probabilistic Circuits: Representations, Inference, Learning and Applications},
+  author = {Antonio Vergari and YooJung Choi and Robert Peharz and Guy Van den Broeck},
+  year = {2020},
+  type = {AAAI Tutorial},
+  booktitle = {Association for the Advancement of Artificial Intelligence Conference}
+}
+
+@inbook{yaniv19,
+author = {Ovadia, Yaniv and Fertig, Emily and Ren, Jie and Nado, Zachary and Sculley, D. and Nowozin, Sebastian and Dillon, Joshua V. and Lakshminarayanan, Balaji and Snoek, Jasper},
+title = {Can You Trust Your Model's Uncertainty? Evaluating Predictive Uncertainty under Dataset Shift},
+year = {2019},
+booktitle = {Proceedings of the 33rd International Conference on Neural Information Processing Systems},
+articleno = {1254},
+numpages = {12}
+}
+
+@article{papamakarios21,
+  author  = {George Papamakarios and Eric Nalisnick and Danilo Jimenez Rezende and Shakir Mohamed and Balaji Lakshminarayanan},
+  title   = {Normalizing Flows for Probabilistic Modeling and Inference},
+  journal = {Journal of Machine Learning Research},
+  year    = {2021},
+  volume  = {22},
+  number  = {57},
+  pages   = {1-64},
+  url     = {http://jmlr.org/papers/v22/19-1028.html}
+}
+
+@InProceedings{rezende15,
+  title = 	 {Variational Inference with Normalizing Flows},
+  author = 	 {Rezende, Danilo and Mohamed, Shakir},
+  booktitle = 	 {Proceedings of the 32nd International Conference on Machine Learning},
+  pages = 	 {1530--1538},
+  year = 	 {2015},
+  editor = 	 {Bach, Francis and Blei, David},
+  volume = 	 {37},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {Lille, France},
+  month = 	 {07--09 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v37/rezende15.pdf},
+  url = 	 {https://proceedings.mlr.press/v37/rezende15.html},
+  abstract = 	 {The choice of the approximate posterior distribution is one of the core problems in variational inference. Most applications of variational inference employ simple families of posterior approximations in order to allow for efficient inference, focusing on mean-field or other simple structured approximations. This restriction has a significant impact on the quality of inferences made using variational methods. We introduce a new approach for specifying flexible, arbitrarily complex and scalable approximate posterior distributions. Our approximations are distributions constructed through a normalizing flow, whereby a simple initial density is transformed into a more complex one by applying a sequence of invertible transformations until a desired level of complexity is attained. We use this view of normalizing flows to develop categories of finite and infinitesimal flows and provide a unified view of approaches for constructing rich posterior approximations. We demonstrate that the theoretical advantages of having posteriors that better match the true posterior, combined with the scalability of amortized variational approaches, provides a clear improvement in performance and applicability of variational inference.}
+}
+
+@inproceedings{gritsenko19,
+  author    = {Alexey A. Gritsenko and
+               Jasper Snoek and
+               Tim Salimans},
+  title     = {On the relationship between Normalising Flows and Variational- and
+               Denoising Autoencoders},
+  booktitle = {Deep Generative Models for Highly Structured Data, {ICLR} 2019 Workshop,
+               New Orleans, Louisiana, United States, May 6, 2019},
+  publisher = {OpenReview.net},
+  year      = {2019},
+  url       = {https://openreview.net/forum?id=HklKEUUY\_E},
+  timestamp = {Thu, 25 Jul 2019 16:26:32 +0200},
+  biburl    = {https://dblp.org/rec/conf/iclr/GritsenkoSS19.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{rolfe17,
+  author    = {Jason Tyler Rolfe},
+  title     = {Discrete Variational Autoencoders},
+  booktitle = {5th International Conference on Learning Representations, {ICLR} 2017,
+               Toulon, France, April 24-26, 2017, Conference Track Proceedings},
+  publisher = {OpenReview.net},
+  year      = {2017},
+  url       = {https://openreview.net/forum?id=ryMxXPFex},
+  timestamp = {Thu, 25 Jul 2019 14:25:44 +0200},
+  biburl    = {https://dblp.org/rec/conf/iclr/Rolfe17.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{vahdat18b,
+ author = {Vahdat, Arash and Andriyash, Evgeny and Macready, William},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {S. Bengio and H. Wallach and H. Larochelle and K. Grauman and N. Cesa-Bianchi and R. Garnett},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {DVAE\#: Discrete Variational Autoencoders with Relaxed Boltzmann Priors},
+ url = {https://proceedings.neurips.cc/paper/2018/file/9f53d83ec0691550f7d2507d57f4f5a2-Paper.pdf},
+ volume = {31},
+ year = {2018}
+}
+
+@inproceedings{vahdat18a,
+  author    = {Arash Vahdat and
+               William G. Macready and
+               Zhengbing Bian and
+               Amir Khoshaman and
+               Evgeny Andriyash},
+  editor    = {Jennifer G. Dy and
+               Andreas Krause},
+  title     = {{DVAE++:} Discrete Variational Autoencoders with Overlapping Transformations},
+  booktitle = {Proceedings of the 35th International Conference on Machine Learning,
+               {ICML} 2018, Stockholmsm{\"{a}}ssan, Stockholm, Sweden, July
+               10-15, 2018},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {80},
+  pages     = {5042--5051},
+  publisher = {{PMLR}},
+  year      = {2018},
+  url       = {http://proceedings.mlr.press/v80/vahdat18a.html},
+  timestamp = {Wed, 03 Apr 2019 18:17:30 +0200},
+  biburl    = {https://dblp.org/rec/conf/icml/VahdatMBKA18.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{lippe21,
+  author    = {Phillip Lippe and
+               Efstratios Gavves},
+  title     = {Categorical Normalizing Flows via Continuous Transformations},
+  booktitle = {9th International Conference on Learning Representations, {ICLR} 2021,
+               Virtual Event, Austria, May 3-7, 2021},
+  publisher = {OpenReview.net},
+  year      = {2021},
+  url       = {https://openreview.net/forum?id=-GLNZeVDuik},
+  timestamp = {Wed, 23 Jun 2021 17:36:39 +0200},
+  biburl    = {https://dblp.org/rec/conf/iclr/LippeG21.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{ziegler19,
+  author    = {Zachary M. Ziegler and
+               Alexander M. Rush},
+  editor    = {Kamalika Chaudhuri and
+               Ruslan Salakhutdinov},
+  title     = {Latent Normalizing Flows for Discrete Sequences},
+  booktitle = {Proceedings of the 36th International Conference on Machine Learning,
+               {ICML} 2019, 9-15 June 2019, Long Beach, California, {USA}},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {97},
+  pages     = {7673--7682},
+  publisher = {{PMLR}},
+  year      = {2019},
+  url       = {http://proceedings.mlr.press/v97/ziegler19a.html},
+  timestamp = {Tue, 11 Jun 2019 15:37:38 +0200},
+  biburl    = {https://dblp.org/rec/conf/icml/ZieglerR19.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@Inbook{dechter98,
+author="Dechter, R.",
+editor="Jordan, Michael I.",
+title="Bucket Elimination: A Unifying Framework for Probabilistic Inference",
+bookTitle="Learning in Graphical Models",
+year="1998",
+publisher="Springer Netherlands",
+address="Dordrecht",
+pages="75--104",
+abstract="Probabilistic inference algorithms for belief updating, finding the most probable explanation, the maximum a posteriori hypothesis, and the maximum expected utility are reformulated within the bucket elimination framework. This emphasizes the principles common to many of the algorithms appearing in the probabilistic inference literature and clarifies the relationship of such algorithms to nonserial dynamic programming algorithms. A general method for combining conditioning and bucket elimination is also presented. For all the algorithms, bounds on complexity are given as a function of the problem's structure.",
+isbn="978-94-011-5014-9",
+doi="10.1007/978-94-011-5014-9_4",
+url="https://doi.org/10.1007/978-94-011-5014-9_4"
+}
+
+@book{koller09,
+author = {Koller, Daphne and Friedman, Nir},
+title = {Probabilistic Graphical Models: Principles and Techniques - Adaptive Computation and Machine Learning},
+year = {2009},
+isbn = {0262013193},
+publisher = {The MIT Press},
+abstract = {Most tasks require a person or an automated system to reasonto reach conclusions based
+on available information. The framework of probabilistic graphical models, presented
+in this book, provides a general approach for this task. The approach is model-based,
+allowing interpretable models to be constructed and then manipulated by reasoning
+algorithms. These models can also be learned automatically from data, allowing the
+approach to be used in cases where manually constructing a model is difficult or even
+impossible. Because uncertainty is an inescapable aspect of most real-world applications,
+the book focuses on probabilistic models, which make the uncertainty explicit and
+provide models that are more faithful to reality. Probabilistic Graphical Models discusses
+a variety of models, spanning Bayesian networks, undirected Markov networks, discrete
+and continuous models, and extensions to deal with dynamical systems and relational
+data. For each class of models, the text describes the three fundamental cornerstones:
+representation, inference, and learning, presenting both basic concepts and advanced
+techniques. Finally, the book considers the use of the proposed framework for causal
+reasoning and decision making under uncertainty. The main text in each chapter provides
+the detailed technical development of the key ideas. Most chapters also include boxes
+with additional material: skill boxes, which describe techniques; case study boxes,
+which discuss empirical cases related to the approach described in the text, including
+applications in computer vision, robotics, natural language understanding, and computational
+biology; and concept boxes, which present significant concepts drawn from the material
+in the chapter. Instructors (and readers) can group chapters in various combinations,
+from core topics to more technically advanced material, to suit their particular needs.
+Adaptive Computation and Machine Learning series}
+}
+
+@inproceedings{khosravi19,
+  title     = {What to Expect of Classifiers? Reasoning about Logistic Regression with Missing Features},
+  author    = {Khosravi, Pasha and Liang, Yitao and Choi, YooJung and Van den Broeck, Guy},
+  booktitle = {Proceedings of the Twenty-Eighth International Joint Conference on
+               Artificial Intelligence, {IJCAI-19}},
+  publisher = {International Joint Conferences on Artificial Intelligence Organization},             
+  pages     = {2716--2724},
+  year      = {2019},
+  month     = {7},
+  doi       = {10.24963/ijcai.2019/377},
+  url       = {https://doi.org/10.24963/ijcai.2019/377},
+}
+
+@InProceedings{rooshenas16,
+  title = 	 {Discriminative Structure Learning of Arithmetic Circuits},
+  author = 	 {Rooshenas, Amirmohammad and Lowd, Daniel},
+  booktitle = 	 {Proceedings of the 19th International Conference on Artificial Intelligence and Statistics},
+  pages = 	 {1506--1514},
+  year = 	 {2016},
+  editor = 	 {Gretton, Arthur and Robert, Christian C.},
+  volume = 	 {51},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {Cadiz, Spain},
+  month = 	 {09--11 May},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v51/rooshenas16.pdf},
+  url = 	 {https://proceedings.mlr.press/v51/rooshenas16.html},
+  abstract = 	 {The biggest limitation of probabilistic graphical models is the complexity of inference, which is often intractable.  An appealing alternative is to use tractable probabilistic models, such as arithmetic circuits (ACs) and sum-product networks (SPNs), in which marginal and conditional queries can be answered efficiently.  In this paper, we present the first discriminative structure learning algorithm for ACs, DACLearn (Discriminative AC Learner).  Like previous work on generative structure learning, DACLearn finds a log-linear model with conjunctive features, using the size of an equivalent AC representation as a learning bias.  Unlike previous work, DACLearn optimizes conditional likelihood, resulting in a more accurate conditional distribution.  DACLearn also learns much more compact ACs than generative methods, since it does not need to represent a consistent distribution over the evidence variables.  To ensure efficiency, DACLearn uses novel initialization and search heuristics to drastically reduce the number of feature evaluations required to learn an accurate model.  In experiments on 20 benchmark domains, we find that our DACLearn learns models that are more accurate and compact than other tractable generative and discriminative methods.}
+}
+
+@InProceedings{shao20,
+  title = 	 {Conditional Sum-Product Networks: Imposing Structure on Deep Probabilistic Architectures},
+  author =       {Shao, Xiaoting and Molina, Alejandro and Vergari, Antonio and Stelzner, Karl and Peharz, Robert and Liebig, Thomas and Kersting, Kristian},
+  booktitle = 	 {Proceedings of the 10th International Conference on Probabilistic Graphical Models},
+  pages = 	 {401--412},
+  year = 	 {2020},
+  editor = 	 {Jaeger, Manfred and Nielsen, Thomas Dyhre},
+  volume = 	 {138},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 sep,
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v138/shao20a/shao20a.pdf},
+  url = 	 {https://proceedings.mlr.press/v138/shao20a.html},
+  abstract = 	 {Probabilistic graphical models are a central tool in AI, however, they are generally not as expressive
+ as deep neural models, and inference is notoriously hard and slow. In contrast, deep probabilistic
+ models such as sum-product networks (SPNs) capture joint distributions in a tractable fashion,
+ but still lack the expressive power of intractable models based on deep neural networks. Therefore,
+ we introduce conditional SPNs (CSPNs), conditional density estimators for multivariate and
+ potentially hybrid domains that allow harnessing the expressive power of neural networks while
+ still maintaining tractability guarantees. One way to implement CSPNs is to use an existing SPN
+ structure and condition its parameters on the input, e.g., via a deep neural network. Our experimental
+ evidence demonstrates that CSPNs are competitive with other probabilistic models and yield
+ superior performance on multilabel image classification compared to mean field and mixture density
+ networks. Furthermore, they can successfully be employed as building blocks for structured
+ probabilistic models, such as autoregressive image models.}
+}
+
+@article{jaeger04,
+author = {Jaeger, Manfred},
+title = {Probabilistic Decision Graphs-Combining Verification and AI Techniques for Probabilistic Inference},
+year = {2004},
+issue_date = {January 2004},
+publisher = {World Scientific Publishing Co., Inc.},
+address = {USA},
+volume = {12},
+number = {1 supp},
+issn = {0218-4885},
+url = {https://doi.org/10.1142/S0218488504002564},
+doi = {10.1142/S0218488504002564},
+abstract = {We adopt probabilistic decision graphs developed in the field of automated verification
+as a tool for probabilistic model representation and inference. We show that probabilistic
+inference has linear time complexity in the size of the probabilistic decision graph,
+that the smallest probabilistic decision graph for a given distribution is at most
+as large as the smallest junction tree for the same distribution, and that in some
+cases it can in fact be much smaller. Behind these very promising features of probabilistic
+decision graphs lies the fact that they integrate into a single coherent framework
+a number of representational and algorithmic optimizations developed for Bayesian
+networks (use of hidden variables, context-specific independence, structured representation
+of conditional probability tables).},
+journal = {Int. J. Uncertain. Fuzziness Knowl.-Based Syst.},
+month = jan,
+pages = {19–42},
+numpages = {24}
+}
+
+@article{dechter07,
+title = {AND/OR search spaces for graphical models},
+journal = {Artificial Intelligence},
+volume = {171},
+number = {2},
+pages = {73-106},
+year = {2007},
+issn = {0004-3702},
+doi = {https://doi.org/10.1016/j.artint.2006.11.003},
+url = {https://www.sciencedirect.com/science/article/pii/S000437020600138X},
+author = {Rina Dechter and Robert Mateescu},
+keywords = {Search, AND/OR search, Decomposition, Graphical models, Bayesian networks, Constraint networks},
+abstract = {The paper introduces an AND/OR search space perspective for graphical models that include probabilistic networks (directed or undirected) and constraint networks. In contrast to the traditional (OR) search space view, the AND/OR search tree displays some of the independencies present in the graphical model explicitly and may sometimes reduce the search space exponentially. Indeed, most algorithmic advances in search-based constraint processing and probabilistic inference can be viewed as searching an AND/OR search tree or graph. Familiar parameters such as the depth of a spanning tree, treewidth and pathwidth are shown to play a key role in characterizing the effect of AND/OR search graphs vs. the traditional OR search graphs. We compare memory intensive AND/OR graph search with inference methods, and place various existing algorithms within the AND/OR search space.}
+}
+
+@article{choi20,
+  title = {Probabilistic Circuits: A Unifying Framework for Tractable Probabilistic Models},
+  author = {YooJung Choi and Antonio Vergari and Guy Van den Broeck},
+  year = {2020},
+  note = {In preparation},
 }

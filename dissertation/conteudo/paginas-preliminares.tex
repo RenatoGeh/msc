@@ -51,33 +51,49 @@
 
 %%%%% Listas criadas manualmente
 
-%\chapter*{Lista de Abreviaturas}
+\chapter*{Nomenclature}
 
 %\chapter*{Lista de Símbolos}
-\disablenewpage{\chapter*{List of Symbols}}
+\disablenewpage{\chapter*{\Large List of Symbols}}
 
 \begin{tabular}{rl}
         $\sigma$      & Sigmoid function\\
 \end{tabular}
 
 % Quebra de página manual
-\clearpage
+%\clearpage
 
 %%%%% Listas criadas automaticamente
 
 % Você pode escolher se quer ou não permitir a quebra de página
 %\listoffigures
+\renewcommand{\listfigurename}{\Large List of Figures}
 \disablenewpage{\listoffigures}
 
 % Você pode escolher se quer ou não permitir a quebra de página
 %\listoftables
+\renewcommand{\listtablename}{\Large List of Tables}
 \disablenewpage{\listoftables}
 
 % Esta lista é criada "automaticamente" pela package float quando
 % definimos o novo tipo de float "program" (em utils.tex)
 % Você pode escolher se quer ou não permitir a quebra de página
 %\listof{program}{\programlistname}
-\disablenewpage{\listof{program}{\programlistname}}
+%\disablenewpage{\listof{program}{\programlistname}}
+
+\renewcommand{\listalgorithmname}{\Large List of Algorithms}
+\disablenewpage{\listofalgorithms}
+
+\section*{Notation}
+
+We use the following notation throughout the work. Random variables are written in upper case (e.g.
+$X$, $Y$) and their values in lower case (e.g. $x$, $y$). We identify propositional variables with
+0/1-valued random variables, and use them interchangeably. Sets of variables and their joint values
+are written in boldface (e.g. $\set{X}$, $\set{x}$). Given a Boolean formula $f$, we write $\langle
+f\rangle$ to denote its semantics, i.e. the Boolean function represented by $f$. For Boolean
+formulas $f$ and $g$, we write $f\equiv g$ if they are logically equivalent, that is, if $\langle
+f\rangle = \langle g\rangle$; we abuse notation and write $\phi\equiv f$ to indicate that $\phi=
+\langle f\rangle$ for a Boolean function $\phi$.
 
 % Sumário (obrigatório)
 \tableofcontents

@@ -17,21 +17,21 @@
 \usepackage{imakeidx} % usando makeindex
 
 % Cria o arquivo de configuração para xindy lidar corretamente com hyperlinks.
-\begin{filecontents*}{hyperxindy.xdy}
-(define-attributes ("emph"))
-(markup-locref :open "\hyperpage{" :close "}" :attr "default")
-(markup-locref :open "\textbf{\hyperpage{" :close "}}" :attr "textbf")
-(markup-locref :open "\textit{\hyperpage{" :close "}}" :attr "textit")
-(markup-locref :open "\emph{\hyperpage{" :close "}}" :attr "emph")
-\end{filecontents*}
+%\begin{filecontents*}{hyperxindy.xdy}
+%(define-attributes ("emph"))
+%(markup-locref :open "\hyperpage{" :close "}" :attr "default")
+%(markup-locref :open "\textbf{\hyperpage{" :close "}}" :attr "textbf")
+%(markup-locref :open "\textit{\hyperpage{" :close "}}" :attr "textit")
+%(markup-locref :open "\emph{\hyperpage{" :close "}}" :attr "emph")
+%\end{filecontents*}
 
 % Cria o arquivo de configuração para makeindex colocar um cabeçalho
 % para cada letra do índice.
-\begin{filecontents*}{mkidxhead.ist}
-headings_flag 1
-heading_prefix "{\\bfseries "
-heading_suffix "}\\nopagebreak\n"
-\end{filecontents*}
+%\begin{filecontents*}{mkidxhead.ist}
+%headings_flag 1
+%heading_prefix "{\\bfseries "
+%heading_suffix "}\\nopagebreak\n"
+%\end{filecontents*}
 
 % Por padrão, o cabeçalho das páginas do índice é feito em maiúsculas;
 % vamos mudar isso e deixar fancyhdr definir a formatação
