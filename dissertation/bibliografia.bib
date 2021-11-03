@@ -654,8 +654,6 @@ pages="203--219"
   year={2015}
 }
 
-
-
 @phdthesis{peharz15_phd,
 author = {Peharz, Robert},
 year = {2015},
@@ -884,7 +882,7 @@ school = {Graz University of Technology}
   author = "Lilith Mattei and Alessandro Antonucci and Denis Deratani Mau{\'a} and Alessandro Facchini and Julissa {Villanueva Llerena}"
 }
 
-@inproceedings{mei20,
+@inproceedings{dang20,
   author    = {Meihua Dang and
                Antonio Vergari and
                Guy Van den Broeck},
@@ -1417,4 +1415,123 @@ abstract = {The paper introduces an AND/OR search space perspective for graphica
   author = {YooJung Choi and Antonio Vergari and Guy Van den Broeck},
   year = {2020},
   note = {In preparation},
+}
+
+@inproceedings{cheng14,
+  title={Language modeling with sum-product networks},
+  author={Cheng, Wei-Chen and Kok, Stanley and Pham, Hoai Vu and Chieu, Hai Leong and Chai, Kian Ming A.},
+  booktitle={Fifteenth Annual Conference of the International Speech Communication Association},
+  year={2014}
+}
+
+@inproceedings{nath16,
+  title={Learning Tractable Probabilistic Models for Fault Localization},
+  author={Nath, Aniruddh and Domingos, Pedro M},
+  booktitle={Thirtieth AAAI Conference on Artificial Intelligence},
+  year={2016}
+}
+
+@InProceedings{rooshenas14,
+  title = 	 {Learning Sum-Product Networks with Direct and Indirect Variable Interactions},
+  author = 	 {Rooshenas, Amirmohammad and Lowd, Daniel},
+  booktitle = 	 {Proceedings of the 31st International Conference on Machine Learning},
+  pages = 	 {710--718},
+  year = 	 {2014},
+  editor = 	 {Xing, Eric P. and Jebara, Tony},
+  volume = 	 {32},
+  number =       {1},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {Bejing, China},
+  month = 	 {22--24 Jun},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v32/rooshenas14.pdf},
+  url = 	 {https://proceedings.mlr.press/v32/rooshenas14.html},
+  abstract = 	 {Sum-product networks (SPNs) are a deep probabilistic representation that allows for efficient, exact inference.  SPNs generalize many other tractable models, including thin junction trees, latent tree models, and many types of mixtures.  Previous work on learning SPN structure has mainly focused on using top-down or bottom-up clustering to find mixtures, which capture variable interactions indirectly through implicit latent variables.  In contrast, most work on learning graphical models, thin junction trees, and arithmetic circuits has focused on finding direct interactions among variables.  In this paper, we present ID-SPN, a new algorithm for learning SPN structure that unifies the two approaches. In experiments on 20 benchmark datasets, we find that the combination of direct and indirect interactions leads to significantly better accuracy than several state-of-the-art algorithms for learning SPNs and other tractable models.}
+}
+
+@InProceedings{dimauro17a,
+author="Di Mauro, Nicola
+and Esposito, Floriana
+and Ventola, Fabrizio G.
+and Vergari, Antonio",
+editor="Esposito, Floriana
+and Basili, Roberto
+and Ferilli, Stefano
+and Lisi, Francesca A.",
+title="Alternative Variable Splitting Methods to Learn Sum-Product Networks",
+booktitle="AI*IA 2017 Advances in Artificial Intelligence",
+year="2017",
+publisher="Springer International Publishing",
+address="Cham",
+pages="334--346",
+abstract="Sum-Product Networks (SPNs) are recent deep probabilistic models providing exact and tractable inference. SPNs have been successfully employed as density estimators in several application domains. However, learning an SPN from high dimensional data still poses a challenge in terms of time complexity. This is due to the high cost of determining independencies among random variables (RVs) and sub-populations among samples, two operations that are repeated several times. Even one of the simplest greedy structure learner, LearnSPN, scales quadratically in the number of the variables to determine RVs independencies. In this work we investigate approximate but fast procedures to determine independencies among RVs whose complexity scales in sub-quadratic time. We propose two procedures: a random subspace approach and one that adopts entropy as a criterion to split RVs in linear time. Experimental results prove that LearnSPN equipped by our splitting procedures is able to reduce learning and/or inference times while preserving comparable inference accuracy.",
+isbn="978-3-319-70169-1"
+}
+
+@InProceedings{peharz20a,
+  title = 	 {Random Sum-Product Networks: A Simple and Effective Approach to Probabilistic Deep Learning},
+  author =       {Peharz, Robert and Vergari, Antonio and Stelzner, Karl and Molina, Alejandro and Shao, Xiaoting and Trapp, Martin and Kersting, Kristian and Ghahramani, Zoubin},
+  booktitle = 	 {Proceedings of The 35th Uncertainty in Artificial Intelligence Conference},
+  pages = 	 {334--344},
+  year = 	 {2020},
+  editor = 	 {Adams, Ryan P. and Gogate, Vibhav},
+  volume = 	 {115},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 jul,
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v115/peharz20a/peharz20a.pdf},
+  url = 	 {https://proceedings.mlr.press/v115/peharz20a.html},
+  abstract = 	 {Sum-product networks (SPNs) are expressive probabilistic models with a rich set of exact and efficient inference routines. However, in order to guarantee exact inference, they require specific structural constraints, which complicate learning SPNs from data. Thereby, most SPN structure learners proposed so far are tedious to tune, do not scale easily, and are not easily integrated with deep learning frameworks. In this paper, we follow a simple “deep learning” approach, by generating unspecialized random structures, scalable to millions of parameters, and subsequently applying GPU-based optimization. Somewhat surprisingly, our models often perform on par with state-of-the-art SPN structure learners and deep neural networks on a diverse range of generative and discriminative scenarios. At the same time, our models yield well-calibrated uncertainties, and stand out among most deep generative and discriminative models in being robust to missing features and being able to detect anomalies.}
+}
+
+@InProceedings{geh21a,
+  title = {Learning Probabilistic Sentential Decision Diagrams Under Logic Constraints by Sampling and Averaging},
+  author = {Renato Lui Geh and Denis Deratani Mau{\'a}},
+  booktitle = 	 {Proceedings of The 37th Uncertainty in Artificial Intelligence Conference},
+  year = 	 {2021},
+  series = 	 {Proceedings of Machine Learning Research},
+  publisher =    {PMLR},
+}
+
+@InProceedings{geh21b,
+  title = {Fast And Accurate Learning of Probabilistic Circuits by Random Projections},
+  author = {Renato Lui Geh and Denis Deratani Mau{\'a}},
+  booktitle = 	 {The 4th Tractable Probabilistic Modeling Workshop},
+  year = 	 {2021},
+}
+
+@InProceedings{dimauro17b,
+author="Di Mauro, Nicola
+and Vergari, Antonio
+and Basile, Teresa M. A.
+and Esposito, Floriana",
+editor="Ceci, Michelangelo
+and Hollm{\'e}n, Jaakko
+and Todorovski, Ljup{\v{c}}o
+and Vens, Celine
+and D{\v{z}}eroski, Sa{\v{s}}o",
+title="Fast and Accurate Density Estimation with Extremely Randomized Cutset Networks",
+booktitle="Machine Learning and Knowledge Discovery in Databases",
+year="2017",
+publisher="Springer International Publishing",
+address="Cham",
+pages="203--219",
+abstract="Cutset Networks (CNets) are density estimators leveraging context-specific independencies recently introduced to provide exact inference in polynomial time. Learning a CNet is done by firstly building a weighted probabilistic OR tree and then estimating tractable distributions as its leaves. Specifically, selecting an optimal OR split node requires cubic time in the number of the data features, and even approximate heuristics still scale in quadratic time. We introduce Extremely Randomized Cutset Networks (XCNets), CNets whose OR tree is learned by performing random conditioning. This simple yet surprisingly effective approach reduces the complexity of OR node selection to constant time. While the likelihood of an XCNet is slightly worse than an optimally learned CNet, ensembles of XCNets outperform state-of-the-art density estimators on a series of standard benchmark datasets, yet employing only a fraction of the time needed to learn the competitors. Code and data related to this chapter are available at: https://github.com/nicoladimauro/cnet.",
+isbn="978-3-319-71249-9"
+}
+
+@InProceedings{peharz20b,
+  title = 	 {Einsum Networks: Fast and Scalable Learning of Tractable Probabilistic Circuits},
+  author =       {Peharz, Robert and Lang, Steven and Vergari, Antonio and Stelzner, Karl and Molina, Alejandro and Trapp, Martin and Van Den Broeck, Guy and Kersting, Kristian and Ghahramani, Zoubin},
+  booktitle = 	 {Proceedings of the 37th International Conference on Machine Learning},
+  pages = 	 {7563--7574},
+  year = 	 {2020},
+  editor = 	 {III, Hal Daumé and Singh, Aarti},
+  volume = 	 {119},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 jul,
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v119/peharz20a/peharz20a.pdf},
+  url = 	 {https://proceedings.mlr.press/v119/peharz20a.html},
+  abstract = 	 {Probabilistic circuits (PCs) are a promising avenue for probabilistic modeling, as they permit a wide range of exact and efficient inference routines. Recent “deep-learning-style” implementations of PCs strive for a better scalability, but are still difficult to train on real-world data, due to their sparsely connected computational graphs. In this paper, we propose Einsum Networks (EiNets), a novel implementation design for PCs, improving prior art in several regards. At their core, EiNets combine a large number of arithmetic operations in a single monolithic einsum-operation, leading to speedups and memory savings of up to two orders of magnitude, in comparison to previous implementations. As an algorithmic contribution, we show that the implementation of Expectation-Maximization (EM) can be simplified for PCs, by leveraging automatic differentiation. Furthermore, we demonstrate that EiNets scale well to datasets which were previously out of reach, such as SVHN and CelebA, and that they can be used as faithful generative image models.}
 }

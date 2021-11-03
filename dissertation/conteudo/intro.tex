@@ -29,12 +29,13 @@ automated power plant systems, where a wrong prediction could cause disastrous c
 known example in the case of the former is obstacle avoidance: while the agent should be capable of
 accurately identifying obstructions in its way during normal conditions, so should it be able to
 identify its own lack of confidence in high uncertainty situations like ones brought by
-environmental factors, such as severe blizzard or heavy rain, that could result in unreliable
-predictions, in which case calling out for human help may turn out to be the safest option. Other
-interesting applications of uncertainty quantification include out-of-distribution detection, which
-in our previous example could be visualized as the agent identifying a human's driving as
-abnormally irregular (due to inebriation, infirmity, etc.) and appropriately taking control of the
-vehicle before a potential accident takes place.
+environmental factors, such as severe blizzard or heavy rain. In these situations where predictions
+are highly unreliable, the safest option might be for the agent to first identify its uncertainty,
+and second to reach out for human help. Other interesting applications of uncertainty
+quantification include out-of-distribution detection, which in our previous example could be
+visualized as the agent identifying a human's driving as abnormally irregular (due to inebriation,
+infirmity, etc.) and appropriately taking control of the vehicle before a potential accident takes
+place.
 
 One popular approach to quantifying uncertainty is through probability theory. By abstracting the
 world as a probability distribution with a finite number of observable random variables that encode
@@ -70,9 +71,9 @@ producing samples consistent with evidence, in none of the previous models are c
 structured prediction under partial observations, \emph{maximum a posteriori} (MAP), conditional or
 marginal probabilities tractable. An obvious alternative would be Probabilistic Graphical Models
 (PGMs), although they too suffer from intractability when dealing with high treewidth networks
-\citep{dechter98,koller09}, severely limiting expressivity (cite here). Instead, we draw our
-attention to an expressive class of models that subsumes several families of probabilistic models
-with tractable inference capabilities.
+\citep{dechter98,koller09}, severely limiting expressivity. Instead, we draw our attention to an
+expressive class of models that subsumes several families of probabilistic models with tractable
+inference capabilities.
 
 Probabilistic Circuits (PCs) define a superclass of probabilistic models distincly specified by
 recursive compositions of distributions through graphical formalisms. Vaguely speaking, PCs are
@@ -90,10 +91,24 @@ part of their computational units. Probabilistic Sentential Decision Diagrams (P
 \cite{dechter07}) all require \emph{smoothness} and \emph{determinism}, but also call for a
 stronger version of \emph{decomposability}, permitting all queries previously mentioned as well as
 computation of the Kullback-Leibler divergence and expectation between two circuits \citep{choi20}.
-
-Interestingly, PCs are sufficiently expressive for generative \emph{and} discriminative modeling
+Usually, PCs represent the joint distribution of the data, although they are sufficiently
+expressive for generative \emph{and} discriminative modeling
 \citep{khosravi19,rashwan18a,rooshenas16,gens12,shao20}. In this dissertation though, we shall
 focus on the generative side of PCs.
+
+While inference is usually straightforward, as we shall see in ??, learning the
+structure of PCs so that they obey the needed structural restrictions requires either careful
+handcrafted architectures \citep{poon11,cheng14,nath16} or usually involves running costly
+(in)dependence tests over most (if not all) variables \citep{gens13,jaini18,vergari15,dimauro17a},
+which can become prohibitive in higher dimensions. Alternatively, some learning algorithms resort
+to structure preserving iterative methods to grow a PC that already initially satisfies desired
+constraints, adding complexity to the underlying distribution at each iteration
+\citep{liang17,dang20}. However, these can take several iterations until visible improvement and
+often take several minutes for each iteration when the circuit is big. Common techniques used in
+deep learning for generating scalable architectures for neural network also pose a problem, as the
+nature of the needed structural constraints make for sparse computational graphs. To circumvent
+these issues, work on scaling PCs to higher dimensions has focused mainly on random architectures,
+with competitive results \citep{peharz20a,dimauro21,geh21a,peharz20b}.
 
 \section{Contributions and Dissertation Outline}
 
