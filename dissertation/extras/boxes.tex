@@ -1,0 +1,32 @@
+\usepackage{tcolorbox}
+
+\definecolor{boxgray}{HTML}{808080}
+\definecolor{boxnteal}{HTML}{467085}
+\definecolor{boxdgreen}{HTML}{335C33}
+\definecolor{boxbrown}{HTML}{4C331A}
+
+\definecolor{boxblue}{HTML}{3275a8}
+\definecolor{boxlblue}{HTML}{AFDCFF}
+\definecolor{boxorange}{HTML}{ce654f}
+\definecolor{boxlorange}{HTML}{cc7d6d}
+\definecolor{boxllorange}{HTML}{edaea1}
+\definecolor{boxpurple}{HTML}{271F36}
+\definecolor{boxred}{HTML}{B44650}
+\definecolor{boxgreen}{HTML}{54774B}
+\definecolor{boxlgreen}{HTML}{9CD08F}
+\definecolor{boxteal}{HTML}{568777}
+\definecolor{boxlteal}{HTML}{88C7B2}
+
+\newcommand{\newSharpBox}[3]{
+  \begin{tcolorbox}[colback=#1!5!white,colframe=#1!75!black,title=#2,sharp corners=northwest]
+    #3
+  \end{tcolorbox}
+}
+
+\newcommand{\newBox}[3]{
+  \begin{tcolorbox}[colback=#1!5!white,colframe=#1!75!black,title=#2]
+    #3
+  \end{tcolorbox}
+}
+
+\newcommand{\newCTitle}[2]{\noindent\colorbox{#1}{\color{white}\strut\textbf{#2}}}

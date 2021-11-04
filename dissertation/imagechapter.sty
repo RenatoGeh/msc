@@ -46,11 +46,19 @@
 \RequirePackage{etoolbox}
 
 % Reproduz o formato padrão da classe book
+%\newcommand{\colortitlechp}{\colorbox{boxgray!60!black}{\strut\color{white}\@ChImlabel}}
+%\newcommand{\colortitletit}[1]{\colorbox{boxgray!70!white}{\strut\color{white}\@ChImtitle{#1}}}
+\newcommand{\colortitlechp}{\@ChImlabel}
+\newcommand{\colortitletit}[1]{\@ChImtitle{#1}}
+\newenvironment{nocolortitle}{
+  \renewcommand{\colortitlechp}{\@ChImlabel}
+  \renewcommand{\colortitletit}[1]{\@ChImtitle{##1}}
+}{}
 \titleformat{\chapter}[display]
     {\normalfont\huge\bfseries}
-    {\@ChImlabel}
+    {\colortitlechp}
     {20pt}
-    {\@ChImtitle{#1}}
+    {\colortitletit{#1}}
 
 \titlespacing{\chapter}{0pt}{50pt}{40pt}[40pt]
 

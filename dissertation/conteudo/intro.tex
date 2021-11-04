@@ -1,26 +1,5 @@
 \chapter{Introduction}
 
-%As the field of Machine Learning (ML) broadens its scope, achieving evermore success in
-%surprisingly many complex real-world applications, so have the challenges of faithfully
-%representing reality and accurately estimating uncertainties. This is made especially clear by the
-%advent of deep models/learning: the impressive surge in both capacity and compute capabilities,
-%made evident by the sheer number of available models for an increasingly wide range of
-%interdisciplinary tasks \citep{bommasani21}, has shown that despite the seemingly impressive
-%empirical results, most deep models struggle when
-
-
-
-%As the field of Machine Learning (ML) broadens its scope, achieving evermore success in
-%surprisingly many complex real-world applications, so have the challenges of faithfully
-%representing reality and accurately estimating uncertainties. Even more pronounced in unsupervised
-%arguably the latest frontier The advent of deep models has caused
-%a surge in both capacity and compute capabilities, as made quite evident by the sheer number of
-%available models for an increasingly wide range of interdisciplinary tasks \citep{bommasani21}.
-%Remarkably, most of these so-called deep models fail to provide accurate or reliable estimates on
-%their uncertainty \citep{gawlikowski21}.
-
-%this is even more noticeable when it comes to unsupervised learning
-
 When reasoning about the world, rarely can we find a realistic model that perfectly subsumes all of
 the needed relationships for flawless prediction. As such, the presence of a reliable uncertainty
 quantifier in intelligent systems is essential in developing performant yet diagnostible agents.
@@ -100,16 +79,63 @@ While inference is usually straightforward, as we shall see in ??, learning the
 structure of PCs so that they obey the needed structural restrictions requires either careful
 handcrafted architectures \citep{poon11,cheng14,nath16} or usually involves running costly
 (in)dependence tests over most (if not all) variables \citep{gens13,jaini18,vergari15,dimauro17a},
-which can become prohibitive in higher dimensions. Alternatively, some learning algorithms resort
-to structure preserving iterative methods to grow a PC that already initially satisfies desired
-constraints, adding complexity to the underlying distribution at each iteration
+which can become prohibitive in higher dimension data. Alternatively, some learning algorithms
+resort to structure preserving iterative methods to grow a PC that already initially satisfies
+desired constraints, adding complexity to the underlying distribution at each iteration
 \citep{liang17,dang20}. However, these can take several iterations until visible improvement and
 often take several minutes for each iteration when the circuit is big. Common techniques used in
 deep learning for generating scalable architectures for neural network also pose a problem, as the
 nature of the needed structural constraints make for sparse computational graphs. To circumvent
 these issues, work on scaling PCs to higher dimensions has focused mainly on random architectures,
-with competitive results \citep{peharz20a,dimauro21,geh21a,peharz20b}.
+with competitive results \citep{peharz20a,dimauro21,geh21a,peharz20b}. Apart from the scalability
+side of random structure generation, usual structure learning algorithms often require grid-search
+for hyperparameter tuning to achieve top quality performance, which is usually not the case for
+random algorithms. For the usual data scientist or machine learning practicioner, hyperparameter
+tuning can become exhaustive, especially if the goal is to analyze and infer from large data, and
+not to achieve top tier performance on benchmark datasets.
+
+In this dissertation, we propose two scalable structural learning algorithms for probabilistic
+circuits that are especially suited for large data and fast deployment. They both take advantage of
+random network generation to quickly construct PCs with little to no need for hyperparameters. The
+first is effective for constructing PCs from binary data with a highly constrained structure, and
+thus appropriate when complex querying is needed. The second builds less constrained random PCs,
+but supports both discrete and continuous data.
 
 \section{Contributions and Dissertation Outline}
 
-referenced structural constraints in passing
+We organize this dissertation as follows. We begin \cref{ch:pc} by formally defining probabilistic
+circuits, conducting a review of some of the structural constraints that we might impose on PCs, as
+well as what we may gain from them in terms of tractability. We then list existing formalisms that
+may be viewed as instances of PCs, and what their structure entail in terms of inference power. In
+Chapter 3, we address existing PC structure learning algorithms, and which guarantees in terms of
+tractability each give. We cover the two new structure learners in Chapter 4, providing empirical
+results on their performance. The final chapter is dedicated to summarizing our research
+contributions and pointing to potential future work in learning PCs.
+
+Our contributions in this dissertation address the following research topics.
+
+\newCTitle{boxgray}{Scalably learning PCs directly from background knowledge}
+
+In \citet{geh21a}, we provide a learning algorithm for PSDDs that learns a PC directly from
+background knowledge in the form of logical constraints. The algorithm samples a structure from a
+distribution of possible PSDDs that are weakly consistent with the logical formula. How weak
+consistency is depends on a parameter that trades permission of false statements as non zero
+probability events with circuit complexity. We provide the algorithm and empirical results in
+Section 4.??.
+
+\newCTitle{boxgray}{Using ensembles to strengthen consistency}
+
+The PC sampler given by \citet{geh21a} produces competitive probabilistic models (in terms of
+likelihood), albeit weak logical models in the sense that it possibly assigns non-zero probability
+to false variable assignments -- as we discuss in Section 4.??, it never assigns zero probability
+to true statements. By producing many weak models, we not only gain in terms of data fitness, but
+also consistency: if any one component in the ensemble returns an assignment to be impossible, the
+whole model should return false.
+
+\newCTitle{boxgray}{Random projections to efficiently learn PCs}
+
+Usual methods often employ clustering algorithms for constructing convex combinations of
+computational units. These can take many iterations to converge or require space quadratic in the
+number of data points. Instead, in Section 4.?? we present linear alternatives based on random
+projections \citep{dasgupta08a,dasgupta08b}.
+
