@@ -11,11 +11,109 @@ queries (as far as we know) are enabled from each constraint.
 \section{Distributions as Computational Graphs}
 \label{sec:pc}
 
-In its simplest form, a probabilistic circuit is a single computational unit corresponding to some
-distribution. Following Graph Theory nomenclature, computational units with no  These can range from univariate or multivariate exponential distributions to complex
-non-parametric models. To simplify notation, when 
+Probabilistic circuits are directed acyclic graphs usually recursively defined in terms of their
+computational units. In its simplest form, a PC is a single unit corresponding to some tractable
+distribution. These can range from univariate or multivariate exponential distributions to complex
+non-parametric models, and are the foundational units of PCs. We shall refer to these computational
+units as \emph{leaf nodes}, as no edges come out of them. To simplify notation, in this
+dissertation, unless specified, leaf nodes will denote univariate distributions. Let
+$\mathcal{L}_p$ a PC leaf node and denote $p$ as its inherent probability distribution. By
+definition, any query $f:\mathcal{X}\to\mathcal{Y}$ which is tractable on $p$ is tractable on
+$\mathcal{L}_p$. We shall denote $\mathcal{L}_p(\set{X})=p(\set{X})$, and often omit $p$ when its
+explicit form is not needed.
 
-$\gaussian$.
+\begin{example}[sidebyside,lefthand width=0.6\textwidth]{Gaussians as probabilistic circuits}{gaussians}
+  Let $\mathcal{L}_p$ a leaf node and $p(X)=\gaussian(X;\mu,\sigma^2)$ a univariate Gaussian
+  distribution. Computing any query on $\mathcal{L}_p$ is straightforward: any query on
+  $\mathcal{L}_p$ directly translates to $p$. As an example, suppose $\mu=0$ and $\sigma^2=1$ and
+  we wish to compute $\mathcal{L}_p(x=0.8)$. The probability of this leaf shall then be
+  \begin{equation*}
+    \mathcal{L}_p(x=0.8)=\gaussian(x=0.8;\mu=0,\sigma^2=1)=0.29.
+  \end{equation*}
+  \tcblower
+  \begin{center}
+    \begin{tikzpicture}[edge/.style = {->,>=latex'}]
+      \node (x) at (0, 0) {$x$};
+      \newGaussNode{g}{$(x) + (1,0)$};
+      \node (px) at ($(g) + (1.25,0)$) {$p(x)$};
+      \draw[edge] (x) -- (g);
+      \draw[edge] (g) -- (px);
+
+      \newGaussNode[label=below:$X$]{gv}{$(g) - (0,1.0)$};
+      \node (xv) at ($(gv) - (1.25,0)$) {\colorbox{boxblue}{\color{white}$\mathbf{.80}$}};
+      \node (pxv) at ($(gv) + (1.25,0)$) {\colorbox{boxgreen}{\color{white}$\mathbf{.29}$}};
+      \draw[edge] (xv) -- (gv);
+      \draw[edge] (gv) -- (pxv);
+    \end{tikzpicture}
+
+    \begin{tikzpicture}
+      \pgfplotsset{
+        every axis/.append style={
+          axis line style={->},
+          tick label style={font={\scriptsize\bfseries}},
+          x tick label style={color=white,above right},
+          y tick label style={color=white,above right},
+          grid style={black,dashed},
+        }
+      }
+      \begin{axis}[
+        no markers, domain=-5:5, samples=35,
+        height=2.75cm, width=\columnwidth,
+        xtick={0.8}, ytick={0.29},
+        xticklabels={\colorbox{boxblue}{\textbf{0.8}}},
+        yticklabels={\colorbox{boxgreen}{\textbf{0.29}}},
+        axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
+        every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
+        every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
+        enlargelimits=false, clip=false, axis on top,
+        grid = major
+      ]
+        \addplot[very thick,boxteal] {gauss(0,1)};
+      \end{axis}
+    \end{tikzpicture}
+  \end{center}
+\end{example}
+
+Evidently, a single leaf node lacks the expressivity for modeling complex models, otherwise we
+would have just used the leaf distribution as a standalone model. The expressiveness of PCs comes
+from recursively combining distributions into complex functions. This can be done through
+computational units that either compute convex combinations or products of their children. Let us
+first look at convex combinations, known in the literature as \emph{sum nodes}.
+
+\begin{remark}[breakable]{On operators and tractability}{optract}
+  Throughout this work we consider only products and convex combinations (apart from the implicit
+  operations contained within leaf nodes) as potential computational units. The question of whether
+  any other operator could be used to gain expressivity without loss of tractability is without a
+  doubt an interesting research question, and one that is actively being pursued. However, this is
+  certainly out of the scope of this dissertation, and so we restrict discussion on this topic and
+  only give a brief comment on tractability here, pointing to existing literature in this area of
+  research.
+
+  \citet{friesen16} formalize the notion of operator generalization in PCs by looking at any
+  commutative semiring, giving results on the conditions for marginalization to be tractable. They
+  provide examples of common semirings and to which known formalisms they correspond to. Two such
+  examples are PCs under the Boolean semiring $(\{0,1\},\vee,\wedge,0,1)$ for logical inference,
+  which are equivalent to Negation Normal Form (NNF, \cite{barwise82}) and constitute an instance
+  of Logic Circuits (LCs), of which Sentential Decision Diagrams (SDDs, \cite{darwiche11}) and
+  Binary Decision Diagrams (BDDs, \cite{akers78}) are a part of; and PCs under the real min-sum
+  semiring $(\mathbb{R}_{\infty}, \min,+,\infty,0)$ for nonconvex optimization \citep{friesen15}.
+
+  Recently, \citet{vergari21} extensively covered tractability conditions and complexity bounds for
+  convex combinations, products, $\exp$ (and more generally powers in both naturals and reals),
+  divisions and logarithms, even giving results for complex information-theoretic queries, such as
+  entropies and divergences.
+
+  Up to now, we have only considered summations with nonnegative weights. Indeed, in most
+  literature the sum node is defined as a convex combination. However, negative weights have
+  appeared in Logistic Circuits \citep{liang19} for discriminative modeling; and in Probabilistic
+  Generating Circuits \citep{zhang21}, a superset of tractable probabilistic models that subsume
+  PCs.
+
+  Other works on 
+\end{remark}
+
+
+Note how these second nonlinearity, the first being leaf nodes
 
 \section{Deciding What to Constraint}
 \label{sec:const}

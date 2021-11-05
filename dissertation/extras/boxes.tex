@@ -1,5 +1,8 @@
 \usepackage{tcolorbox}
 
+\tcbuselibrary{theorems}
+\tcbuselibrary{breakable}
+
 \definecolor{boxgray}{HTML}{808080}
 \definecolor{boxnteal}{HTML}{467085}
 \definecolor{boxdgreen}{HTML}{335C33}
@@ -30,3 +33,7 @@
 }
 
 \newcommand{\newCTitle}[2]{\noindent\colorbox{#1}{\color{white}\strut\textbf{#2}}}
+
+\newtcbtheorem[number within=section]{example}{Example}{parbox=false,breakable=true,colback=boxorange!30,colframe=boxorange,fonttitle=\bfseries}{eg}
+
+\newtcbtheorem[number within=section]{remark}{Remark}{parbox=false,breakable=true,colback=boxpurple!20,colframe=boxpurple,fonttitle=\bfseries}{rem}
