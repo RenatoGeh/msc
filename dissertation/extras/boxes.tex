@@ -2,8 +2,10 @@
 
 \tcbuselibrary{theorems}
 \tcbuselibrary{breakable}
+\tcbuselibrary{skins}
 
 \definecolor{boxgray}{HTML}{808080}
+\definecolor{boxdgray}{HTML}{545454}
 \definecolor{boxnteal}{HTML}{467085}
 \definecolor{boxdgreen}{HTML}{335C33}
 \definecolor{boxbrown}{HTML}{4C331A}
@@ -34,6 +36,8 @@
 
 \newcommand{\newCTitle}[2]{\noindent\colorbox{#1}{\color{white}\strut\textbf{#2}}}
 
-\newtcbtheorem[number within=section]{example}{Example}{parbox=false,breakable=true,colback=boxorange!30,colframe=boxorange,fonttitle=\bfseries}{eg}
+\tcbset{skin=enhanced,parbox=false,breakable=true,fonttitle=\bfseries}
 
-\newtcbtheorem[number within=section]{remark}{Remark}{parbox=false,breakable=true,colback=boxpurple!20,colframe=boxpurple,fonttitle=\bfseries}{rem}
+\newtcbtheorem[number within=section]{example}{Example}{colback=boxorange!30,colframe=boxorange}{eg}
+
+\newtcbtheorem[number within=section]{remark}{Remark}{colback=boxpurple!20,colframe=boxpurple}{rem}

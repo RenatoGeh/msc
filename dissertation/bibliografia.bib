@@ -524,7 +524,7 @@ pages="203--219"
  year = {2010}
 }
 
-@inproceedings{jaini18,
+@inproceedings{jaini18a,
   title={Prometheus: Directly learning acyclic directed graph structures for sum-product networks},
   author={Jaini, Priyank and Ghose, Amur and Poupart, Pascal},
   booktitle={International Conference on Probabilistic Graphical Models},
@@ -1617,3 +1617,108 @@ isbn="978-3-319-71249-9"
   url = 	 {https://proceedings.mlr.press/v139/zhang21i.html},
   abstract = 	 {Generating functions, which are widely used in combinatorics and probability theory, encode function values into the coefficients of a polynomial. In this paper, we explore their use as a tractable probabilistic model, and propose probabilistic generating circuits (PGCs) for their efficient representation. PGCs are strictly more expressive efficient than many existing tractable probabilistic models, including determinantal point processes (DPPs), probabilistic circuits (PCs) such as sum-product networks, and tractable graphical models. We contend that PGCs are not just a theoretical framework that unifies vastly different existing models, but also show great potential in modeling realistic data. We exhibit a simple class of PGCs that are not trivially subsumed by simple combinations of PCs and DPPs, and obtain competitive performance on a suite of density estimation benchmarks. We also highlight PGCs’ connection to the theory of strongly Rayleigh distributions.}
 }
+
+@InProceedings{maua17a,
+  title = 	 {Credal Sum-Product Networks},
+  author = 	 {Mauá, Denis D. and Cozman, Fabio G. and Conaty, Diarmaid and Campos, Cassio P.},
+  booktitle = 	 {Proceedings of the Tenth International Symposium on Imprecise Probability: Theories and Applications},
+  pages = 	 {205--216},
+  year = 	 {2017},
+  editor = 	 {Antonucci, Alessandro and Corani, Giorgio and Couso, Inés and Destercke, Sébastien},
+  volume = 	 {62},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--14 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v62/mauá17a/mauá17a.pdf},
+  url = 	 {https://proceedings.mlr.press/v62/mau%C3%A117a.html},
+  abstract = 	 {Sum-product networks are a relatively new and increasingly popular class of (precise) probabilistic graphical models that allow for marginal inference with polynomial effort. As with other probabilistic models, sum-product networks are often learned from data and used to perform classification. Hence, their results are prone to be unreliable and overconfident. In this work, we develop credal sum-product networks, an imprecise extension of sum-product networks. We present algorithms and complexity results for common inference tasks. We apply our algorithms on realistic classification task using images of digits and show that credal sum-product networks obtained by a perturbation of the parameters of learned sum-product networks are able to distinguish between reliable and unreliable classifications with high accuracy.}
+}
+
+@article{cozman00,
+title = {Credal networks},
+journal = {Artificial Intelligence},
+volume = {120},
+number = {2},
+pages = {199-233},
+year = {2000},
+issn = {0004-3702},
+doi = {https://doi.org/10.1016/S0004-3702(00)00029-1},
+url = {https://www.sciencedirect.com/science/article/pii/S0004370200000291},
+author = {Fabio G. Cozman},
+keywords = {Graphical models of inference, Convex sets of probability measures, Bayesian networks, Lower and upper expectations, Robust Bayesian analysis, Independence relations, Graphical d-separation relations},
+abstract = {This paper presents a complete theory of credal networks, structures that associate convex sets of probability measures with directed acyclic graphs. Credal networks are graphical models for precise/imprecise beliefs. The main contribution of this work is a theory of credal networks that displays as much flexibility and representational power as the theory of standard Bayesian networks. Results in this paper show how to express judgements of irrelevance and independence, and how to compute inferences in credal networks. A credal network admits several extensions—several sets of probability measures comply with the constraints represented by a network. Two types of extensions are investigated. The properties of strong extensions are clarified through a new generalization of d-separation, and exact and approximate inference methods are described for strong extensions. Novel results are presented for natural extensions, and linear fractional programming methods are described for natural extensions. The paper also investigates credal networks that are defined globally through perturbations of a single network.}
+}
+
+@InProceedings{sharir18a,
+  title = 	 {Sum-Product-Quotient Networks},
+  author = 	 {Sharir, Or and Shashua, Amnon},
+  booktitle = 	 {Proceedings of the Twenty-First International Conference on Artificial Intelligence and Statistics},
+  pages = 	 {529--537},
+  year = 	 {2018},
+  editor = 	 {Storkey, Amos and Perez-Cruz, Fernando},
+  volume = 	 {84},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {09--11 Apr},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v84/sharir18a/sharir18a.pdf},
+  url = 	 {https://proceedings.mlr.press/v84/sharir18a.html},
+  abstract = 	 {We present a novel tractable generative model that extends Sum-Product Networks (SPNs) and significantly boosts their power. We call it Sum-Product-Quotient Networks (SPQNs), whose  core concept is to incorporate conditional distributions into the model by direct computation using quotient nodes, e.g. $P(A|B) = \frac{P(A,B)}{P(B)}$. We provide sufficient conditions for the tractability of SPQNs that generalize and relax the decomposable and complete tractability conditions of SPNs. These relaxed conditions give rise to an exponential boost to the expressive efficiency of our model, i.e. we prove that there are distributions which SPQNs can compute efficiently but require SPNs to be of exponential size. Thus, we narrow the gap in expressivity between tractable graphical models and other Neural Network-based generative models.}
+}
+
+@InProceedings{pevny20a,
+  title = 	 {Sum-Product-Transform Networks: Exploiting Symmetries using Invertible Transformations},
+  author =       {Pevn\'{y}, Tom\'{a}\v{s} and Sm\'{i}dl, V\'{a}clav and Trapp, Martin and Pol\'{a}\v{c}ek, Ond\v{r}ej and Oberhuber, Tom\'{a}\v{s}},
+  booktitle = 	 {Proceedings of the 10th International Conference on Probabilistic Graphical Models},
+  pages = 	 {341--352},
+  year = 	 {2020},
+  editor = 	 {Jaeger, Manfred and Nielsen, Thomas Dyhre},
+  volume = 	 {138},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 sep,
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v138/pevny20a/pevny20a.pdf},
+  url = 	 {https://proceedings.mlr.press/v138/pevny20a.html},
+  abstract = 	 {In this work, we propose Sum-Product-Transform Networks (SPTN), an extension of sum-product networks that uses invertible transformations as additional internal nodes.
+ The type and placement of transformations determine properties of the resulting SPTN with many interesting special cases.
+ Importantly, SPTN with Gaussian leaves and affine transformations pose the same inference task tractable that can be computed efficiently in SPNs.
+ We propose to store and optimize affine transformations in their SVD decompositions using an efficient parametrization of unitary matrices by a set of Givens rotations.
+ Last but not least, we demonstrate that G-SPTNs pushes the state-of-the-art on the density estimation task on used datasets.
+ }
+}
+
+@inproceedings{melibari16,
+author = {Melibari, Mazen and Poupart, Pascal and Doshi, Prashant},
+title = {Sum-Product-Max Networks for Tractable Decision Making},
+year = {2016},
+isbn = {9781577357704},
+publisher = {AAAI Press},
+abstract = {Investigations into probabilistic graphical models for decision making have predominantly
+centered on influence diagrams (IDs) and decision circuits (DCs) for representation
+and computation of decision rules that maximize expected utility. Since IDs are typically
+handcrafted and DCs are compiled from IDs, in this paper we propose an approach to
+learn the structure and parameters of decision-making problems directly from data.
+We present a new representation called sum-product-max network (SPMN) that generalizes
+a sum-product network (SPN) to the class of decision-making problems and whose solution,
+analogous to DCs, scales linearly in the size of the network. We show that SPMNs may
+be reduced to DCs linearly and present a first method for learning SPMNs from data.
+This approach is significant because it facilitates a novel paradigm of tractable
+decision making driven by data.},
+booktitle = {Proceedings of the Twenty-Fifth International Joint Conference on Artificial Intelligence},
+pages = {1846–1852},
+numpages = {7},
+location = {New York, New York, USA},
+series = {IJCAI'16}
+}
+
+@inproceedings{jaini18b,
+ author = {Jaini, Priyank and Poupart, Pascal and Yu, Yaoliang},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {S. Bengio and H. Wallach and H. Larochelle and K. Grauman and N. Cesa-Bianchi and R. Garnett},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {Deep Homogeneous Mixture Models: Representation, Separation, and Approximation},
+ url = {https://proceedings.neurips.cc/paper/2018/file/c5f5c23be1b71adb51ea9dc8e9d444a8-Paper.pdf},
+ volume = {31},
+ year = {2018}
+}
+

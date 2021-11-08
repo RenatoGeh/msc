@@ -17,33 +17,33 @@ distribution. These can range from univariate or multivariate exponential distri
 non-parametric models, and are the foundational units of PCs. We shall refer to these computational
 units as \emph{leaf nodes}, as no edges come out of them. To simplify notation, in this
 dissertation, unless specified, leaf nodes will denote univariate distributions. Let
-$\mathcal{L}_p$ a PC leaf node and denote $p$ as its inherent probability distribution. By
+$\Leaf_p$ a PC leaf node and denote $p$ as its inherent probability distribution. By
 definition, any query $f:\mathcal{X}\to\mathcal{Y}$ which is tractable on $p$ is tractable on
-$\mathcal{L}_p$. We shall denote $\mathcal{L}_p(\set{X})=p(\set{X})$, and often omit $p$ when its
+$\Leaf_p$. We shall denote $\Leaf_p(\set{X})=p(\set{X})$, and often omit $p$ when its
 explicit form is not needed.
 
 \begin{example}[sidebyside,lefthand width=0.6\textwidth]{Gaussians as probabilistic circuits}{gaussians}
-  Let $\mathcal{L}_p$ a leaf node and $p(X)=\gaussian(X;\mu,\sigma^2)$ a univariate Gaussian
-  distribution. Computing any query on $\mathcal{L}_p$ is straightforward: any query on
-  $\mathcal{L}_p$ directly translates to $p$. As an example, suppose $\mu=0$ and $\sigma^2=1$ and
-  we wish to compute $\mathcal{L}_p(x=0.8)$. The probability of this leaf shall then be
+  Let $\Leaf_p$ a leaf node and $p(X)=\gaussian(X;\mu,\sigma^2)$ a univariate Gaussian
+  distribution. Computing any query on $\Leaf_p$ is straightforward: any query on
+  $\Leaf_p$ directly translates to $p$. As an example, suppose $\mu=0$ and $\sigma^2=1$ and
+  we wish to compute $\Leaf_p(x=0.8)$. The probability of this leaf shall then be
   \begin{equation*}
-    \mathcal{L}_p(x=0.8)=\gaussian(x=0.8;\mu=0,\sigma^2=1)=0.29.
+    \Leaf_p(x=0.8)=\gaussian(x=0.8;\mu=0,\sigma^2=1)=0.29.
   \end{equation*}
   \tcblower
   \begin{center}
-    \begin{tikzpicture}[edge/.style = {->,>=latex'}]
+    \begin{tikzpicture}
       \node (x) at (0, 0) {$x$};
       \newGaussNode{g}{$(x) + (1,0)$};
       \node (px) at ($(g) + (1.25,0)$) {$p(x)$};
-      \draw[edge] (x) -- (g);
-      \draw[edge] (g) -- (px);
+      \draw[boxdgray,edge] (x) -- (g);
+      \draw[boxdgray,edge] (g) -- (px);
 
       \newGaussNode[label=below:$X$]{gv}{$(g) - (0,1.0)$};
       \node (xv) at ($(gv) - (1.25,0)$) {\colorbox{boxblue}{\color{white}$\mathbf{.80}$}};
       \node (pxv) at ($(gv) + (1.25,0)$) {\colorbox{boxgreen}{\color{white}$\mathbf{.29}$}};
-      \draw[edge] (xv) -- (gv);
-      \draw[edge] (gv) -- (pxv);
+      \draw[boxdgray,edge] (xv) -- (gv);
+      \draw[boxdgray,edge] (gv) -- (pxv);
     \end{tikzpicture}
 
     \begin{tikzpicture}
@@ -80,40 +80,162 @@ from recursively combining distributions into complex functions. This can be don
 computational units that either compute convex combinations or products of their children. Let us
 first look at convex combinations, known in the literature as \emph{sum nodes}.
 
+Let $\Sum$ be a PC sum node, and denote by $\Ch(\Sum)$ the children nodes of $\Sum$. For every edge
+$\edge{\Sum\Child}$ coming out of $\Sum$ and going to $\Child$, we attribute a weight $w_{\Sum,
+\Child}>0$, such that $\sum_{\Child\in\Ch(\Sum)} w_{\Sum,\Child} = 1$. A sum node semantically
+defines a mixture model over its children, essentially acting as a latent variable over the
+component distributions \citep{peharz16}. Its value is the weighted sum of its children
+$p_{\Sum}(\set{X}=\set{x})=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\cdot
+p_{\Child}(\set{X}=\set{x})$. To simplify notation, we shall use $\Node(\set{X}=\set{x})$ as an
+alias for $p_{\Node}(\set{X}=\set{x})$, that is, the probability function given by the $\Node$'s
+induced distribution.
+
+\begin{example}[sidebyside,lefthand width=0.55\textwidth]{Gaussian mixture models as probabilistic circuits}{mixgauss}
+  \def\mone{1}
+  \def\sone{0.65}
+  \def\mtwo{2.5}
+  \def\stwo{0.85}
+  \def\mthr{4}
+  \def\sthr{0.6}
+  A Gaussian Mixture Model (GMM) defines a mixture over Gaussian components. Say we wish to compute
+  the probability of $X=x$ for a GMM $\mathcal{G}$ with three components
+  $\gaussian_1(\mu_1=\mone,\sigma^2_1=\sone)$, $\gaussian_2(\mu_2=\mtwo, \sigma^2_1=\stwo)$ and
+  $\gaussian_3(\mu_3=\mthr,\sigma^2_3=\sthr)$, and suppose we have weights set to
+  $\phi=(0.4,0.25,0.35)$. Computing the probability of $G$ amounts to the weighted summation
+  \begin{align*}
+    \mathcal{G}(X=x)=&0.4\cdot\gaussian_1(x;\mu_1,\sigma^2_2)+0.25\cdot\gaussian_2(x;\mu_2,\sigma^2_2)+\\
+                     &0.35\cdot\gaussian_3(x;\mu_3,\sigma^2_3),
+  \end{align*}
+  which is equivalent to a computational graph (i.e. a PC) with a sum node whose weights are set to
+  $\phi$ and children are the components of the mixture. The figure on the right shows
+  $\mathcal{G}$ (top) and its corresponding PC (bottom). Given $x=1.5$ (in blue), leaf nodes are
+  computed following the inference flow (gray edges) up to the root sum node (in red), where a
+  weighted summation is computed to output the probability (in green).
+
+  \tcblower
+  \begin{center}
+    \def\mone{1}
+    \def\sone{0.65}
+    \def\mtwo{2.5}
+    \def\stwo{0.85}
+    \def\mthr{4}
+    \def\sthr{0.6}
+    \begin{tikzpicture}
+      \pgfplotsset{
+        every axis/.append style={
+          axis line style={->},
+          tick label style={font={\scriptsize\bfseries}},
+          x tick label style={color=white,below},
+          y tick label style={color=white,left},
+          grid style={black,dashed},
+        }
+      }
+      \begin{axis}[
+        no markers, domain=-1:6, samples=35,
+        height=3.75cm, width=\columnwidth,
+        xtick={1.5}, ytick={0.2414},
+        xticklabels={\colorbox{boxblue}{\textbf{1.5}}},
+        yticklabels={\colorbox{boxgreen}{\textbf{0.24}}},
+        axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
+        axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
+        every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
+        every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
+        enlargelimits=false, clip=false, axis on top,
+        grid = major
+      ]
+        \path[name path=axis] (axis cs:0,0) -- (axis cs:5,0);
+        \addplot[very thick,boxteal,name path=g1] {gauss(\mone,\sone)};
+        \addplot[very thick,boxorange,name path=g2] {gauss(\mtwo,\stwo)};
+        \addplot[very thick,boxpurple,name path=g3] {gauss(\mthr,\sthr)};
+        \addplot[very thick,boxred] {mixgauss3(\mone,\sone,\mtwo,\stwo,\mthr,\sthr,0.4,0.25,0.35)};
+        \addplot[boxteal!60] fill between [of=g1 and axis];
+        \addplot[boxorange!50] fill between [of=g2 and axis];
+        \addplot[boxpurple!40] fill between [of=g3 and axis];
+        \node at (\mone, 0.7) {\tiny$\mu_1=\mone$};
+        \node at (\mtwo, 0.5) {\tiny$\mu_2=\mtwo$};
+        \node at (\mthr, 0.75) {\tiny$\mu_3=\mthr$};
+      \end{axis}
+    \end{tikzpicture}
+
+    \begin{tikzpicture}
+      \newSumNode[fill=boxred!70]{s}{0,0};
+      \newGaussNode[fill=boxteal]{g1}{$(s) + (-1.5,-1)$};
+      \newGaussNode[fill=boxorange!80]{g2}{$(s) + (0,-1)$};
+      \newGaussNode[fill=boxpurple!60]{g3}{$(s) + (1.5,-1)$};
+      \draw[edge] (s) edge[bend right=5] (g1);
+      \draw[edge] (s) edge[bend right=5] (g2);
+      \draw[edge] (s) edge[bend right=5] (g3);
+      \node at ($(s) + (-1.2,-0.35)$) {\scriptsize$.40$};
+      \node at ($(s) + (-0.3,-0.5)$) {\scriptsize$.25$};
+      \node at ($(s) + (1,-0.35)$) {\scriptsize$.35$};
+      \node (inp) at ($(g2) + (0,-1.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathbf{1.5}$}};
+      \node (out) at ($(s) + (0,1.0)$) {\scriptsize\colorbox{boxgreen}{\color{white}$\mathbf{0.24}$}};
+      \draw[edge,boxdgray] (s) -- (out);
+      \node (l1) at ($(g1) + (0,-0.5)$) {\scriptsize$\gaussian_1(\mone,\sone)$};
+      \node (l2) at ($(g2) + (0,-0.5)$) {\scriptsize$\gaussian_2(\mtwo,\stwo)$};
+      \node (l3) at ($(g3) + (0,-0.5)$) {\scriptsize$\gaussian_3(\mthr,\sthr)$};
+      \draw[edge,boxdgray] (inp) -- (l1);
+      \draw[edge,boxdgray] (inp) -- (l2);
+      \draw[edge,boxdgray] (inp) -- (l3);
+      \draw[edge,boxdgray] (g1) edge[bend left=-5] (s);
+      \draw[edge,boxdgray] (g2) edge[bend left=-5] (s);
+      \draw[edge,boxdgray] (g3) edge[bend left=-5] (s);
+    \end{tikzpicture}
+  \end{center}
+\end{example}
+
+Before we address products as computational units in PCs, we first need to discuss the concept of
+scope of a PC node. Denote by $\Sc(\Node)$ the set of all variables that appear in $\Node$.  We
+inductively compute the scope of circuit by a bottom-up approach: the scope of a leaf node
+$\Leaf_p$ is the set of variables that appear in $p$, and the scope of any other node is the union
+of all of its childrens' scopes. The notion of a node's scope is essential to the structural
+constraints seen in \cref{sec:const}.
+
+So far, the only nonlinearities present in PCs come from the internal computations of leaf nodes.
+In fact, a PC that only contains sum and leaf nodes can always be reduced to a sum node rooted PC
+with a single layer, i.e. a mixture model (see \cref{thm:summix}). Adding \emph{product nodes} as
+another form of nonlinearity increases expressivity sufficiently for PCs to be capable of
+representing any (discrete) probability distribution.  are products of their childrens'
+distribution: if $\Prod$ is a PC product node, then its value
+$\Prod(\set{X}=\set{x})=\prod_{\Child\in\Ch(\Prod)}\Child(\set{X}=\set{x})$.  Semantically, product
+nodes are factorizations of its children, indicating an independence relationship between variables
+from different children as long as 
+
 \begin{remark}[breakable]{On operators and tractability}{optract}
   Throughout this work we consider only products and convex combinations (apart from the implicit
   operations contained within leaf nodes) as potential computational units. The question of whether
   any other operator could be used to gain expressivity without loss of tractability is without a
   doubt an interesting research question, and one that is actively being pursued. However, this is
   certainly out of the scope of this dissertation, and so we restrict discussion on this topic and
-  only give a brief comment on tractability here, pointing to existing literature in this area of
-  research.
+  only give a brief comment on operator tractability here, pointing to existing literature in this
+  area of research.
 
-  \citet{friesen16} formalize the notion of operator generalization in PCs by looking at any
-  commutative semiring, giving results on the conditions for marginalization to be tractable. They
-  provide examples of common semirings and to which known formalisms they correspond to. Two such
-  examples are PCs under the Boolean semiring $(\{0,1\},\vee,\wedge,0,1)$ for logical inference,
-  which are equivalent to Negation Normal Form (NNF, \cite{barwise82}) and constitute an instance
-  of Logic Circuits (LCs), of which Sentential Decision Diagrams (SDDs, \cite{darwiche11}) and
-  Binary Decision Diagrams (BDDs, \cite{akers78}) are a part of; and PCs under the real min-sum
-  semiring $(\mathbb{R}_{\infty}, \min,+,\infty,0)$ for nonconvex optimization \citep{friesen15}.
+  \citet{friesen16} formalize the notion of replacing sums and products in PCs with any pair of
+  operators in a commutative semiring, giving results on the conditions for marginalization to be
+  tractable. They provide examples of common semirings and to which known formalisms they
+  correspond to. One such example are PCs under the Boolean semiring $(\{0,1\},\vee,\wedge,0,1)$
+  for logical inference, which are equivalent to Negation Normal Form (NNF, \cite{barwise82}) and
+  constitute an instance of Logic Circuits (LCs), of which Sentential Decision Diagrams (SDDs,
+  \cite{darwiche11}) and Binary Decision Diagrams (BDDs, \cite{akers78}) are a part of. Another
+  less common semiring in PCs is the real min-sum semiring $(\mathbb{R}_{\infty}, \min,+,\infty,0)$
+  for nonconvex optimization \citep{friesen15}.
 
   Recently, \citet{vergari21} extensively covered tractability conditions and complexity bounds for
   convex combinations, products, $\exp$ (and more generally powers in both naturals and reals),
-  divisions and logarithms, even giving results for complex information-theoretic queries, such as
-  entropies and divergences.
+  quotients and logarithms, even giving results for complex information-theoretic queries, such as
+  entropies and divergences. Notably, they analyze whether structural constraints (and thus, in a
+  sense, tractability) are preserved.
 
-  Up to now, we have only considered summations with nonnegative weights. Indeed, in most
+  Up to now, we have only considered summations as nonnegative weighted sums. Indeed, in most
   literature the sum node is defined as a convex combination. However, negative weights have
   appeared in Logistic Circuits \citep{liang19} for discriminative modeling; and in Probabilistic
-  Generating Circuits \citep{zhang21}, a superset of tractable probabilistic models that subsume
-  PCs.
+  Generating Circuits \citep{zhang21}, a class of tractable probabilistic models that subsume PCs.
+  \citet{maua17a} extend (nonnegative) weights in sum nodes with probability intervals, effectively
+  inducing a credal set \citep{cozman00} for measuring imprecision.
 
-  Other works on 
+  Other works have extended PCs with quotients \citep{sharir18a}, transformations \citep{pevny20a},
+  max \citep{melibari16}, and einsum \citep{peharz20b} operators.
 \end{remark}
-
-
-Note how these second nonlinearity, the first being leaf nodes
 
 \section{Deciding What to Constraint}
 \label{sec:const}

@@ -1,6 +1,28 @@
 %!TeX root=../tese.tex
-%("dica" para o editor de texto: este arquivo é parte de um documento maior)
-% para saber mais: https://tex.stackexchange.com/q/78101/183146
 
-%\input{conteudo/...}
-%\par
+\chapter{Appendix}
+
+\section{Proofs}
+
+\begin{theorem}
+  \label{thm:summix}
+  Let $\mathcal{C}$ a probabilistic circuit whose first $n$ layers are composed solely of sum
+  nodes. Call $\set{N}$ the set of all nodes in layer $n+1$. $\mathcal{C}$ is equivalent to a PC
+  $\mathcal{C}'$ whose root is a sum node with $\set{N}$ as children.
+\end{theorem}
+\begin{proof}
+  We adapt a similar proof due to \citet{jaini18b}. Every sum node is of the form
+  \begin{equation*}
+    \Sum(\set{x})=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\cdot\Child(\set{x}).
+  \end{equation*}
+  Particularly, every child $\Child$ in a sum node in layer $1\leq i\leq n-1$, is a sum node, and
+  so for the first layer we have that
+  \begin{align*}
+    \Sum(\set{x})&=\sum_{\Child_1\in\Ch(\Sum)}w_{\Sum,\Child_1}\sum_{\Child_2\in\Ch(\Child_1)}
+    w_{\Child_1,\Child_2}\Child_2(\set{x})\\
+                 &=\sum_{\Child_1\in\Ch(\Sum)}\sum_{\Child_2\in\Ch(\Child_1)}w_{\Sum,\Child_1}
+    w_{\Child_1,\Child_2}\Child_2(\set{x}).
+  \end{align*}
+  Define a one-to-one mapping that takes a tuple $(i,j)$ where $i\in$
+
+\end{proof}
