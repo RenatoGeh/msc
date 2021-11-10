@@ -1,7 +1,8 @@
 \usepackage{amsthm}
 \usepackage{bm}
+\usepackage{stmaryrd}
 
-\usetikzlibrary{shapes,arrows,positioning,fit,circuits.logic.US}
+\usetikzlibrary{shapes,arrows,positioning,fit,circuits.logic.US,math}
 
 \newcommand{\bigo}{\mathcal{O}}
 \newcommand{\set}[1]{\mathbf{#1}}
@@ -32,6 +33,12 @@
 \DeclareMathOperator{\vtree}{\mathcal{V}}
 \DeclareMathOperator{\Forget}{\normalfont{Forget}}
 
+\DeclareMathOperator{\lint}{\llbracket}
+\DeclareMathOperator{\rint}{\rrbracket}
+
+\newcommand\indep{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
 \newcommand{\edge}[1]{\overrightarrow{#1}}
 
 \newcommand{\ov}{\overline}
@@ -42,7 +49,7 @@
 
 \newcommand{\newSumNode}[3][]{\node[circle,draw,inner sep=0pt,minimum size=13pt,thick,fill=blue!50!green!30,#1] (#2) at (#3) {$\bm{+}$}}
 \newcommand{\newMixNode}[3][]{\node[#1,circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=blue!50!green!30] (#2) at (#3) {$\sum$}}
-\newcommand{\newProdNode}[3][]{\node[#1,circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=blue!50!red!30] (#2) at (#3) {$\bm{\times}$}}
+\newcommand{\newProdNode}[3][]{\node[circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=blue!50!red!30,#1] (#2) at (#3) {$\bm{\times}$}}
 \newcommand{\newLeafNode}[3][]{\node[#1,circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=orange!50!black!40] (#2) at (#3) {$\bm{\circ}$}}
 \newcommand{\newCellNode}[3][]{\node[#1,circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=orange!50!black!40] (#2) at (#3) {$\bm{\Box}$}}
 \tikzset{sigmoid/.style={path picture={\begin{scope}[x=0.65pt,y=7pt] \draw plot[domain=-6:6](\x,{1/(1+exp(-1.5*\x))-0.5}); \end{scope}}}}
@@ -56,13 +63,21 @@
 \pgfmathdeclarefunction{gauss}{2}{%
   \pgfmathparse{1/(#2*2.5066)*exp(-((x-#1)^2)/(2*#2^2))}%
 }
+\pgfmathdeclarefunction{egauss}{3}{%
+  \pgfmathparse{1/(#2*2.5066)*exp(-((#3-#1)^2)/(2*#2^2))}%
+}
 \pgfmathdeclarefunction{gauss3}{6}{%
   \pgfmathparse{(exp(-((x-#1)^2)/(2*#2^2))/#2+exp(-((x-#3)^2)/(2*#4^2))/#4+exp(-((x-#5)^2)/(2*#6^2))/#6)/2.5066}%
 }
 \pgfmathdeclarefunction{mixgauss3}{9}{%
   \pgfmathparse{(#7*exp(-((x-#1)^2)/(2*#2^2))/#2+#8*exp(-((x-#3)^2)/(2*#4^2))/#4+#9*exp(-((x-#5)^2)/(2*#6^2))/#6)/2.5066}%
 }
-
+\pgfmathdeclarefunction{mixgauss2}{6}{%
+  \pgfmathparse{(#5*exp(-((x-#1)^2)/(2*#2^2))/#2+#6*exp(-((x-#3)^2)/(2*#4^2))/#4)/2.5066}%
+}
+\pgfmathdeclarefunction{mixgauss2y}{6}{%
+  \pgfmathparse{(#5*exp(-((y-#1)^2)/(2*#2^2))/#2+#6*exp(-((y-#3)^2)/(2*#4^2))/#4)/2.5066}%
+}
 
 \DeclareMathOperator{\gaussian}{\mathcal{N}}
 

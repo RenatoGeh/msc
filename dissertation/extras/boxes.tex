@@ -21,6 +21,10 @@
 \definecolor{boxlgreen}{HTML}{9CD08F}
 \definecolor{boxteal}{HTML}{568777}
 \definecolor{boxlteal}{HTML}{88C7B2}
+\definecolor{boxgold}{HTML}{EFA906}
+\definecolor{boxdyellow}{HTML}{F9CB40}
+\definecolor{boxgoldenrod}{HTML}{818a34}
+\definecolor{boxpink}{HTML}{b522a4}
 
 \newcommand{\newSharpBox}[3]{
   \begin{tcolorbox}[colback=#1!5!white,colframe=#1!75!black,title=#2,sharp corners=northwest]
@@ -36,7 +40,9 @@
 
 \newcommand{\newCTitle}[2]{\noindent\colorbox{#1}{\color{white}\strut\textbf{#2}}}
 
-\tcbset{skin=enhanced,parbox=false,breakable=true,fonttitle=\bfseries}
+\tcbset{
+  skin=enhanced,parbox=false,breakable=true,fonttitle=\bfseries,sidebyside gap=25pt
+}
 
 \newtcbtheorem[number within=section]{example}{Example}{colback=boxorange!30,colframe=boxorange}{eg}
 

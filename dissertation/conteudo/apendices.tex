@@ -6,16 +6,16 @@
 
 \begin{theorem}
   \label{thm:summix}
-  Let $\mathcal{C}$ a probabilistic circuit whose first $n$ layers are composed solely of sum
-  nodes. Call $\set{N}$ the set of all nodes in layer $n+1$. $\mathcal{C}$ is equivalent to a PC
-  $\mathcal{C}'$ whose root is a sum node with $\set{N}$ as children.
+  Let $\mathcal{C}$ a probabilistic circuit whose first $l$ layers are composed solely of sum
+  nodes. Call $\Nodes$ the set of all nodes in layer $l+1$. $\mathcal{C}$ is equivalent to a PC
+  $\mathcal{C}'$ whose root is a sum node with $\Nodes$ as children.
 \end{theorem}
 \begin{proof}
   We adapt a similar proof due to \citet{jaini18b}. Every sum node is of the form
   \begin{equation*}
     \Sum(\set{x})=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\cdot\Child(\set{x}).
   \end{equation*}
-  Particularly, every child $\Child$ in a sum node in layer $1\leq i\leq n-1$, is a sum node, and
+  Particularly, every child $\Child$ in a sum node in layer $1\leq i\leq l-1$, is a sum node, and
   so for the first layer we have that
   \begin{align*}
     \Sum(\set{x})&=\sum_{\Child_1\in\Ch(\Sum)}w_{\Sum,\Child_1}\sum_{\Child_2\in\Ch(\Child_1)}
@@ -23,6 +23,23 @@
                  &=\sum_{\Child_1\in\Ch(\Sum)}\sum_{\Child_2\in\Ch(\Child_1)}w_{\Sum,\Child_1}
     w_{\Child_1,\Child_2}\Child_2(\set{x}).
   \end{align*}
-  Define a one-to-one mapping that takes a tuple $(i,j)$ where $i\in$
-
+  Define a one-to-one mapping that takes a tuple $(\Child_1,\Child_2)$ where $\Child_1\in\Ch(\Sum)$
+  and $\Child_2\in\Ch(\Child_1)$ and returns a (unique) path from $\Sum$ to every grandchild
+  $\Child_2$ of $\Sum$. Call $\set{K}$ the set of all paths, and $w_{\Sum,\Child_1}$ and
+    $w_{\Child_1,\Child_2}$ the weights for one such path. We can merge these two weights into a
+  single weight $w_{\Sum,\Child_2}'= w_{\Sum,\Child_1}\cdot w_{\Child_1,\Child_2}$, yielding
+  \begin{equation*}
+    \Sum(\set{x})=\sum_{(w_{\Sum,\Child_1},w_{\Child_1,\Child_2})\in\set{K}} w_{\Sum,\Child_2}'
+    \Child_2(\set{x}).
+  \end{equation*}
+  This ensures that two consecutive sum layers can be collapsed into a single layer. Particularly,
+  for the first (root) and second layers, the above transformation generates a circuit with one
+  fewer layer and whose root has $\bigo(nm)$ edges, where $n$ and $m$ are the number of edges coming
+  from the original root and its children respectively. We can apply this procedure until there are
+  no more consecutive sum nodes. This results in a PC of the form
+  \begin{equation*}
+    \Sum(\set{x})=\sum_{\Child\in\Ch(S)} w_{\Sum,\Child}\Node(\set{x}),
+  \end{equation*}
+  where $\Node\in\Nodes$. The number of children of the resulting root sum node will be exponential
+  on the number of edges of its children.
 \end{proof}

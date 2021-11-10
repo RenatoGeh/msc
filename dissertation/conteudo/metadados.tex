@@ -20,10 +20,10 @@
     %shorttitle={Título curto},
 }
 
-\author[fem]{Renato Lui Geh}
+\author[masc]{Renato Lui Geh}
 
 % Para TCCs, este comando define o supervisor
-\orientador[fem]{Prof. Denis Deratani Mauá, PhD}
+\orientador[masc]{Professor Denis Deratani Mauá}
 
 % Se não houver, remova; se houver mais de um, basta
 % repetir o comando quantas vezes forem necessárias
@@ -41,11 +41,9 @@
   % É qualificação?
   %quali,
   programa={Computer Science},
-  membrobanca={Profª. Drª. Fulana de Tal (orientadora) -- IME-USP [sem ponto final]},
-  % Em inglês, não há o "ª"
-  %membrobanca{Prof. Dr. Fulana de Tal (advisor) -- IME-USP [sem ponto final]},
-  membrobanca={Prof. Dr. Ciclano de Tal -- IME-USP [sem ponto final]},
-  membrobanca={Profª. Drª. Convidada de Tal -- IMPA [sem ponto final]},
+  membrobanca={Professor Denis Deratani Mauá (Chair) -- University of São Paulo},
+  membrobanca={Professor Guy Van den Broeck -- University of California, Los Angeles},
+  membrobanca={Professor Bryon Aragam -- University of Chicago},
   % Se não houver, remova
   apoio={This work was supported by CNPq grant \#133787/2019-2, CAPES grant \#88887.339583/2019-00
   and EPECLIN FM-USP.},
@@ -70,8 +68,36 @@
 \keyword{Probabilistic models}
 
 % O resumo é obrigatório, em português e inglês.
-\resumo{
+\abstract{
+  The rising popularity of generative models together with the growing need for flexible and exact
+  inferences has motivated the machine learning community to look for expressive yet tractable
+  probabilistic models. Probabilistic circuits (PCs) are a family of tractable probabilistic models
+  capable of answering a wide range of queries exactly and in polynomial time. Their operational
+  syntax in the form of a computational graph and their principled probabilistic semantics allow
+  their parameters to be estimated by the highly scalable and efficient optimization techniques
+  used in deep learning. Importantly, tractability is tightly linked to constraints on their
+  underlying graph: by enforcing certain structural assumptions, queries like marginals,
+  \emph{maximum a posteriori} or entropy become linear time computable while still retaining great
+  expressivity. While inference is usually straightforward, learning PCs that both obey the needed
+  structural restrictions and exploit their expressive power has proven a challenge. Current
+  state-of-the-art structure learning algorithms for PCs can be roughly divided into three main
+  categories. Most learning algorithms seek to generate a usually tree-shaped circuit from
+  recursive decompositions on data, often through clustering and costly statistical (in)dependence
+  tests, which can become prohibitive in higher dimensional data. Alternatively, other approaches
+  involve constructing an intricate network by growing an initial circuit through structural
+  preserving iterative methods. Besides depending on a sufficiently expressive initial structure,
+  these can possibly take several minutes per iteration and many iterations until visible
+  improvement. Lastly, other approaches involve randomly generating a probabilistic circuit by some
+  criterion. Although usually less performant compared to other methods, random PCs are orders of
+  magnitude more time efficient. With this in mind, this dissertation aims to propose fast and
+  scalable random structure learning algorithms for PCs from two different standpoints: from a
+  logical point of view, we efficiently construct a highly structured binary PC that takes certain
+  knowledge in the form of logical constraints and scalably translate them into a probabilistic
+  circuit; from the viewpoint of data guided structure search, we propose hierarchically building
+  PCs from random hyperplanes. We empirically show that either approach is competitive against
+  state-of-the-art methods of the same class, and that their performance can be further boosted by
+  simple ensemble strategies.
 }
 
-\abstract{
+\resumo{
 }

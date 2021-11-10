@@ -12,40 +12,23 @@ queries (as far as we know) are enabled from each constraint.
 \label{sec:pc}
 
 Probabilistic circuits are directed acyclic graphs usually recursively defined in terms of their
-computational units. In its simplest form, a PC is a single unit corresponding to some tractable
-distribution. These can range from univariate or multivariate exponential distributions to complex
-non-parametric models, and are the foundational units of PCs. We shall refer to these computational
-units as \emph{leaf nodes}, as no edges come out of them. To simplify notation, in this
-dissertation, unless specified, leaf nodes will denote univariate distributions. Let
-$\Leaf_p$ a PC leaf node and denote $p$ as its inherent probability distribution. By
-definition, any query $f:\mathcal{X}\to\mathcal{Y}$ which is tractable on $p$ is tractable on
-$\Leaf_p$. We shall denote $\Leaf_p(\set{X})=p(\set{X})$, and often omit $p$ when its
-explicit form is not needed.
-
-\begin{example}[sidebyside,lefthand width=0.6\textwidth]{Gaussians as probabilistic circuits}{gaussians}
-  Let $\Leaf_p$ a leaf node and $p(X)=\gaussian(X;\mu,\sigma^2)$ a univariate Gaussian
+computational units. In its simplest form a PC is a single unit with no outgoing edges whose value
+corresponds to the result of a function. These are often called \emph{input} nodes, and can take
+any form as long as its value is tractably computable. More concretely, input nodes typically
+represent probability density (or mass) functions, although they also support inputs as joint
+probability density functions of complex non-parametric models as well. To simplify notation, from
+here on out we shall use the term distribution and probability density (resp. mass) function
+interchangeably and argue that the input node represents a probability distribution.
+\begin{example}[sidebyside,lefthand width=0.6\textwidth]{Gaussians as probabilistic circuits}{gaussians} %
+  Let $\Leaf_p$ an input node and $p(X)=\gaussian(X;\mu,\sigma^2)$ a univariate Gaussian
   distribution. Computing any query on $\Leaf_p$ is straightforward: any query on
   $\Leaf_p$ directly translates to $p$. As an example, suppose $\mu=0$ and $\sigma^2=1$ and
-  we wish to compute $\Leaf_p(x=0.8)$. The probability of this leaf shall then be
+  we wish to compute $\Leaf_p(x=0.8)$. The probability of this input shall then be
   \begin{equation*}
     \Leaf_p(x=0.8)=\gaussian(x=0.8;\mu=0,\sigma^2=1)=0.29.
   \end{equation*}
   \tcblower
   \begin{center}
-    \begin{tikzpicture}
-      \node (x) at (0, 0) {$x$};
-      \newGaussNode{g}{$(x) + (1,0)$};
-      \node (px) at ($(g) + (1.25,0)$) {$p(x)$};
-      \draw[boxdgray,edge] (x) -- (g);
-      \draw[boxdgray,edge] (g) -- (px);
-
-      \newGaussNode[label=below:$X$]{gv}{$(g) - (0,1.0)$};
-      \node (xv) at ($(gv) - (1.25,0)$) {\colorbox{boxblue}{\color{white}$\mathbf{.80}$}};
-      \node (pxv) at ($(gv) + (1.25,0)$) {\colorbox{boxgreen}{\color{white}$\mathbf{.29}$}};
-      \draw[boxdgray,edge] (xv) -- (gv);
-      \draw[boxdgray,edge] (gv) -- (pxv);
-    \end{tikzpicture}
-
     \begin{tikzpicture}
       \pgfplotsset{
         every axis/.append style={
@@ -71,32 +54,48 @@ explicit form is not needed.
         \addplot[very thick,boxteal] {gauss(0,1)};
       \end{axis}
     \end{tikzpicture}
+
+    \begin{tikzpicture}
+      \node (x) at (0, 0) {$x$};
+      \newGaussNode{g}{$(x) + (1,0)$};
+      \node (px) at ($(g) + (1.25,0)$) {$p(x)$};
+      \draw[boxdgray,edge] (x) -- (g);
+      \draw[boxdgray,edge] (g) -- (px);
+
+      \newGaussNode[label=below:$X$]{gv}{$(g) - (0,1.0)$};
+      \node (xv) at ($(gv) - (1.25,0)$) {\colorbox{boxblue}{\color{white}$\mathbf{.80}$}};
+      \node (pxv) at ($(gv) + (1.25,0)$) {\colorbox{boxgreen}{\color{white}$\mathbf{.29}$}};
+      \draw[boxdgray,edge] (xv) -- (gv);
+      \draw[boxdgray,edge] (gv) -- (pxv);
+    \end{tikzpicture}
   \end{center}
 \end{example}
-
-Evidently, a single leaf node lacks the expressivity for modeling complex models, otherwise we
-would have just used the leaf distribution as a standalone model. The expressiveness of PCs comes
+Let $\Leaf_p$ a PC input node and denote $p$ as its inherent probability distribution. By
+definition, any query $f:\mathcal{X}\to \mathcal{Y}$ which is tractable on $p$ is tractable on
+$\Leaf_p$. We shall denote $\Leaf_p(\set{X})=p(\set{X})$, and often omit $p$ when its explicit form
+is not needed. Evidently, a single input node lacks the expressivity for modeling complex models, otherwise we
+would have just used the input distribution as a standalone model. The expressiveness of PCs comes
 from recursively combining distributions into complex functions. This can be done through
 computational units that either compute convex combinations or products of their children. Let us
-first look at convex combinations, known in the literature as \emph{sum nodes}.
+first look at convex combinations, known in the literature as \emph{sum} nodes.
 
 Let $\Sum$ be a PC sum node, and denote by $\Ch(\Sum)$ the children nodes of $\Sum$. For every edge
 $\edge{\Sum\Child}$ coming out of $\Sum$ and going to $\Child$, we attribute a weight $w_{\Sum,
 \Child}>0$, such that $\sum_{\Child\in\Ch(\Sum)} w_{\Sum,\Child} = 1$. A sum node semantically
 defines a mixture model over its children, essentially acting as a latent variable over the
-component distributions \citep{peharz16}. Its value is the weighted sum of its children
+component distributions \citep{poon11,peharz16}. Its value is the weighted sum of its children
 $p_{\Sum}(\set{X}=\set{x})=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\cdot
 p_{\Child}(\set{X}=\set{x})$. To simplify notation, we shall use $\Node(\set{X}=\set{x})$ as an
 alias for $p_{\Node}(\set{X}=\set{x})$, that is, the probability function given by the $\Node$'s
 induced distribution.
 
+\newcommand\mone{1}%
+\newcommand\sone{0.65}%
+\newcommand\mtwo{2.5}%
+\newcommand\stwo{0.85}%
+\newcommand\mthr{4}%
+\newcommand\sthr{0.6}%
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Gaussian mixture models as probabilistic circuits}{mixgauss}
-  \def\mone{1}
-  \def\sone{0.65}
-  \def\mtwo{2.5}
-  \def\stwo{0.85}
-  \def\mthr{4}
-  \def\sthr{0.6}
   A Gaussian Mixture Model (GMM) defines a mixture over Gaussian components. Say we wish to compute
   the probability of $X=x$ for a GMM $\mathcal{G}$ with three components
   $\gaussian_1(\mu_1=\mone,\sigma^2_1=\sone)$, $\gaussian_2(\mu_2=\mtwo, \sigma^2_1=\stwo)$ and
@@ -108,18 +107,12 @@ induced distribution.
   \end{align*}
   which is equivalent to a computational graph (i.e. a PC) with a sum node whose weights are set to
   $\phi$ and children are the components of the mixture. The figure on the right shows
-  $\mathcal{G}$ (top) and its corresponding PC (bottom). Given $x=1.5$ (in blue), leaf nodes are
-  computed following the inference flow (gray edges) up to the root sum node (in red), where a
-  weighted summation is computed to output the probability (in green).
+  $\mathcal{G}$ (top) and its corresponding PC (middle). Given $x=1.5$ (in blue), input nodes are
+  computed following the inference flow (bottom, gray edges) up to the root sum node (in red),
+  where a weighted summation is computed to output the probability (in green).
 
   \tcblower
   \begin{center}
-    \def\mone{1}
-    \def\sone{0.65}
-    \def\mtwo{2.5}
-    \def\stwo{0.85}
-    \def\mthr{4}
-    \def\sthr{0.6}
     \begin{tikzpicture}
       \pgfplotsset{
         every axis/.append style={
@@ -136,7 +129,6 @@ induced distribution.
         xtick={1.5}, ytick={0.2414},
         xticklabels={\colorbox{boxblue}{\textbf{1.5}}},
         yticklabels={\colorbox{boxgreen}{\textbf{0.24}}},
-        axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
         axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
         every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
         every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
@@ -162,6 +154,22 @@ induced distribution.
       \newGaussNode[fill=boxteal]{g1}{$(s) + (-1.5,-1)$};
       \newGaussNode[fill=boxorange!80]{g2}{$(s) + (0,-1)$};
       \newGaussNode[fill=boxpurple!60]{g3}{$(s) + (1.5,-1)$};
+      \draw[edge] (s) edge (g1);
+      \draw[edge] (s) edge (g2);
+      \draw[edge] (s) edge (g3);
+      \node at ($(s) + (-1.2,-0.35)$) {\scriptsize$.40$};
+      \node at ($(s) + (-0.3,-0.5)$) {\scriptsize$.25$};
+      \node at ($(s) + (1,-0.35)$) {\scriptsize$.35$};
+      \node (l1) at ($(g1) + (0,-0.5)$) {\scriptsize$\gaussian_1(\mone,\sone)$};
+      \node (l2) at ($(g2) + (0,-0.5)$) {\scriptsize$\gaussian_2(\mtwo,\stwo)$};
+      \node (l3) at ($(g3) + (0,-0.5)$) {\scriptsize$\gaussian_3(\mthr,\sthr)$};
+    \end{tikzpicture}
+
+    \begin{tikzpicture}
+      \newSumNode[fill=boxred!70]{s}{0,0};
+      \newGaussNode[fill=boxteal]{g1}{$(s) + (-1.5,-1)$};
+      \newGaussNode[fill=boxorange!80]{g2}{$(s) + (0,-1)$};
+      \newGaussNode[fill=boxpurple!60]{g3}{$(s) + (1.5,-1)$};
       \draw[edge] (s) edge[bend right=5] (g1);
       \draw[edge] (s) edge[bend right=5] (g2);
       \draw[edge] (s) edge[bend right=5] (g3);
@@ -171,12 +179,12 @@ induced distribution.
       \node (inp) at ($(g2) + (0,-1.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathbf{1.5}$}};
       \node (out) at ($(s) + (0,1.0)$) {\scriptsize\colorbox{boxgreen}{\color{white}$\mathbf{0.24}$}};
       \draw[edge,boxdgray] (s) -- (out);
-      \node (l1) at ($(g1) + (0,-0.5)$) {\scriptsize$\gaussian_1(\mone,\sone)$};
-      \node (l2) at ($(g2) + (0,-0.5)$) {\scriptsize$\gaussian_2(\mtwo,\stwo)$};
-      \node (l3) at ($(g3) + (0,-0.5)$) {\scriptsize$\gaussian_3(\mthr,\sthr)$};
-      \draw[edge,boxdgray] (inp) -- (l1);
-      \draw[edge,boxdgray] (inp) -- (l2);
-      \draw[edge,boxdgray] (inp) -- (l3);
+      \node (l1) at ($(g1) + (0,-0.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{0.45}$}};
+      \node (l2) at ($(g2) + (0,-0.5)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{0.23}$}};
+      \node (l3) at ($(g3) + (0,-0.5)$) {\scriptsize\colorbox{boxpurple!80}{\color{white}$\mathbf{0.00}$}};
+      \draw[edge,boxdgray] (inp) edge (l1);
+      \draw[edge,boxdgray] (inp) edge (l2);
+      \draw[edge,boxdgray] (inp) edge (l3);
       \draw[edge,boxdgray] (g1) edge[bend left=-5] (s);
       \draw[edge,boxdgray] (g2) edge[bend left=-5] (s);
       \draw[edge,boxdgray] (g3) edge[bend left=-5] (s);
@@ -186,24 +194,207 @@ induced distribution.
 
 Before we address products as computational units in PCs, we first need to discuss the concept of
 scope of a PC node. Denote by $\Sc(\Node)$ the set of all variables that appear in $\Node$.  We
-inductively compute the scope of circuit by a bottom-up approach: the scope of a leaf node
-$\Leaf_p$ is the set of variables that appear in $p$, and the scope of any other node is the union
-of all of its childrens' scopes. The notion of a node's scope is essential to the structural
-constraints seen in \cref{sec:const}.
+inductively compute the scope of circuit by a bottom-up approach: the scope of an input node
+$\Leaf_p$ is the set of variables that appear in $p$'s distribution, and the scope of any other
+node is the union of all of its childrens' scopes. The notion of a node's scope is essential to the
+structural constraints seen in \cref{sec:const}.
 
-So far, the only nonlinearities present in PCs come from the internal computations of leaf nodes.
-In fact, a PC that only contains sum and leaf nodes can always be reduced to a sum node rooted PC
-with a single layer, i.e. a mixture model (see \cref{thm:summix}). Adding \emph{product nodes} as
-another form of nonlinearity increases expressivity sufficiently for PCs to be capable of
-representing any (discrete) probability distribution.  are products of their childrens'
-distribution: if $\Prod$ is a PC product node, then its value
-$\Prod(\set{X}=\set{x})=\prod_{\Child\in\Ch(\Prod)}\Child(\set{X}=\set{x})$.  Semantically, product
-nodes are factorizations of its children, indicating an independence relationship between variables
-from different children as long as 
+So far, the only nonlinearities present in PCs come from the internal computations of input nodes.
+In fact, a PC that only contains sums inputs can always be reduced to a sum node rooted PC with a
+single layer, i.e. a mixture model (see \cref{thm:summix}). Adding \emph{product nodes} as another
+form of nonlinearity increases expressivity sufficiently for PCs to be capable of representing any
+(discrete) probability distribution \citep{darwiche03,martens14,peharz15}. More importantly,
+products semantically act as factorizations of their children, indicating an independence
+relationship between variables from different children. In practice, product nodes are simply
+products of their childrens' distribution: if $\Prod$ is a PC product node, then its value is given
+by $\Prod(\set{X}=\set{x})=\prod_{\Child\in\Ch(\Prod)}\Child(\set{X}=\set{x})$.
+
+\newcommand\xmone{2}%
+\newcommand\xsone{0.5}%
+\newcommand\xmtwo{4}%
+\newcommand\xstwo{0.8}%
+\newcommand\ymone{3}%
+\newcommand\ysone{0.7}%
+\newcommand\ymtwo{5}%
+\newcommand\ystwo{0.4}%
+\begin{example}[sidebyside,lefthand width=0.55\textwidth]{Factors as probabilistic circuits}{factors}
+  Say we have two GMMs $\mathcal{G}_1$ and $\mathcal{G}_2$. The first is a mixture model over
+  variable $X$, with component weights $\phi_1=(0.3,0.7)$ and gaussians
+  $\gaussian_1(\mu_1=\xmone,\sigma_1=\xsone)$ and $\gaussian_2(\mu_2=\xmtwo,\sigma_2=\xstwo)$. The
+  second is composed of $\gaussian_3(\mu_3=\ymone,\sigma_2=\ysone)$ and $\gaussian_4(\mu_4=\ymtwo,
+  \sigma_2=\ystwo)$, both distributions over variable $Y$ and with weights $\phi_2=(0.6,0.4)$.
+
+  Suppose $X\indep Y$, yet we wish to compute the joint probability of both $x$ and $y$. If
+  $X\indep Y$, then $p(x,y)=p(x)p(y)=\mathcal{G}_1(x)\mathcal{G}_2(y)$, which corresponds to a
+  factoring of mixtures. This is represented as a product node (in green) over the two mixture
+  models (in red and purple). The resulting joint of this circuit is shown below.
+\begin{tikzpicture}
+  \pgfplotsset{
+    every axis/.append style={
+      axis line style={->},
+      axis lines=center,
+      grid style={black,dashed},
+      x tick label style={color=white,below},
+      y tick label style={color=white,right},
+      z tick label style={color=white,left},
+    }
+  }
+  \begin{axis}[
+    no markers, width=0.9\columnwidth,
+    xtick={2}, ytick={4}, ztick={0.035},
+    xticklabels={\colorbox{boxblue}{\textbf{2}}},
+    yticklabels={\colorbox{boxblue}{\textbf{4}}},
+    zticklabels={\colorbox{boxgreen}{\textbf{0.035}}},
+    xlabel=$x$, ylabel=$y$, zlabel={$p(x,y)$},
+    axis lines*=left,
+    xlabel style={anchor=north west},
+    ylabel style={anchor=south west},
+    zlabel style={anchor=south west},
+    enlargelimits=false, clip=false, axis on top,
+    grid = major
+  ]
+    \addplot3[
+      surf, samples=50,
+      domain=0.5:6.5,
+      y domain=1:6
+    ] {((0.3*exp(-((x-\xmone)^2)/(2*\xsone^2))/\xsone+0.7*exp(-((x-\xmtwo)^2)/(2*\xstwo^2))/\xstwo)/2.5066)*(((0.6*exp(-((y-\ymone)^2)/(2*\ysone^2))/\ysone+0.4*exp(-((y-\ymtwo)^2)/(2*\ystwo^2))/\ystwo)/2.5066))};
+  \end{axis}
+\end{tikzpicture}
+
+  \tcblower
+  \begin{center}
+    \begin{tikzpicture}
+      \pgfplotsset{
+        every axis/.append style={
+          axis line style={->},
+          tick label style={font={\scriptsize\bfseries}},
+          x tick label style={color=white,below},
+          y tick label style={color=white,left},
+          grid style={black,dashed},
+        }
+      }
+      \begin{axis}[
+        no markers, domain=0:7, samples=35,
+        height=3.0cm, width=\columnwidth,
+        xtick={2}, ytick={0.25},
+        xticklabels={\colorbox{boxblue}{\textbf{2}}},
+        yticklabels={\colorbox{boxred}{\textbf{0.25}}},
+        axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
+        every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
+        every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
+        enlargelimits=false, clip=false, axis on top,
+        grid = major
+      ]
+        \path[name path=axis] (axis cs:0,0) -- (axis cs:7,0);
+        \addplot[very thick,boxteal,name path=g1] {gauss(\xmone,\xsone)};
+        \addplot[very thick,boxorange,name path=g2] {gauss(\xmtwo,\xstwo)};
+        \addplot[very thick,boxred] {mixgauss2(\xmone,\xsone,\xmtwo,\xstwo,0.3,0.7)};
+        \addplot[boxteal!60] fill between [of=g1 and axis];
+        \addplot[boxorange!50] fill between [of=g2 and axis];
+        \node at (axis cs:\xmone,{egauss(\xmone,\xsone,\xmone)+0.1}) {\tiny$\mu_1=\xmone$};
+        \node at (axis cs:\xmtwo,{egauss(\xmtwo,\xstwo,\xmtwo)+0.1}) {\tiny$\mu_2=\xmtwo$};
+      \end{axis}
+    \end{tikzpicture}
+    \begin{tikzpicture}
+      \pgfplotsset{
+        every axis/.append style={
+          axis line style={->},
+          tick label style={font={\scriptsize\bfseries}},
+          x tick label style={color=white,below},
+          y tick label style={color=white,left},
+          grid style={black,dashed},
+        }
+      }
+      \begin{axis}[
+        no markers, domain=1:7, samples=50,
+        height=3.0cm, width=\columnwidth,
+        xtick={4}, ytick={0.14},
+        xticklabels={\colorbox{boxblue}{\textbf{4}}},
+        yticklabels={\colorbox{boxpurple}{\textbf{0.14}}},
+        axis lines*=left, xlabel=$y$, ylabel=$p(y)$,
+        every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
+        every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
+        enlargelimits=false, clip=false, axis on top,
+        grid = major
+      ]
+        \path[name path=axis] (axis cs:0,0) -- (axis cs:7,0);
+        \addplot[very thick,boxpink,name path=g1] {gauss(\ymone,\ysone)};
+        \addplot[very thick,boxgoldenrod,name path=g2] {gauss(\ymtwo,\ystwo)};
+        \addplot[very thick,boxpurple] {mixgauss2(\ymone,\ysone,\ymtwo,\ystwo,0.6,0.4)};
+        \addplot[boxpink!40] fill between [of=g1 and axis];
+        \addplot[boxgoldenrod!50] fill between [of=g2 and axis];
+        \node at (axis cs:\ymone,{egauss(\ymone,\ysone,\ymone)+0.1}) {\tiny$\mu_3=\ymone$};
+        \node at (axis cs:\ymtwo,{egauss(\ymtwo,\ystwo,\ymtwo)+0.1}) {\tiny$\mu_4=\ymtwo$};
+      \end{axis}
+    \end{tikzpicture}
+    \begin{tikzpicture}
+      \newProdNode[fill=boxgreen]{r}{0,0};
+      \newSumNode[fill=boxred!70]{p}{$(r) + (-1.25,-0.75)$};
+      \newSumNode[fill=boxpurple!60]{q}{$(r) + (1.25,-0.75)$};
+      \newGaussNode[fill=boxteal]{x1}{$(p) + (-0.6,-1)$};
+      \newGaussNode[fill=boxorange!80]{x2}{$(p) + (0.65,-1)$};
+      \newGaussNode[fill=boxpink!50]{y1}{$(q) + (-0.6,-1)$};
+      \newGaussNode[fill=boxgoldenrod!70]{y2}{$(q) + (0.6,-1)$};
+      \draw[edge] (r) edge (p);
+      \draw[edge] (r) edge (q);
+      \draw[edge] (p) edge (x1);
+      \draw[edge] (p) edge (x2);
+      \draw[edge] (q) edge (y1);
+      \draw[edge] (q) edge (y2);
+      \node at ($(p) + (-0.5,-0.4)$) {\scriptsize$.3$};
+      \node at ($(p) + (0.5,-0.4)$) {\scriptsize$.7$};
+      \node at ($(q) + (-0.5,-0.4)$) {\scriptsize$.6$};
+      \node at ($(q) + (0.5,-0.4)$) {\scriptsize$.4$};
+      \node (l1) at ($(x1) + (0,-0.5)$) {\scriptsize$\gaussian_1(\xmone,\xsone)$};
+      \node (l2) at ($(x2) + (0,-0.5)$) {\scriptsize$\gaussian_2(\xmtwo,\xstwo)$};
+      \node (l3) at ($(y1) + (0,-0.5)$) {\scriptsize$\gaussian_1(\ymone,\ysone)$};
+      \node (l4) at ($(y2) + (0,-0.5)$) {\scriptsize$\gaussian_2(\ymtwo,\ystwo)$};
+    \end{tikzpicture}
+    \begin{tikzpicture}
+      \newProdNode[fill=boxgreen]{r}{0,0};
+      \newSumNode[fill=boxred!70]{p}{$(r) + (-1.25,-0.75)$};
+      \newSumNode[fill=boxpurple!60]{q}{$(r) + (1.25,-0.75)$};
+      \newGaussNode[fill=boxteal]{x1}{$(p) + (-0.6,-1)$};
+      \newGaussNode[fill=boxorange!80]{x2}{$(p) + (0.65,-1)$};
+      \newGaussNode[fill=boxpink!50]{y1}{$(q) + (-0.6,-1)$};
+      \newGaussNode[fill=boxgoldenrod!70]{y2}{$(q) + (0.6,-1)$};
+      \draw[edge] (r) edge[bend right=5] (p);
+      \draw[edge] (r) edge[bend right=5] (q);
+      \draw[edge] (p) edge[bend right=5] (x1);
+      \draw[edge] (p) edge[bend right=5] (x2);
+      \draw[edge] (q) edge[bend right=5] (y1);
+      \draw[edge] (q) edge[bend right=5] (y2);
+      \node at ($(p) + (-0.5,-0.4)$) {\scriptsize$.3$};
+      \node at ($(p) + (0.5,-0.4)$) {\scriptsize$.7$};
+      \node at ($(q) + (-0.5,-0.4)$) {\scriptsize$.6$};
+      \node at ($(q) + (0.5,-0.4)$) {\scriptsize$.4$};
+      \node (l1) at ($(x1) + (0,-0.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{0.24}$}};
+      \node (l2) at ($(x2) + (0,-0.5)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{0.01}$}};
+      \node (l3) at ($(y1) + (0,-0.5)$) {\scriptsize\colorbox{boxpink}{\color{white}$\mathbf{0.12}$}};
+      \node (l4) at ($(y2) + (0,-0.5)$) {\scriptsize\colorbox{boxgoldenrod}{\color{white}$\mathbf{0.01}$}};
+      \draw[edge,boxdgray] (p) edge[bend left=-5] (r);
+      \draw[edge,boxdgray] (q) edge[bend left=-5] (r);
+      \draw[edge,boxdgray] (x1) edge[bend left=-5] (p);
+      \draw[edge,boxdgray] (x2) edge[bend left=-5] (p);
+      \draw[edge,boxdgray] (y1) edge[bend left=-5] (q);
+      \draw[edge,boxdgray] (y2) edge[bend left=-5] (q);
+      \node at ($(p) + (-0.3,0.6)$) {\scriptsize\colorbox{boxred}{\color{white}$\mathbf{0.25}$}};
+      \node at ($(q) + (0.3,0.6)$) {\scriptsize\colorbox{boxpurple}{\color{white}$\mathbf{0.14}$}};
+      \node (x) at ($(p) + (0,-2.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathbf{x=2}$}};
+      \node (y) at ($(q) + (0,-2.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathbf{y=4}$}};
+      \draw[edge,boxdgray] (x) edge (l1);
+      \draw[edge,boxdgray] (x) edge (l2);
+      \draw[edge,boxdgray] (y) edge (l3);
+      \draw[edge,boxdgray] (y) edge (l4);
+      \node (out) at ($(r) + (0,0.9)$) {\scriptsize\colorbox{boxgreen}{\color{white}$\mathbf{0.035}$}};
+      \draw[edge,boxdgray] (r) edge (out);
+    \end{tikzpicture}
+  \end{center}
+\end{example}
 
 \begin{remark}[breakable]{On operators and tractability}{optract}
   Throughout this work we consider only products and convex combinations (apart from the implicit
-  operations contained within leaf nodes) as potential computational units. The question of whether
+  operations contained within input nodes) as potential computational units. The question of whether
   any other operator could be used to gain expressivity without loss of tractability is without a
   doubt an interesting research question, and one that is actively being pursued. However, this is
   certainly out of the scope of this dissertation, and so we restrict discussion on this topic and
@@ -224,7 +415,7 @@ from different children as long as
   convex combinations, products, $\exp$ (and more generally powers in both naturals and reals),
   quotients and logarithms, even giving results for complex information-theoretic queries, such as
   entropies and divergences. Notably, they analyze whether structural constraints (and thus, in a
-  sense, tractability) are preserved.
+  sense, tractability) under these conditions are preserved.
 
   Up to now, we have only considered summations as nonnegative weighted sums. Indeed, in most
   literature the sum node is defined as a convex combination. However, negative weights have
@@ -233,8 +424,8 @@ from different children as long as
   \citet{maua17a} extend (nonnegative) weights in sum nodes with probability intervals, effectively
   inducing a credal set \citep{cozman00} for measuring imprecision.
 
-  Other works have extended PCs with quotients \citep{sharir18a}, transformations \citep{pevny20a},
-  max \citep{melibari16}, and einsum \citep{peharz20b} operators.
+  Other works include PCs with quotients \citep{sharir18a}, transformations \citep{pevny20a}, max
+  \citep{melibari16}, and einsum \citep{peharz20b} operations.
 \end{remark}
 
 \section{Deciding What to Constraint}
