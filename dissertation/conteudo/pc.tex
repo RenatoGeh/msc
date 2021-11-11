@@ -86,7 +86,7 @@ defines a mixture model over its children, essentially acting as a latent variab
 component distributions \citep{poon11,peharz16}. Its value is the weighted sum of its children
 $p_{\Sum}(\set{X}=\set{x})=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\cdot
 p_{\Child}(\set{X}=\set{x})$. To simplify notation, we shall use $\Node(\set{X}=\set{x})$ as an
-alias for $p_{\Node}(\set{X}=\set{x})$, that is, the probability function given by the $\Node$'s
+alias for $p_{\Node}(\set{X}=\set{x})$, that is, the probability function given by $\Node$'s
 induced distribution.
 
 \newcommand\mone{1}%
@@ -191,13 +191,6 @@ induced distribution.
     \end{tikzpicture}
   \end{center}
 \end{example}
-
-Before we address products as computational units in PCs, we first need to discuss the concept of
-scope of a PC node. Denote by $\Sc(\Node)$ the set of all variables that appear in $\Node$.  We
-inductively compute the scope of circuit by a bottom-up approach: the scope of an input node
-$\Leaf_p$ is the set of variables that appear in $p$'s distribution, and the scope of any other
-node is the union of all of its childrens' scopes. The notion of a node's scope is essential to the
-structural constraints seen in \cref{sec:const}.
 
 So far, the only nonlinearities present in PCs come from the internal computations of input nodes.
 In fact, a PC that only contains sums inputs can always be reduced to a sum node rooted PC with a
@@ -392,6 +385,27 @@ by $\Prod(\set{X}=\set{x})=\prod_{\Child\in\Ch(\Prod)}\Child(\set{X}=\set{x})$.
   \end{center}
 \end{example}
 
+Now that we have introduced the three most important computational units in PCs, we are finally
+ready to formally define probabilistic circuits.
+
+\begin{definition}[Probabilistic circuit]
+  A probabilistic circuits $\mathcal{C}$ is a rooted DAG whose nodes compute any tractable
+  operation of their children, usually either convex combinations, known as \emph{sum} nodes, or
+  \emph{products}. Nodes with no outgoing edges, i.e. \emph{input} nodes, are tractable nonnegative
+  functions whose integrals exist and equal to one. Computing a value from $\mathcal{C}$ amounts to
+  a bottom-up feedforward pass from input nodes to root.
+  \label{def:pc}
+\end{definition}
+
+While we assume that \emph{tractable} operation or function is acceptable, we are usually
+interested in $\bigo(1)$ time computable operations, and often assume the same of input functions
+to simplify analysis. Further, in this dissertation we are only interested in convex combinations
+and products, and as such only these operations are considered. When a probabilistic circuit
+$\mathcal{C}$ contains no consecutive sums or products (i.e. for every sum all of its children are
+either inputs or products and respectively for products) then it is said to be a \emph{standard}
+form circuit. Any PC can be transformed into a \emph{standardized} circuit, a process we call
+\emph{standardization} (see \cref{thm:standard}).
+
 \begin{remark}[breakable]{On operators and tractability}{optract}
   Throughout this work we consider only products and convex combinations (apart from the implicit
   operations contained within input nodes) as potential computational units. The question of whether
@@ -428,9 +442,443 @@ by $\Prod(\set{X}=\set{x})=\prod_{\Child\in\Ch(\Prod)}\Child(\set{X}=\set{x})$.
   \citep{melibari16}, and einsum \citep{peharz20b} operations.
 \end{remark}
 
+Before we address the key components that make PCs interesting tractable
+probabilistic models, we must first discuss some important concepts that often come up in PC
+literature. Mainly, we are interested in defining two notions here: the scope of a unit and induced
+subcircuits.
+
+In simple terms, the scope of a computational unit $\Node$ of a PC is merely the set of all
+variables that appear in the descendants of $\Node$. More formally, denote by $\Sc(\Node)$
+the set of all variables that appear in $\Node$.  We inductively compute the scope of circuit by a
+bottom-up approach: the scope of an input node $\Leaf_p$ is the set of variables that appear in
+$p$'s distribution\footnote{Although we previously defined input nodes as mere functions, here we
+are explicitly associating a random variable to a \emph{probability} function. Indeed, if we
+are being rigorous, we should define input nodes as a pair of random variable and function. To save
+space we instead assume, as previously stated, that the function is seen as both the probability
+(density) function as well as the distribution itself, and thus its scope is the scope of its
+distribution, i.e. the random variables that come into play in a probability distribution.}, and
+the scope of any other node is the union of all of its childrens' scopes.  The notion of scope is
+essential to the structural constraints seen in \cref{sec:const}.
+
+As an example, take the circuit from \Cref{eg:factors}. The scope of input nodes
+\inode[fill=boxteal]{\newGaussNode} and \inode[fill=boxorange!80]{\newGaussNode} are
+$\Sc(\inode[fill=boxteal]{\newGaussNode})=\Sc(\inode[fill=boxorange!80]{\newGaussNode})=\{X\}$,
+while $\Sc(\inode[fill=boxpink!50]{\newGaussNode})=\Sc(\inode[fill=boxgoldenrod!70]{\newGaussNode})
+=\{Y\}$. Consequentially, their parent sum nodes will have the same scope as their children
+$\Sc(\inode[fill=boxred!70]{\newSumNode})=\{X\}$ and $\Sc(\inode[fill=boxpurple!60]{\newSumNode})=
+\{Y\}$, yet the root node's scope is $\Sc(\inode[fill=boxgreen]{\newProdNode})=\{X,Y\}$, since its
+childrens' scopes are distinct.
+
+Let $\mathcal{C}$ a probabilistic circuit and node $\Node\in\mathcal{C}$. We say that
+$\mathcal{S}_{\Node}$ is a subcircuit of $\mathcal{C}$ rooted at $\Node$ if $\mathcal{S}_{\Node}$'s
+root is $\Node$, all nodes and edges in $\mathcal{S}_{\Node}$ are also in $\mathcal{C}$ and
+$\mathcal{S}$ is also a probabilistic circuit. We now introduce the concept of induced subcircuits
+\citep{chan06,dennis15,peharz14}.
+
+\begin{definition}[Induced subcircuit]
+  Let $\mathcal{C}$ a probabilistic circuit. An induced subcircuit $\mathcal{S}$ of $\mathcal{C}$
+  is a subcircuit of $\mathcal{C}$ such that all edges coming out of product nodes in $\mathcal{C}$
+  are also in $\mathcal{S}$, and of all edges coming out of sum nodes in $\mathcal{C}$, only one is
+  in $\mathcal{S}$.
+\end{definition}
+
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.245\textwidth}
+    \begin{center}
+      \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen]{r}{0,0};
+        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
+        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
+        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
+        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
+        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
+        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
+        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
+        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
+        \draw[edge] (r) edge (p1);
+        \draw[edge] (r) edge (p2);
+        \draw[edge] (r) edge (p3);
+        \draw[edge] (p1) edge (s1);
+        \draw[edge] (p1) edge (s3);
+        \draw[edge] (p2) edge (s2);
+        \draw[edge] (p2) edge (s3);
+        \draw[edge] (p3) edge (s2);
+        \draw[edge] (p3) edge (s4);
+        \draw[edge] (s1) edge (g1);
+        \draw[edge] (s1) edge (g2);
+        \draw[edge] (s2) edge (g1);
+        \draw[edge] (s2) edge (g2);
+        \draw[edge] (s3) edge (g3);
+        \draw[edge] (s3) edge (g4);
+        \draw[edge] (s4) edge (g3);
+        \draw[edge] (s4) edge (g4);
+      \end{tikzpicture}
+      }
+    \end{center}
+    \caption{}
+    \label{fig:pc}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.245\textwidth}
+    \begin{center}
+      \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen]{r}{0,0};
+        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
+        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
+        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
+        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
+        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
+        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
+        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
+        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
+        \draw[thick,red,edge] (r) edge (p1);
+        \draw[boxgray,edge] (r) edge (p2);
+        \draw[boxgray,edge] (r) edge (p3);
+        \draw[thick,red,edge] (p1) edge (s1);
+        \draw[thick,red,edge] (p1) edge (s3);
+        \draw[boxgray,edge] (p2) edge (s2);
+        \draw[boxgray,edge] (p2) edge (s3);
+        \draw[boxgray,edge] (p3) edge (s2);
+        \draw[boxgray,edge] (p3) edge (s4);
+        \draw[thick,red,edge] (s1) edge (g1);
+        \draw[boxgray,edge] (s1) edge (g2);
+        \draw[boxgray,edge] (s2) edge (g1);
+        \draw[boxgray,edge] (s2) edge (g2);
+        \draw[thick,red,edge] (s3) edge (g3);
+        \draw[boxgray,edge] (s3) edge (g4);
+        \draw[boxgray,edge] (s4) edge (g3);
+        \draw[boxgray,edge] (s4) edge (g4);
+      \end{tikzpicture}
+      }
+    \end{center}
+  \end{subfigure}\begin{subfigure}[t]{0.245\textwidth}
+    \begin{center}
+      \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen]{r}{0,0};
+        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
+        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
+        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
+        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
+        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
+        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
+        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
+        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
+        \draw[boxgray,edge] (r) edge (p1);
+        \draw[thick,blue,edge] (r) edge (p2);
+        \draw[boxgray,edge] (r) edge (p3);
+        \draw[boxgray,edge] (p1) edge (s1);
+        \draw[boxgray,edge] (p1) edge (s3);
+        \draw[thick,blue,edge] (p2) edge (s2);
+        \draw[thick,blue,edge] (p2) edge (s3);
+        \draw[boxgray,edge] (p3) edge (s2);
+        \draw[boxgray,edge] (p3) edge (s4);
+        \draw[boxgray,edge] (s1) edge (g1);
+        \draw[boxgray,edge] (s1) edge (g2);
+        \draw[boxgray,edge] (s2) edge (g1);
+        \draw[thick,blue,edge] (s2) edge (g2);
+        \draw[boxgray,edge] (s3) edge (g3);
+        \draw[thick,blue,edge] (s3) edge (g4);
+        \draw[boxgray,edge] (s4) edge (g3);
+        \draw[boxgray,edge] (s4) edge (g4);
+      \end{tikzpicture}
+      }
+    \end{center}
+    \caption{}
+    \label{fig:subcircs}
+  \end{subfigure}\begin{subfigure}[t]{0.245\textwidth}
+    \begin{center}
+      \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen]{r}{0,0};
+        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
+        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
+        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
+        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
+        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
+        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
+        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
+        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
+        \draw[boxgray,edge] (r) edge (p1);
+        \draw[boxgray,edge] (r) edge (p2);
+        \draw[thick,green!20!black,edge] (r) edge (p3);
+        \draw[boxgray,edge] (p1) edge (s1);
+        \draw[boxgray,edge] (p1) edge (s3);
+        \draw[boxgray,edge] (p2) edge (s2);
+        \draw[boxgray,edge] (p2) edge (s3);
+        \draw[thick,green!20!black,edge] (p3) edge (s2);
+        \draw[thick,green!20!black,edge] (p3) edge (s4);
+        \draw[boxgray,edge] (s1) edge (g1);
+        \draw[boxgray,edge] (s1) edge (g2);
+        \draw[thick,green!20!black,edge] (s2) edge (g1);
+        \draw[boxgray,edge] (s2) edge (g2);
+        \draw[boxgray,edge] (s3) edge (g3);
+        \draw[boxgray,edge] (s3) edge (g4);
+        \draw[boxgray,edge] (s4) edge (g3);
+        \draw[thick,green!20!black,edge] (s4) edge (g4);
+      \end{tikzpicture}
+      }
+    \end{center}
+  \end{subfigure}
+  \caption{A probabilistic circuit (a) and 3 of the 12 possible induced subcircuits (b).}
+  \label{fig:induced}
+\end{figure}
+
+Examples of induced subcircuits are visualized in \cref{fig:induced}. When the induced subcircuit
+is a tree, as is the case in \cref{fig:induced}, they are referred to as induced tree
+\citep{zhao15,zhao16b}.
+
+So far, by \cref{def:pc} a PC does not yet necessarily represent a probability distribution. To do
+so, the structure must obey constraints that we have only previously mentioned in passing. We
+formally define them next.
+
 \section{Deciding What to Constraint}
 \label{sec:const}
 
+In this section we are interested in studying how the structural constraints in PCs enable
+different inference tasks. We shall first cover the more basic queries, namely \emph{probability of
+evidence} (\evi), \emph{marginal probability} (\mar), \emph{conditional probability} (\con) and
+\emph{maximum a posteriori probability} (\map). After that we address more complex queries such as
+\emph{mutual information} (\mi) and \emph{expectation} (\expc).
 
-referenced structural constraints in passing
+The most basic inference task we are interested in computing is the probability of evidence. To
+unlock this, we must introduce two structural constraints known as \emph{smoothness} and
+\emph{decomposability}.
 
+\begin{definition}[Smoothness]
+  A probabilistic circuit $\mathcal{C}$ is said to be \emph{smooth} if for every sum node $\Sum$ in
+  $\mathcal{C}$, $\Sc(\Child_1)=\Sc(\Child_2)$ for $\Child_1,\Child_2\in\Ch(\Sum)$.
+\end{definition}
+
+\begin{definition}[Decomposability]
+  A probabilistic circuit $\mathcal{C}$ is said to be \emph{decomposable} if for every product node
+  $\Prod$ in $\mathcal{C}$, $\Sc(\Child_1)\cap\Sc(\Child_2)=\emptyset$ for $\Child_1,\Child_2\in
+  \Ch(\Prod)$.
+\end{definition}
+
+For any \emph{smooth} and \emph{decomposable} PC, computing \evi{} is done in linear time in the
+number of edges. In fact this is true for \mar{} and \con{} as well. To compute marginals, it is
+sufficient to compute the corresponding marginals with respect to each input node and proceed to
+propagate values bottom-up. For conditionals, we simply compute two passes: one where we
+marginalize the conditional variables and the other any other variables that are not present in our
+query. These procedures are formalized in the theorem below.
+
+\begin{restatable}{theorem}{linevi}
+  \label{thm:linevi}
+  Let $\mathcal{C}$ a \emph{smooth} and \emph{decomposable} PC. Any one of \evi{}, \mar{} or \con{}
+  can be computed in linear time (in the number of edges of $\mathcal{C}$).
+\end{restatable}
+
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.31\textwidth}
+    \begin{center}
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen]{r}{0,0};
+        \newProdNode[fill=boxred]{p1}{$(r) + (-1.5,-1)$};
+        \newProdNode[fill=boxred]{p2}{$(r) + (0,-1)$};
+        \newProdNode[fill=boxred]{p3}{$(r) + (1.5,-1)$};
+        \newGaussNode[fill=boxteal,label=below:{$A$}]{a}{$(p1) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80,label=below:{$B$}]{b}{$(p2) + (0,-1)$};
+        \newGaussNode[fill=boxpink!50,label=below:{$C$}]{c}{$(p3) + (0,-1)$};
+        \draw[edge] (r) edge (p1);
+        \draw[edge] (r) edge (p2);
+        \draw[edge] (r) edge (p3);
+        \draw[edge] (p1) edge (a);
+        \draw[edge] (p1) edge (b);
+        \draw[edge] (p2) edge (a);
+        \draw[edge] (p2) edge (c);
+        \draw[edge] (p3) edge (b);
+        \draw[edge] (p3) edge (c);
+      \end{tikzpicture}
+    \end{center}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.31\textwidth}
+    \begin{center}
+      \begin{tikzpicture}
+        \newProdNode[fill=boxgreen]{r}{0,0};
+        \newSumNode[fill=boxred]{p1}{$(r) + (-2.0,-1)$};
+        \newSumNode[fill=boxred]{p2}{$(r) + (-0.66,-1)$};
+        \newSumNode[fill=boxred]{p3}{$(r) + (0.66,-1)$};
+        \newSumNode[fill=boxred]{p4}{$(r) + (2.0,-1)$};
+        \newGaussNode[fill=boxteal,label=below:{$A$}]{a1}{$(p1) + (0,-1)$};
+        \newGaussNode[fill=boxteal,label=below:{$A$}]{a2}{$(p2) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80,label=below:{$B$}]{b1}{$(p3) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80,label=below:{$B$}]{b2}{$(p4) + (0,-1)$};
+        \draw[edge] (r) -- (p1);
+        \draw[edge] (r) -- (p2);
+        \draw[edge] (r) -- (p3);
+        \draw[edge] (r) -- (p4);
+        \draw[edge] (p1) -- (a1);
+        \draw[edge] (p1) -- (a2);
+        \draw[edge] (p2) -- (a1);
+        \draw[edge] (p2) -- (a2);
+        \draw[edge] (p3) -- (b1);
+        \draw[edge] (p3) -- (b2);
+        \draw[edge] (p4) -- (b1);
+        \draw[edge] (p4) -- (b2);
+      \end{tikzpicture}
+    \end{center}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.31\textwidth}
+    \begin{center}
+      \begin{tikzpicture}
+        \newProdNode[fill=boxgreen]{r}{0,0};
+        \newSumNode[fill=boxred]{s1}{$(r) + (-1.0,-0.5)$};
+        \newSumNode[fill=boxred]{s2}{$(r) + (1.0,-0.5)$};
+        \newProdNode[fill=boxpurple!60]{p1}{$(s1) + (-0.5,-0.75)$};
+        \newProdNode[fill=boxpurple!60]{p2}{$(s1) + (0.5,-0.75)$};
+        \newProdNode[fill=boxpurple!60]{p3}{$(s2) + (-0.5,-0.75)$};
+        \newProdNode[fill=boxpurple!60]{p4}{$(s2) + (0.5,-0.75)$};
+        \newGaussNode[fill=boxteal,label=below:{$A$}]{a}{$(p1) + (0,-0.75)$};
+        \newGaussNode[fill=boxorange!80,label=below:{$B$}]{b}{$(p2) + (0,-0.75)$};
+        \newGaussNode[fill=boxpink!50,label=below:{$C$}]{c}{$(p3) + (0,-0.75)$};
+        \newGaussNode[fill=boxgoldenrod!70,label=below:{$D$}]{d}{$(p4) + (0,-0.75)$};
+        \draw[edge] (r) -- (s1);
+        \draw[edge] (r) -- (s2);
+        \draw[edge] (s1) -- (p1);
+        \draw[edge] (s1) -- (p2);
+        \draw[edge] (s2) -- (p3);
+        \draw[edge] (s2) -- (p4);
+        \draw[edge] (p1) -- (a);
+        \draw[edge] (p1) -- (b);
+        \draw[edge] (p2) -- (a);
+        \draw[edge] (p2) -- (b);
+        \draw[edge] (p3) -- (c);
+        \draw[edge] (p3) -- (d);
+        \draw[edge] (p4) -- (c);
+        \draw[edge] (p4) -- (d);
+      \end{tikzpicture}
+    \end{center}
+    \caption{}
+  \end{subfigure}
+  \caption{Decomposable but unsmooth (a), smooth but undecomposable (b), and smooth and
+  decomposable (c) circuits.}
+\end{figure}
+
+Because \evi{}, \mar{} and \con{} are the most basic forms of querying in a PC, we shall refer to
+these as the \emph{base queries}. Although smoothness and decomposability are sufficient conditions
+for tractable base queries, they are not necessary conditions. As a matter of fact, decomposability
+can be replaced with a third weaker constraint known as \emph{consistency}. Denote by
+$\Desc(\Node)$ the set of all descendants of $\Node$.
+
+\begin{definition}[Consistency]
+  A probabilistic circuit $\mathcal{C}$ is said to be \emph{consistent} if for any product node
+  $\Prod$ in $\mathcal{C}$, it holds that every two children $\Child_1,\Child_2\in\Ch(\Prod)$ there
+  does not exist two input nodes $\Leaf_p^1\in\Desc(\Child_1)$ and $\Leaf_q^2\in\Desc(\Child_2)$
+  whose scope is the same and $p(\set{x})\neq q(\set{x})$ for any $\set{x}\in\sspace{X}$.
+\end{definition}
+
+In \citet{peharz15}, \citeauthor{peharz15} show that although smooth and consistent PCs are more
+succinct \citep{darwiche02} compared to smooth and decomposable circuits, the gain is only mild,
+further proving that any smooth and consistent PC can be polynomially translated to a decomposable
+equivalent. In practice, because constructing decomposable circuits (and verifying decomposability)
+is much easier compared to the same with consistency, we instead focus on smooth and decomposable
+PCs.
+
+Suppose we wish to compute the most probable assignment of a variable, say for classification or
+image reconstruction. To do so, we must compute the conditional query
+\begin{equation*}
+  \max_{\set{y}}p(\set{y}|\set{x})=\max_{\set{y}}\frac{p(\set{y},\set{x})}{p(\set{x})}=
+  \frac{\max_{\set{y}}p(\set{y},\set{x})}{p(\set{x})},
+\end{equation*}
+often called the \emph{maximum a posteriori} (\map) probability. Although it seems at first like
+\map{} is no harder than computing a \con{}, it turns out that for smooth and decomposable PCs,
+\map{} is unfortunately intractable \citep{conaty17,mei18}. To unlock access to \map{} we must make
+the circuit \emph{deterministic}.
+
+\begin{definition}[Determinism]
+  A probabilistic circuit $\mathcal{C}$ is said to be \emph{deterministic} if for every sum node
+  $\Sum\in\mathcal{C}$ only one child of $\Sum$ has nonnegative value at a time for any assignment.
+\end{definition}
+
+At this point, we must introduce a graphical notation for \emph{indicator} nodes. An indicator node
+is an input node whose function is the characteristic function $f(x)=\ind_{\{x=k\}}$, i.e. a
+degenerate function with all on $k$ and zero anywhere else. A special case is when $X$ is binary
+and $k=1$, in which case we say the input node is a literal, denoting by the usual propositional
+notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, we shall use \inode{\newLeafNode}
+for indicators and the propositional notation for literals.
+
+With determinism, we now have access to \map{}.
+
+\begin{restatable}{theorem}{det}
+  \label{thm:det}
+  Let $\mathcal{C}$ a smooth, decomposable and \emph{deterministic} PC. \map{} is computable in
+  linear time (in the number of edges of $\mathcal{C}$).
+\end{restatable}
+
+\begin{example}[breakable,sidebyside,lefthand width=0.55\textwidth]{Naïve Bayes as probabilistic circuits}{nbayes}
+  Suppose we have census measurements on the age $A$, body mass $B$ and average amount of cheese
+  eaten in a day $C$ from three different cities $Y$.  Assuming $A$, $B$ and $C$ are independent,
+  given a sample $x=(a,b,c)$ we can use a Gaussian naïve Bayes to predict $x$'s class
+  \begin{equation}
+    p(y|a,b,c)=p(y)p(a|y)p(b|y)p(c|y).
+  \end{equation}
+  In PC terms, $p(y)$ are the weights for each class and $p(z|y)$ are Gaussian input nodes. To make
+  sure that these are the distributions of feature $z$ given $y$, we introduce indicator variables
+  ``selecting'' $Y$'s state. Since the PC is deterministic, we can compute the \map{} in linear
+  time by simply replacing the root node with a max, which is equivalent to finding the highest
+  likelihood of $x$ for each city $y$.
+  \tcblower
+  \begin{center}
+  \begin{tikzpicture}
+    \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxteal] (y) at (0,0) {$Y$};
+    \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxorange!80] (a) at ($(y) + (-1,-1)$) {$A$};
+    \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxpink!50] (b) at ($(y) + (0,-1)$) {$B$};
+    \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxgoldenrod!70] (c) at ($(y) + (1,-1)$) {$C$};
+    \draw[edge] (y) -- (a);
+    \draw[edge] (y) -- (b);
+    \draw[edge] (y) -- (c);
+  \end{tikzpicture}
+
+  \resizebox{\columnwidth}{!}{
+  \begin{tikzpicture}
+    \newSumNode[fill=boxgreen]{r}{0,0};
+    \newProdNode[fill=boxred!70]{p1}{$(r) + (-2.25,-1)$};
+    \newProdNode[fill=boxred!70]{p2}{$(r) + (0.0,-1)$};
+    \newProdNode[fill=boxred!70]{p3}{$(r) + (2.25,-1)$};
+    \newLeafNode[fill=boxteal,label={[label distance=-0.3cm]below left:{\scriptsize$\ind_{y=1}$}}]{i1}{$(p1) + (-1.5,-0.5)$};
+    \newLeafNode[fill=boxteal,label={[label distance=-0.3cm]below left:{\scriptsize$\ind_{y=2}$}}]{i2}{$(p2) + (-1.5,-0.5)$};
+    \newLeafNode[fill=boxteal,label={[label distance=-0.3cm]below left:{\scriptsize$\ind_{y=3}$}}]{i3}{$(p3) + (-1.5,-0.5)$};
+    \newGaussNode[label={[label distance=-0.1cm]below left:{$A$}},fill=boxorange!80]{g11}{$(p1) + (-1.0,-1)$};
+    \newGaussNode[label={[label distance=-0.1cm]below left:{$B$}},fill=boxpink!50]{g12}{$(p1) + (-0.5,-1.5)$};
+    \newGaussNode[label={[label distance=-0.1cm]below left:{$C$}},fill=boxgoldenrod!70]{g13}{$(p1) + (0,-2)$};
+    \newGaussNode[label={[label distance=-0.1cm]below left:{$A$}},fill=boxorange!80]{g21}{$(p2) + (-1.0,-1)$};
+    \newGaussNode[label={[label distance=-0.1cm]below left:{$B$}},fill=boxpink!50]{g22}{$(p2) + (-0.5,-1.5)$};
+    \newGaussNode[label={[label distance=-0.1cm]below left:{$C$}},fill=boxgoldenrod!70]{g23}{$(p2) + (0,-2)$};
+    \newGaussNode[label={[label distance=-0.1cm]below left:{$A$}},fill=boxorange!80]{g31}{$(p3) + (-1.0,-1)$};
+    \newGaussNode[label={[label distance=-0.1cm]below left:{$B$}},fill=boxpink!50]{g32}{$(p3) + (-0.5,-1.5)$};
+    \newGaussNode[label={[label distance=-0.1cm]below left:{$A$}},fill=boxgoldenrod!70]{g33}{$(p3) + (0,-2)$};
+    \draw[edge] (r) edge (p1);
+    \draw[edge] (r) edge (p2);
+    \draw[edge] (r) edge (p3);
+    \draw[edge] (p1) edge (i1);
+    \draw[edge] (p2) edge (i2);
+    \draw[edge] (p3) edge (i3);
+    \draw[edge] (p1) -- (g11);
+    \draw[edge] (p1) -- (g12);
+    \draw[edge] (p1) -- (g13);
+    \draw[edge] (p2) -- (g21);
+    \draw[edge] (p2) -- (g22);
+    \draw[edge] (p2) -- (g23);
+    \draw[edge] (p3) -- (g31);
+    \draw[edge] (p3) -- (g32);
+    \draw[edge] (p3) -- (g33);
+  \end{tikzpicture}
+  }
+  \end{center}
+\end{example}

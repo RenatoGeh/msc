@@ -43,3 +43,129 @@
   where $\Node\in\Nodes$. The number of children of the resulting root sum node will be exponential
   on the number of edges of its children.
 \end{proof}
+
+\begin{theorem}[Standardization]
+  \label{thm:standard}
+  Any probabilistic circuit $\mathcal{C}$ can be reduced to a circuit where every sum node contains
+  only products or inputs and every product node contains only sums or inputs.
+\end{theorem}
+\begin{proof}
+  If $\mathcal{C}$ is already standard we are done. Otherwise, there exists either (i) a sum node
+  $\Sum$ with a sum $\Sum'$ as child; or (ii) a product node $\Prod$ with a product $\Prod'$ as
+  child. We first address (i): let $w$ be the weight of edge $\edge{\Sum\Sum'}$ and $\theta_i$
+  the weights from all edges coming out from $\Sum'$.
+  \begin{center}
+    \begin{tikzpicture}
+      \newSumNode[label=above right:{$\Sum$}]{s}{0,0};
+      \newProdNode{p1}{$(s) + (-1.25,-1)$};
+      \newSumNode[label=above left:{$\Sum'$}]{sl}{$(s) + (0,-1.5)$};
+      \newProdNode{p2}{$(s) + (1.25,-1)$};
+      \newProdNode{q1}{$(sl) + (-1.25,-1)$};
+      \newProdNode{q2}{$(sl) + (0,-1)$};
+      \newProdNode{q3}{$(sl) + (1.25,-1)$};
+      \draw[edge] (s) edge (p1);
+      \draw[edge] (s) edge node[midway,right] {\scriptsize$w$} (sl);
+      \draw[edge] (s) edge (p2);
+      \draw[edge] (sl) edge node[midway,left] {\scriptsize$\theta_1$} (q1);
+      \draw[edge] (sl) edge node[midway,left] {\scriptsize$\theta_2$} (q2);
+      \draw[edge] (sl) edge node[midway,left] {\scriptsize$\theta_3$} (q3);
+
+      \draw[edge,very thick,red] (2.25,-1.5) -- node[midway,above] {Standardize} (5.5,-1.5);
+
+      \newSumNode[label=above right:{$\Sum$}]{s}{8,0};
+      \newProdNode{p1}{$(s) + (-1.5,-1.0)$};
+      \newProdNode{p2}{$(s) + (1.5,-1.0)$};
+      \newProdNode{q1}{$(s) + (-1.5,-2.5)$};
+      \newProdNode{q2}{$(s) + (-0,-2.5)$};
+      \newProdNode{q3}{$(s) + (1.5,-2.5)$};
+      \draw[edge] (s) edge (p1);
+      \draw[edge] (s.south) -- ++(0,-1.25) -| node[midway,below right] {\scriptsize$w\cdot\theta_1$} (q1);
+      \draw[edge] (s.south) -- ++(0,-1.25) -| node[midway,below right] {\scriptsize$w\cdot\theta_2$} (q2);
+      \draw[edge] (s.south) -- ++(0,-1.25) -| node[midway,below right] {\scriptsize$w\cdot\theta_3$} (q3);
+      \draw[edge] (s) edge (p2);
+    \end{tikzpicture}
+  \end{center}
+  Connect $\Sum$ with every child of $\Sum'$, assigning as weight $w\cdot\theta_i$ for each child
+  $i$. Delete $\Sum'$ and all edges coming out from it. The resulting circuit is computationally
+  equivalent but now without a consecutive pair of sums. This transformation is visualized by the
+  figure above. We do a similar procedure in (ii), but now instead remove $\Prod'$ and connect all
+  children of $\Prod'$ to $\Prod$, as we show below.
+  \begin{center}
+    \begin{tikzpicture}
+      \newProdNode[label=above right:{$\Prod$}]{s}{0,0};
+      \newSumNode{p1}{$(s) + (-1.25,-1)$};
+      \newProdNode[label=above left:{$\Prod'$}]{sl}{$(s) + (0,-1.5)$};
+      \newSumNode{p2}{$(s) + (1.25,-1)$};
+      \newSumNode{q1}{$(sl) + (-1.25,-1)$};
+      \newSumNode{q2}{$(sl) + (0,-1)$};
+      \newSumNode{q3}{$(sl) + (1.25,-1)$};
+      \draw[edge] (s) edge (p1);
+      \draw[edge] (s) edge (sl);
+      \draw[edge] (s) edge (p2);
+      \draw[edge] (sl) edge (q1);
+      \draw[edge] (sl) edge (q2);
+      \draw[edge] (sl) edge (q3);
+
+      \draw[edge,very thick,red] (2.25,-1.5) -- node[midway,above] {Standardize} (5.5,-1.5);
+
+      \newProdNode[label=above right:{$\Prod$}]{s}{8,0};
+      \newSumNode{p1}{$(s) + (-1.5,-1.0)$};
+      \newSumNode{p2}{$(s) + (1.5,-1.0)$};
+      \newSumNode{q1}{$(s) + (-1.5,-2.5)$};
+      \newSumNode{q2}{$(s) + (-0,-2.5)$};
+      \newSumNode{q3}{$(s) + (1.5,-2.5)$};
+      \draw[edge] (s) edge (p1);
+      \draw[edge] (s.south) -- ++(0,-1.25) -| (q1);
+      \draw[edge] (s.south) -- ++(0,-1.25) -| (q2);
+      \draw[edge] (s.south) -- ++(0,-1.25) -| (q3);
+      \draw[edge] (s) edge (p2);
+    \end{tikzpicture}
+  \end{center}
+\end{proof}
+
+\linevi*
+\begin{proof}
+  For a sum node $\Sum$, we have the following marginalization query
+  \begin{align*}
+    \int\Sum(\set{x},\set{y})\dif\set{y}&=\int\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\Child(\set{x},\set{y})\dif\set{y}\\
+                                        &=\sum_{\Child\in\Ch(\Sum)}w_{\sum,\Child}\int\Child(\set{x},\set{y})\dif\set{y}.
+  \end{align*}
+  Analogously, for a product node
+  \begin{align*}
+    \int\Prod(\set{x},\set{y})\dif\set{y}&=\int\prod_{\Child\in\Ch(\Prod)}\Child(\set{x},\set{y})\dif\set{y}\\
+                                         &=\prod_{\Child\in\Ch(\Prod)}\int\Child(\set{x},\set{y})\dif\set{y}.
+  \end{align*}
+  This ensures that marginals are pushed down to children. This can be done recursively until
+  $\Child$ is an input node $\Leaf_p$, in which case we marginalize $\set{y}$ according to $p$,
+  which by definition should be tractable and here we assume can be done in $\bigo(1)$. We have
+  proved the case for \mar{}. For \evi{}, we simply assign $\set{y}=\emptyset$ with input nodes
+  acting as probability density functions. Conditionals can easily be computed by an \evi{}
+  followed by a second pass marginalizing the conditional variables
+  $p(\set{x}|\set{y})=\frac{p(\set{x},\set{y})}{p(\set{y})}$ which are both done in linear time as
+  we have seen here.
+\end{proof}
+
+\det*
+\begin{proof}
+  For a sum node $\Sum$, we want to compute the following query
+  \begin{equation*}
+    \max_{\set{y}}\Sum(\set{y}|\set{x})=\frac{1}{\Sum(\set{x})}\max_{\set{y}}\Sum(\set{y},\set{x})
+    =\frac{1}{\Sum(\set{x})}\max_{\set{y}}\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\Child(\set{y},\set{x}),
+  \end{equation*}
+  yet notice that for any assignment of $\set{x}$ and $\set{y}$ only one $\Child\in\Ch(\Sum)$ must
+  have a nonnegative value by the definition of determinism, so we may replace the summation with
+  a maximization over the children, giving
+  \begin{equation*}
+    \max_{\set{y}}\Sum(\set{y}|\set{x})=\frac{1}{\Sum(\set{x})}\max_{\set{y}}\max_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\Child(\set{y},\set{x})
+    =\frac{1}{\Sum(\set{x})}\max_{\Child\in\Ch(\Sum)}\max_{\set{y}}w_{\Sum,\Child}\Child(\set{y},\set{x}).
+  \end{equation*}
+  For a product node $\Prod$, we compute
+  \begin{align*}
+    \max_{\set{y}}\Prod(\set{y}|\set{x})=\frac{1}{\Prod(\set{x})}\max_{\set{y}}\Prod(\set{y},\set{x})
+    =\frac{1}{\Prod(\set{x})}\max_{\set{y}}\prod_{\Child\in\Ch(\Prod)}\Child(\set{y},\set{x})
+    =\frac{1}{\Prod(\set{x})}\prod_{\Child\in\Ch(\Prod)}\max_{\set{y}}\Child(\set{y},\set{x}).
+  \end{align*}
+  This is equivalent to an inductive top-down pass where we maximize instead of sum until we reach
+  all input nodes, in which case we simply maximize the supposedly tractable functions. Once these
+  are computed, we unroll the induction, maximizing over all values.
+\end{proof}

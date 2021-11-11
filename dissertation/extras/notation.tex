@@ -1,6 +1,23 @@
+\newcommand\hmmax{0}
+\newcommand\bmmax{0}
+
 \usepackage{amsthm}
 \usepackage{bm}
-\usepackage{stmaryrd}
+\usepackage{dsfont}
+\usepackage{thm-restate}
+
+\DeclareFontFamily{U}{matha}{\hyphenchar\font45}
+\DeclareFontShape{U}{matha}{m}{n}{ <-6> matha5 <6-7> matha6 <7-8>
+matha7 <8-9> matha8 <9-10> matha9 <10-12> matha10 <12-> matha12 }{}
+\DeclareSymbolFont{matha}{U}{matha}{m}{n}
+%
+\DeclareFontFamily{U}{mathx}{\hyphenchar\font45}
+\DeclareFontShape{U}{mathx}{m}{n}{ <-6> mathx5 <6-7> mathx6 <7-8>
+mathx7 <8-9> mathx8 <9-10> mathx9 <10-12> mathx10 <12-> mathx12 }{}
+\DeclareSymbolFont{mathx}{U}{mathx}{m}{n}
+
+\DeclareMathDelimiter{\lint} {4}{matha}{"76}{mathx}{"30}
+\DeclareMathDelimiter{\rint} {5}{matha}{"77}{mathx}{"38}
 
 \usetikzlibrary{shapes,arrows,positioning,fit,circuits.logic.US,math}
 
@@ -10,6 +27,7 @@
 \DeclareMathOperator*{\argmax}{\normalfont{arg\,max}}
 \DeclareMathOperator*{\Val}{\normalfont{Val}}
 \DeclareMathOperator*{\Ch}{\normalfont{Ch}}
+\DeclareMathOperator*{\Desc}{\normalfont{Desc}}
 \DeclareMathOperator*{\Pa}{\normalfont{Pa}}
 \DeclareMathOperator*{\Sc}{\normalfont{Sc}}
 \DeclareMathOperator*{\Root}{\normalfont{Root}}
@@ -27,14 +45,20 @@
 \DeclareMathOperator{\Disj}{\oplus}
 \newcommand{\bs}[1]{\boldsymbol{#1}}
 \newcommand{\defeq}{\vcentcolon=}
-\DeclareMathOperator*{\ind}{\mathbbm{1}}
+\DeclareMathOperator*{\ind}{\mathds{1}}
 \DeclareMathOperator*{\True}{\normalfont{true}}
 \DeclareMathOperator*{\False}{\normalfont{false}}
 \DeclareMathOperator{\vtree}{\mathcal{V}}
 \DeclareMathOperator{\Forget}{\normalfont{Forget}}
+\newcommand{\sspace}[1]{\bm{\mathcal{#1}}}
 
-\DeclareMathOperator{\lint}{\llbracket}
-\DeclareMathOperator{\rint}{\rrbracket}
+\newcommand{\evi}{\textsf{EVI}}
+\newcommand{\mar}{\textsf{MAR}}
+\newcommand{\map}{\textsf{MAP}}
+\newcommand{\con}{\textsf{CON}}
+\newcommand{\mi}{\textsf{MI}}
+\newcommand{\ce}{\textsf{CE}}
+\newcommand{\expc}{\textsf{EXP}}
 
 \newcommand\indep{\protect\mathpalette{\protect\independenT}{\perp}}
 \def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
@@ -50,7 +74,7 @@
 \newcommand{\newSumNode}[3][]{\node[circle,draw,inner sep=0pt,minimum size=13pt,thick,fill=blue!50!green!30,#1] (#2) at (#3) {$\bm{+}$}}
 \newcommand{\newMixNode}[3][]{\node[#1,circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=blue!50!green!30] (#2) at (#3) {$\sum$}}
 \newcommand{\newProdNode}[3][]{\node[circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=blue!50!red!30,#1] (#2) at (#3) {$\bm{\times}$}}
-\newcommand{\newLeafNode}[3][]{\node[#1,circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=orange!50!black!40] (#2) at (#3) {$\bm{\circ}$}}
+\newcommand{\newLeafNode}[3][]{\node[circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=orange!50!black!40,#1] (#2) at (#3) {$\bm{\bigcirc}$}}
 \newcommand{\newCellNode}[3][]{\node[#1,circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=orange!50!black!40] (#2) at (#3) {$\bm{\Box}$}}
 \tikzset{sigmoid/.style={path picture={\begin{scope}[x=0.65pt,y=7pt] \draw plot[domain=-6:6](\x,{1/(1+exp(-1.5*\x))-0.5}); \end{scope}}}}
 \tikzset{gaussian/.style={path picture={\begin{scope}[x=1pt,y=10pt] \draw plot[domain=-4:4](\x,{exp(-\x*\x*0.5)/2.5-0.1}); \end{scope}}}}
@@ -80,6 +104,7 @@
 }
 
 \DeclareMathOperator{\gaussian}{\mathcal{N}}
+\newcommand*\dif{\mathop{}\!\mathrm{d}}
 
 \definecolor{LightGray}{gray}{0.85}
 \definecolor{Red}{rgb}{0.75,0,0}
@@ -92,3 +117,4 @@
 \newtheorem{proposition}{Proposition}[section]
 \newtheorem{lemma}{Lemma}[section]
 \newtheorem{corollary}{Corollary}[section]
+\newtheorem{definition}{Definition}[section]
