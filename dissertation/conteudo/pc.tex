@@ -87,7 +87,8 @@ component distributions \citep{poon11,peharz16}. Its value is the weighted sum o
 $p_{\Sum}(\set{X}=\set{x})=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\cdot
 p_{\Child}(\set{X}=\set{x})$. To simplify notation, we shall use $\Node(\set{X}=\set{x})$ as an
 alias for $p_{\Node}(\set{X}=\set{x})$, that is, the probability function given by $\Node$'s
-induced distribution.
+induced distribution. We often omit the variable assignment $\set{X}=\set{x}$ to $\set{x}$ if the
+notation is unambiguous.
 
 \newcommand\mone{1}%
 \newcommand\sone{0.65}%
@@ -654,6 +655,8 @@ evidence} (\evi), \emph{marginal probability} (\mar), \emph{conditional probabil
 \emph{maximum a posteriori probability} (\map). After that we address more complex queries such as
 \emph{mutual information} (\mi) and \emph{expectation} (\expc).
 
+\subsection{Basic Queries}
+
 The most basic inference task we are interested in computing is the probability of evidence. To
 unlock this, we must introduce two structural constraints known as \emph{smoothness} and
 \emph{decomposability}.
@@ -770,32 +773,76 @@ query. These procedures are formalized in the theorem below.
   decomposable (c) circuits.}
 \end{figure}
 
-Because \evi{}, \mar{} and \con{} are the most basic forms of querying in a PC, we shall refer to
-these as the \emph{base queries}. Although smoothness and decomposability are sufficient conditions
-for tractable base queries, they are not necessary conditions. As a matter of fact, decomposability
-can be replaced with a third weaker constraint known as \emph{consistency}. Denote by
-$\Desc(\Node)$ the set of all descendants of $\Node$.
+Importantly, \evi{} and \con{} are both special cases of \mar{} in the sense that they are
+marginalizations over different intervals (see \cpageref{proof:linevi}). More specifically, \evi{} is a
+marginalization over an empty set and \con{} is simply the quotient between two marginalization
+passes.  Algorithmically, this means that the only distinction between these three queries is on
+what to do on the input nodes. We say that a variable assignment $\set{x}$ for circuit
+$\mathcal{C}$ is \emph{complete} if for every variable $X\in\Sc(\mathcal{C})$, $\set{x}$ assigns a
+value to $X$; otherwise it is said to be a \emph{partial} assignment. \cref{alg:evi} and
+\cref{alg:mar} show the exact algorithmic procedures to extract \evi{} and \mar{} queries from
+$\mathcal{C}$. For \con{}, it suffices to run two \mar{}s.
+
+\begin{algorithm}[t]
+  \caption{\evi}\label{alg:evi}
+  \begin{algorithmic}[1]
+    \Require A probabilistic circuit $\mathcal{C}$ and complete assignment $\set{x}$
+    \Ensure Probability $\mathcal{C}(\set{x})$
+    \State $\Nodes\gets\textproc{ReverseTopologicalOrder}(\mathcal{C})$
+    \State Let $v$ a hash function mapping a node to its probability
+    \For{each $\Node\in\Nodes$}
+      \IIf{$\Node$ is an input}{$v_{\Node}\gets\Node(\set{x})$}
+      \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
+      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}
+    \EndFor%
+    \State \textbf{return} $v_{\normalfont{R}}$, where $\normalfont{R}$ is $\mathcal{C}$'s root
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+  \caption{\mar}\label{alg:mar}
+  \begin{algorithmic}[1]
+    \Require A probabilistic circuit $\mathcal{C}$ and partial assignment $\set{x}$
+    \Ensure Probability $\int\mathcal{C}(\set{x},\set{y})\dif\set{y}$
+    \State $\Nodes\gets\textproc{ReverseTopologicalOrder}(\mathcal{C})$
+    \State Let $v$ a hash function mapping a node to its probability
+    \For{each $\Node\in\Nodes$}
+      \IIf{$\Node$ is an input}{$v_{\Node}\gets\int\Node(\set{x},\set{y})\dif\set{y}$}
+      \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
+      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}
+    \EndFor%
+    \State \textbf{return} $v_{\normalfont{R}}$, where $\normalfont{R}$ is $\mathcal{C}$'s root
+  \end{algorithmic}
+\end{algorithm}
+
+Because \evi{}, \mar{} and \con{} are the most basic forms of querying in PCs, we shall refer to
+these as \emph{base queries}. Although smoothness and decomposability are sufficient conditions for
+tractable base queries, they are not necessary conditions. As a matter of fact, decomposability can
+be replaced with a third weaker constraint known as \emph{consistency}. Denote by $\Desc(\Node)$
+the set of all descendants of $\Node$.
 
 \begin{definition}[Consistency]
   A probabilistic circuit $\mathcal{C}$ is said to be \emph{consistent} if for any product node
-  $\Prod$ in $\mathcal{C}$, it holds that every two children $\Child_1,\Child_2\in\Ch(\Prod)$ there
-  does not exist two input nodes $\Leaf_p^1\in\Desc(\Child_1)$ and $\Leaf_q^2\in\Desc(\Child_2)$
-  whose scope is the same and $p(\set{x})\neq q(\set{x})$ for any $\set{x}\in\sspace{X}$.
+  $\Prod$ in $\mathcal{C}$, it holds that for every two children $\Child_1,\Child_2\in\Ch(\Prod)$
+  there does not exist two input nodes $\Leaf_p^1\in\Desc(\Child_1)$ and
+  $\Leaf_q^2\in\Desc(\Child_2)$ whose scope is the same and $p(\set{x})\neq q(\set{x})$ for any
+  $\set{x}\in\sspace{X}$.
 \end{definition}
 
-In \citet{peharz15}, \citeauthor{peharz15} show that although smooth and consistent PCs are more
-succinct \citep{darwiche02} compared to smooth and decomposable circuits, the gain is only mild,
-further proving that any smooth and consistent PC can be polynomially translated to a decomposable
+In \citet{peharz15}, the authors show that although smooth and consistent PCs are more succinct
+\citep{darwiche02} compared to smooth and decomposable circuits, the gain is only mild, further
+proving that any smooth and consistent PC can be polynomially translated to a decomposable
 equivalent. In practice, because constructing decomposable circuits (and verifying decomposability)
-is much easier compared to the same with consistency, we instead focus on smooth and decomposable
-PCs.
+is much easier compared to doing the same with consistency, we instead focus on smooth and
+decomposable PCs.
 
 Suppose we wish to compute the most probable assignment of a variable, say for classification or
 image reconstruction. To do so, we must compute the conditional query
-\begin{equation*}
+\begin{equation}
   \max_{\set{y}}p(\set{y}|\set{x})=\max_{\set{y}}\frac{p(\set{y},\set{x})}{p(\set{x})}=
   \frac{\max_{\set{y}}p(\set{y},\set{x})}{p(\set{x})},
-\end{equation*}
+  \label{eq:map}
+\end{equation}
 often called the \emph{maximum a posteriori} (\map) probability. Although it seems at first like
 \map{} is no harder than computing a \con{}, it turns out that for smooth and decomposable PCs,
 \map{} is unfortunately intractable \citep{conaty17,mei18}. To unlock access to \map{} we must make
@@ -808,10 +855,10 @@ the circuit \emph{deterministic}.
 
 At this point, we must introduce a graphical notation for \emph{indicator} nodes. An indicator node
 is an input node whose function is the characteristic function $f(x)=\ind_{\{x=k\}}$, i.e. a
-degenerate function with all on $k$ and zero anywhere else. A special case is when $X$ is binary
-and $k=1$, in which case we say the input node is a literal, denoting by the usual propositional
-notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, we shall use \inode{\newLeafNode}
-for indicators and the propositional notation for literals.
+degenerate function with all of its mass on $k$ and zero anywhere else. A special case is when $X$
+is binary and $k=1$, in which case we say the input node is a literal node, denoting by the usual
+propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, we shall use
+\inode{\newLeafNode} for indicators and the textual propositional notation for literals.
 
 With determinism, we now have access to \map{}.
 
@@ -821,48 +868,98 @@ With determinism, we now have access to \map{}.
   linear time (in the number of edges of $\mathcal{C}$).
 \end{restatable}
 
+\begin{algorithm}[t]
+  \caption{\map}\label{alg:map}
+  \begin{algorithmic}[1]
+    \Require A probabilistic circuit $\mathcal{C}$ and evidence assignment $\set{x}$
+    \Ensure Probability $\max_{\set{y}}\mathcal{C}(\set{y}|\set{x})$
+    \State $\Nodes\gets\textproc{ReverseTopologicalOrder}(\mathcal{C})$
+    \State Let $v$ a hash function mapping a node to its probability
+    \For{each $\Node\in\Nodes$}
+      \IIf{$\Node$ is an input}{$v_{\Node}\gets\max_{\set{y}}\Node(\set{y},\set{x})$}
+      \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\max_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
+      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}
+    \EndFor%
+    \State \textbf{return} $v_{\normalfont{R}}/\mathcal{\set{x}}$, where $\normalfont{R}$ is
+    $\mathcal{C}$'s root
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+  \caption{\textsf{ARG}\map}\label{alg:argmap}
+  \begin{algorithmic}[1]
+    \Require A probabilistic circuit $\mathcal{C}$ and evidence assignment $\set{x}$
+    \Ensure The most probable state $\argmax_{\set{y}}\mathcal{C}(\set{y}|\set{x})$
+    \State Compute $\max_{\set{y}}\mathcal{C}(\set{y}|\set{x})$ and store values in $v$
+    \State $\Nodes\gets\textproc{MaxInducedTree}(\mathcal{C}, v)$
+    \State Call $\set{y}$ the set of initially empty $\argmax$ states
+    \For{each input node $\Leaf\in\Nodes$}
+      \State $\set{y}\gets\set{y}\cup\argmax_{\set{z}}\Node(\set{z},\set{x})$
+    \EndFor%
+    \State \textbf{return} $\set{y}$
+  \end{algorithmic}
+\end{algorithm}
+
+When a PC is smooth, decomposable and deterministic, the \map{} is easily computable by simply
+replacing sum nodes with a max operation and performing a feedforward \evi{} pass. This is commonly
+called the Max-Product algorithm, shown more formally in \cref{alg:map}. To find the states that
+maximize \cref{eq:map} in a given circuit $\mathcal{C}$, we first compute the \map{} probabilities
+through the usual bottom-up pass, and then find the maximum (in terms of probability) induced tree
+$\mathcal{M}$ rooted at $\mathcal{C}$. This maximum induced tree can be retrieved by a top-down
+pass selecting the most probable sum child nodes according to the probabilities set by \map{}.
+Since $\mathcal{C}$ is decomposable, there cannot exist a node in $\mathcal{M}$ with more than one
+parent, meaning it is by construction a tree whose leaves are input nodes with scopes whose union
+is the scope of $\mathcal{C}$. This reduces the problem to a divide-and-conquer approach where each
+input node is individually maximized (see \cref{alg:argmap} and \cpageref{proof:det} for a formal
+proof on its validity).
+
 \begin{example}[breakable,sidebyside,lefthand width=0.55\textwidth]{Naïve Bayes as probabilistic circuits}{nbayes}
-  Suppose we have census measurements on the age $A$, body mass $B$ and average amount of cheese
-  eaten in a day $C$ from three different cities $Y$.  Assuming $A$, $B$ and $C$ are independent,
-  given a sample $x=(a,b,c)$ we can use a Gaussian naïve Bayes to predict $x$'s class
-  \begin{equation}
+  Suppose we have samples of per capita census measurements on three different features, say age
+  $A$, body mass index $B$ and average amount of cheese consumed daily $C$ from three different
+  cities $Y$.  Assuming $A$, $B$ and $C$ are independent, given a sample $x=(a,b,c)$ we can use
+  Gaussian naïve Bayes to predict $x$'s class
+  \begin{equation*}
     p(y|a,b,c)=p(y)p(a|y)p(b|y)p(c|y).
-  \end{equation}
-  In PC terms, $p(y)$ are the weights for each class and $p(z|y)$ are Gaussian input nodes. To make
-  sure that these are the distributions of feature $z$ given $y$, we introduce indicator variables
-  ``selecting'' $Y$'s state. Since the PC is deterministic, we can compute the \map{} in linear
-  time by simply replacing the root node with a max, which is equivalent to finding the highest
-  likelihood of $x$ for each city $y$.
+  \end{equation*}
+  In PC terms, $p(y)$ are the prior probabilities, i.e. sum weights, for each class and $p(z|y)$
+  are Gaussian input nodes corresponding to the distributions of each feature in each city. To make
+  sure that these are in fact conditional distributions, we introduce indicator variables
+  ``selecting'' $Y$'s state. Since the PC resulting is deterministic, we can compute the \map{} for
+  classification in linear time by simply replacing the root node with a max, which is exactly
+  equivalent to finding the highest likelihood of $x$ for each city $y$.
   \tcblower
   \begin{center}
   \begin{tikzpicture}
-    \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxteal] (y) at (0,0) {$Y$};
-    \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxorange!80] (a) at ($(y) + (-1,-1)$) {$A$};
-    \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxpink!50] (b) at ($(y) + (0,-1)$) {$B$};
-    \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxgoldenrod!70] (c) at ($(y) + (1,-1)$) {$C$};
+    \node[label=above:{\scriptsize$p(Y)$},inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxteal] (y) at (0,0) {$Y$};
+    \node[label=below:{\scriptsize$p(A|Y)$},inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxorange!80] (a) at ($(y) + (-1,-1)$) {$A$};
+    \node[label=below:{\scriptsize$p(B|Y)$},inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxpink!50] (b) at ($(y) + (0,-1)$) {$B$};
+    \node[label=below:{\scriptsize$p(C|Y)$},inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxgoldenrod!70] (c) at ($(y) + (1,-1)$) {$C$};
     \draw[edge] (y) -- (a);
     \draw[edge] (y) -- (b);
     \draw[edge] (y) -- (c);
   \end{tikzpicture}
 
-  \resizebox{\columnwidth}{!}{
+  \vskip -0.25cm
+  \small%
+  Gaussian naïve Bayes
+
   \begin{tikzpicture}
     \newSumNode[fill=boxgreen]{r}{0,0};
-    \newProdNode[fill=boxred!70]{p1}{$(r) + (-2.25,-1)$};
-    \newProdNode[fill=boxred!70]{p2}{$(r) + (0.0,-1)$};
-    \newProdNode[fill=boxred!70]{p3}{$(r) + (2.25,-1)$};
-    \newLeafNode[fill=boxteal,label={[label distance=-0.3cm]below left:{\scriptsize$\ind_{y=1}$}}]{i1}{$(p1) + (-1.5,-0.5)$};
-    \newLeafNode[fill=boxteal,label={[label distance=-0.3cm]below left:{\scriptsize$\ind_{y=2}$}}]{i2}{$(p2) + (-1.5,-0.5)$};
-    \newLeafNode[fill=boxteal,label={[label distance=-0.3cm]below left:{\scriptsize$\ind_{y=3}$}}]{i3}{$(p3) + (-1.5,-0.5)$};
-    \newGaussNode[label={[label distance=-0.1cm]below left:{$A$}},fill=boxorange!80]{g11}{$(p1) + (-1.0,-1)$};
-    \newGaussNode[label={[label distance=-0.1cm]below left:{$B$}},fill=boxpink!50]{g12}{$(p1) + (-0.5,-1.5)$};
-    \newGaussNode[label={[label distance=-0.1cm]below left:{$C$}},fill=boxgoldenrod!70]{g13}{$(p1) + (0,-2)$};
-    \newGaussNode[label={[label distance=-0.1cm]below left:{$A$}},fill=boxorange!80]{g21}{$(p2) + (-1.0,-1)$};
-    \newGaussNode[label={[label distance=-0.1cm]below left:{$B$}},fill=boxpink!50]{g22}{$(p2) + (-0.5,-1.5)$};
-    \newGaussNode[label={[label distance=-0.1cm]below left:{$C$}},fill=boxgoldenrod!70]{g23}{$(p2) + (0,-2)$};
-    \newGaussNode[label={[label distance=-0.1cm]below left:{$A$}},fill=boxorange!80]{g31}{$(p3) + (-1.0,-1)$};
-    \newGaussNode[label={[label distance=-0.1cm]below left:{$B$}},fill=boxpink!50]{g32}{$(p3) + (-0.5,-1.5)$};
-    \newGaussNode[label={[label distance=-0.1cm]below left:{$A$}},fill=boxgoldenrod!70]{g33}{$(p3) + (0,-2)$};
+    \newProdNode[fill=boxred!70]{p1}{$(r) + (1,-2.25)$};
+    \newProdNode[fill=boxred!70]{p2}{$(r) + (1,0)$};
+    \newProdNode[fill=boxred!70]{p3}{$(r) + (1,2.25)$};
+    \newLeafNode[fill=boxteal,label={[label distance=-0.1cm]below right:{\scriptsize$\ind_{y=1}$}}]{i1}{$(p1) + (0.5,-1.5)$};
+    \newLeafNode[fill=boxteal,label={[label distance=-0.1cm]below right:{\scriptsize$\ind_{y=2}$}}]{i2}{$(p2) + (0.5,-1.5)$};
+    \newLeafNode[fill=boxteal,label={[label distance=-0.1cm]below right:{\scriptsize$\ind_{y=3}$}}]{i3}{$(p3) + (0.5,-1.5)$};
+    \newGaussNode[label={[label distance=-0.1cm]below right:{$A$}},fill=boxorange!80]{g11}{$(p1) + (1,-1)$};
+    \newGaussNode[label={[label distance=-0.1cm]below right:{$B$}},fill=boxpink!50]{g12}{$(p1) + (1.5,-0.5)$};
+    \newGaussNode[label={[label distance=-0.1cm]below right:{$C$}},fill=boxgoldenrod!70]{g13}{$(p1) + (2,0)$};
+    \newGaussNode[label={[label distance=-0.1cm]below right:{$A$}},fill=boxorange!80]{g21}{$(p2) + (1,-1)$};
+    \newGaussNode[label={[label distance=-0.1cm]below right:{$B$}},fill=boxpink!50]{g22}{$(p2) + (1.5,-0.5)$};
+    \newGaussNode[label={[label distance=-0.1cm]below right:{$C$}},fill=boxgoldenrod!70]{g23}{$(p2) + (2,0)$};
+    \newGaussNode[label={[label distance=-0.1cm]below right:{$A$}},fill=boxorange!80]{g31}{$(p3) + (1,-1)$};
+    \newGaussNode[label={[label distance=-0.1cm]below right:{$B$}},fill=boxpink!50]{g32}{$(p3) + (1.5,-0.5)$};
+    \newGaussNode[label={[label distance=-0.1cm]below right:{$A$}},fill=boxgoldenrod!70]{g33}{$(p3) + (2,0)$};
     \draw[edge] (r) edge (p1);
     \draw[edge] (r) edge (p2);
     \draw[edge] (r) edge (p3);
@@ -879,6 +976,25 @@ With determinism, we now have access to \map{}.
     \draw[edge] (p3) -- (g32);
     \draw[edge] (p3) -- (g33);
   \end{tikzpicture}
-  }
+
+  \vskip -0.25cm
+  Equivalent PC
   \end{center}
 \end{example}
+
+\subsection{Complex Queries}
+
+Although base queries cover most of the needs of the usual data scientist, for more complex tasks
+involving information-theoretic measures, logical queries or distributional divergences we need
+stronger assumptions on how PCs are constructed.
+
+A key requirement for most of these tasks is based on the notion of \emph{structure
+decomposability}, a stronger variant of decomposability where variable partitionings on product
+nodes follow a hierarchy. This hierarchy is easily visualized through a \emph{vtree} (i.e.\ a
+variable tree), a binary tree that defines a (partial) ordering of variables.
+
+\begin{definition}[Vtree]
+  A variable tree, or \emph{vtree}, is a binary
+\end{definition}
+
+We shall adopt the same scope notation as in PCs. Let $v$ a vtree node from a vtree $\mathcal{V}$.

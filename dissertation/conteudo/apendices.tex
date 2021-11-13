@@ -125,6 +125,7 @@
 
 \linevi*
 \begin{proof}
+  \label{proof:linevi}
   For a sum node $\Sum$, we have the following marginalization query
   \begin{align*}
     \int\Sum(\set{x},\set{y})\dif\set{y}&=\int\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\Child(\set{x},\set{y})\dif\set{y}\\
@@ -139,14 +140,15 @@
   $\Child$ is an input node $\Leaf_p$, in which case we marginalize $\set{y}$ according to $p$,
   which by definition should be tractable and here we assume can be done in $\bigo(1)$. We have
   proved the case for \mar{}. For \evi{}, we simply assign $\set{y}=\emptyset$ with input nodes
-  acting as probability density functions. Conditionals can easily be computed by an \evi{}
-  followed by a second pass marginalizing the conditional variables
+  acting as probability density functions. Conditionals can easily be computed by an \evi{} or
+  \mar{} followed by a second pass marginalizing the conditional variables
   $p(\set{x}|\set{y})=\frac{p(\set{x},\set{y})}{p(\set{y})}$ which are both done in linear time as
   we have seen here.
 \end{proof}
 
 \det*
 \begin{proof}
+  \label{proof:det}
   For a sum node $\Sum$, we want to compute the following query
   \begin{equation*}
     \max_{\set{y}}\Sum(\set{y}|\set{x})=\frac{1}{\Sum(\set{x})}\max_{\set{y}}\Sum(\set{y},\set{x})
