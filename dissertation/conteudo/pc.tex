@@ -713,10 +713,10 @@ query. These procedures are formalized in the theorem below.
     \begin{center}
       \begin{tikzpicture}
         \newProdNode[fill=boxgreen]{r}{0,0};
-        \newSumNode[fill=boxred]{p1}{$(r) + (-2.0,-1)$};
-        \newSumNode[fill=boxred]{p2}{$(r) + (-0.66,-1)$};
-        \newSumNode[fill=boxred]{p3}{$(r) + (0.66,-1)$};
-        \newSumNode[fill=boxred]{p4}{$(r) + (2.0,-1)$};
+        \newSumNode[fill=boxred!70]{p1}{$(r) + (-2.0,-1)$};
+        \newSumNode[fill=boxred!70]{p2}{$(r) + (-0.66,-1)$};
+        \newSumNode[fill=boxred!70]{p3}{$(r) + (0.66,-1)$};
+        \newSumNode[fill=boxred!70]{p4}{$(r) + (2.0,-1)$};
         \newGaussNode[fill=boxteal,label=below:{$A$}]{a1}{$(p1) + (0,-1)$};
         \newGaussNode[fill=boxteal,label=below:{$A$}]{a2}{$(p2) + (0,-1)$};
         \newGaussNode[fill=boxorange!80,label=below:{$B$}]{b1}{$(p3) + (0,-1)$};
@@ -741,8 +741,8 @@ query. These procedures are formalized in the theorem below.
     \begin{center}
       \begin{tikzpicture}
         \newProdNode[fill=boxgreen]{r}{0,0};
-        \newSumNode[fill=boxred]{s1}{$(r) + (-1.0,-0.5)$};
-        \newSumNode[fill=boxred]{s2}{$(r) + (1.0,-0.5)$};
+        \newSumNode[fill=boxred!70]{s1}{$(r) + (-1.0,-0.5)$};
+        \newSumNode[fill=boxred!70]{s2}{$(r) + (1.0,-0.5)$};
         \newProdNode[fill=boxpurple!60]{p1}{$(s1) + (-0.5,-0.75)$};
         \newProdNode[fill=boxpurple!60]{p2}{$(s1) + (0.5,-0.75)$};
         \newProdNode[fill=boxpurple!60]{p3}{$(s2) + (-0.5,-0.75)$};
@@ -990,11 +990,251 @@ stronger assumptions on how PCs are constructed.
 
 A key requirement for most of these tasks is based on the notion of \emph{structure
 decomposability}, a stronger variant of decomposability where variable partitionings on product
-nodes follow a hierarchy. This hierarchy is easily visualized through a \emph{vtree} (i.e.\ a
-variable tree), a binary tree that defines a (partial) ordering of variables.
+nodes follow a hierarchy. This hierarchy is easily visualized through a \emph{vtree} (variable
+tree), a data structure that defines a (partial) ordering of variables.
 
 \begin{definition}[Vtree]
-  A variable tree, or \emph{vtree}, is a binary
+  A variable tree $\vtree$, or \emph{vtree}, over a set of variables $\set{X}$ is a binary tree
+  whose leaf nodes have a one-to-one and onto mapping $\phi_{\vtree}$ with $\set{X}$.
 \end{definition}
 
-We shall adopt the same scope notation as in PCs. Let $v$ a vtree node from a vtree $\mathcal{V}$.
+We shall adopt the same scope definition and notation $\Sc(\cdot)$ for vtrees as in PCs. Let $v$ a
+vtree node from a vtree $\vtree$. If $v$ is a leaf node, its scope is $\phi_{\vtree}(v)$, i.e.\ the
+leaf's assigned variable; otherwise its scope is the union of the scope of its children. For an
+inner node $v$, we shall call its left child $\lch{v}$ and right child $\rch{v}$. Every inner node
+$v$ of a vtree $\vtree$ defines a variable \emph{partitioning} of the scope $(\Sc(\lch{v}),
+\Sc(\rch{v}))$, while the leaves of $\vtree$ define a partial ordering of $\Sc(\vtree)$. We are
+especially interested in the scope partitioning aspect of vtrees.
+
+\begin{definition}
+  A product node $\Prod$ \emph{respects} a vtree node $v$ if $\Prod$ contains only two children
+  $\Ch(\Prod)=\{\Child_1,\Child_2\}$, and $\Sc(\Child_1)=\Sc(\lch{v})$ and $\Sc(\Child_2)=
+  \Sc(\rch{v})$.
+\end{definition}
+
+Obviously the above definition is vague with regards to which child (i.e.\ graphically, left or
+right) of $\Prod$ should respect the scope of which $v$ child. We therefore assume a fixed order
+for $\Prod$'s children and say that the (graphically) left child is called the \emph{prime} and
+(graphically) right child the \emph{sub}. This ultimately means that the scope of the prime (resp.
+sub) of $\Prod$ must be the same as the scope of the left (resp. right) child of $v$. Although the
+graphical concept of left and right is needed for easily visualizing the scope partitioning of a
+product with respect to a vtree node, we do not use it strictly. In fact, when the situation is
+unambiguous, we compactly represent the computational graph without adhering to the left-right
+convention in favor of readability.
+
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.25\textwidth}
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \newVtreeNode{r}{0,0}{1};
+      \newVtreeNode{ab}{$(r) + (-1.0,-1.5)$}{2};
+      \newVtreeNode{cd}{$(r) + (1.0,-1.5)$}{3};
+      \node (a) at ($(ab) + (-0.5,-1.5)$) {$A$};
+      \node (b) at ($(ab) + (0.5,-1.5)$) {$B$};
+      \node (c) at ($(cd) + (-0.5,-1.5)$) {$C$};
+      \node (d) at ($(cd) + (0.5,-1.5)$) {$D$};
+      \draw (r) -- (ab); \draw (r) -- (cd);
+      \draw (ab) -- (a); \draw (ab) -- (b);
+      \draw (cd) -- (c); \draw (cd) -- (d);
+    \end{tikzpicture}
+    }
+    \caption{}
+    \label{fig:vtree}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.35\textwidth}
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \newSumNode[fill=boxgreen]{r}{0,0};
+      \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
+      \newProdNode[fill=boxred!70]{p2}{$(r) + (1.5,-1)$};
+      \newSumNode[fill=boxpurple!60]{s1}{$(r) + (-2,-2)$};
+      \newSumNode[fill=boxpurple!60]{s2}{$(r) + (0,-2)$};
+      \newSumNode[fill=boxpurple!60]{s3}{$(r) + (2,-2)$};
+      \newProdNode[fill=boxbrown!60]{q1}{$(s1) + (-0.5,-1)$};
+      \newProdNode[fill=boxbrown!60]{q2}{$(s1) + (0.5,-1)$};
+      \newProdNode[fill=boxbrown!60]{q3}{$(s2) + (-0.5,-1)$};
+      \newProdNode[fill=boxbrown!60]{q4}{$(s2) + (0.5,-1)$};
+      \newProdNode[fill=boxbrown!60]{q5}{$(s3) + (-0.5,-1)$};
+      \newProdNode[fill=boxbrown!60]{q6}{$(s3) + (0.5,-1)$};
+      \newGaussNode[label=below:{$A$},fill=boxteal]{a1}{$(q1) + (0,-1)$};
+      \newGaussNode[label=below:{$B$},fill=boxorange!80]{b1}{$(q2) + (0,-1)$};
+      \newGaussNode[label=below:{$C$},fill=boxpink!50]{c}{$(q3) + (0,-1)$};
+      \newGaussNode[label=below:{$D$},fill=boxgoldenrod!70]{d}{$(q4) + (0,-1)$};
+      \newGaussNode[label=below:{$A$},fill=boxteal]{a2}{$(q5) + (0,-1)$};
+      \newGaussNode[label=below:{$B$},fill=boxorange!80]{b2}{$(q6) + (0,-1)$};
+      \draw[edge] (r) -- (p1); \draw[edge] (r) -- (p2);
+      \draw[edge] (p1) -- (s1); \draw[edge] (p1) -- (s2); \draw[edge] (p2) -- (s2); \draw[edge] (p2) -- (s3);
+      \draw[edge] (s1) -- (q1); \draw[edge] (s1) -- (q2);
+      \draw[edge] (s2) -- (q3); \draw[edge] (s2) -- (q4);
+      \draw[edge] (s3) -- (q5); \draw[edge] (s3) -- (q6);
+      \draw[edge] (q1) -- (a1); \draw[edge] (q1) -- (b1);
+      \draw[edge] (q2) -- (a1); \draw[edge] (q2) -- (b1);
+      \draw[edge] (q3) -- (c); \draw[edge] (q3) -- (d);
+      \draw[edge] (q4) -- (c); \draw[edge] (q4) -- (d);
+      \draw[edge] (q5) -- (a2); \draw[edge] (q5) -- (b2);
+      \draw[edge] (q6) -- (a2); \draw[edge] (q6) -- (b2);
+    \end{tikzpicture}
+    }
+    \caption{}
+    \label{fig:respect}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.35\textwidth}
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \newSumNode[fill=boxgreen]{r}{0,0};
+      \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-0.8)$};
+      \newProdNode[fill=boxred!70]{p2}{$(r) + (1.5,-0.8)$};
+      \newGaussNode[label=below:{$A$},fill=boxteal]{a1}{$(p1) + (-1,-0.8)$};
+      \newSumNode[fill=boxpurple!60]{s1}{$(p1) + (0.5,-0.8)$};
+      \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.5,-0.8)$};
+      \newGaussNode[label=below:{$D$},fill=boxgoldenrod!70]{d1}{$(p2) + (1,-0.8)$};
+      \newProdNode[fill=boxbrown!60]{q1}{$(s1) + (-0.75,-0.8)$};
+      \newProdNode[fill=boxbrown!60]{q2}{$(s1) + (0.5,-0.8)$};
+      \newProdNode[fill=boxbrown!60]{q3}{$(s2) + (-0.5,-0.8)$};
+      \newProdNode[fill=boxbrown!60]{q4}{$(s2) + (0.75,-0.8)$};
+      \newGaussNode[label=below:{$C$},fill=boxpink!50]{c1}{$(q1) + (-0.65,-0.8)$};
+      \newGaussNode[label=below:{$C$},fill=boxpink!50]{c2}{$(q2) + (0.6,-0.8)$};
+      \newGaussNode[label=below:{$C$},fill=boxpink!50]{c3}{$(q4) + (0.65,-0.8)$};
+      \newSumNode[fill=boxblue!80]{z1}{$(q1) + (0.75,-0.8)$};
+      \newSumNode[fill=boxblue!80]{z2}{$(q3) + (0.75,-0.8)$};
+      \newProdNode[fill=boxgray!80]{t1}{$(z1) + (-0.5,-0.8)$};
+      \newProdNode[fill=boxgray!80]{t2}{$(z1) + (0.5,-0.8)$};
+      \newProdNode[fill=boxgray!80]{t3}{$(z2) + (-0.25,-0.8)$};
+      \newProdNode[fill=boxgray!80]{t4}{$(z2) + (0.5,-0.8)$};
+      \newGaussNode[label=below:{$D$},fill=boxgoldenrod!70]{d2}{$(t1) + (0,-0.8)$};
+      \newGaussNode[label=below:{$B$},fill=boxorange!80]{b}{$(c2) + (0,-1.6)$};
+      \newGaussNode[label=below:{$A$},fill=boxteal]{a2}{$(t4) + (0,-0.8)$};
+      \draw[edge] (r) -- (p1); \draw[edge] (r) -- (p2);
+      \draw[edge] (p1) -- (a1); \draw[edge] (p1) -- (s1);
+      \draw[edge] (p2) -- (s2); \draw[edge] (p2) -- (d1);
+      \draw[edge] (s1) -- (q1); \draw[edge] (s1) -- (q2);
+      \draw[edge] (s2) -- (q3); \draw[edge] (s2) -- (q4);
+      \draw[edge] (q1) -- (c1); \draw[edge] (q1) -- (z1);
+      \draw[edge] (q2) -- (z1); \draw[edge] (q2) -- (c2);
+      \draw[edge] (q3) -- (c2); \draw[edge] (q3) -- (z2);
+      \draw[edge] (q4) -- (z2); \draw[edge] (q4) -- (c3);
+      \draw[edge] (z1) -- (t1); \draw[edge] (z1) -- (t2);
+      \draw[edge] (z2) -- (t3); \draw[edge] (z2) -- (t4);
+      \draw[edge] (t1) -- (d2); \draw[edge] (t1) -- (b);
+      \draw[edge] (t2) -- (d2); \draw[edge] (t2) -- (b);
+      \draw[edge] (t3) -- (b); \draw[edge] (t3) -- (a2);
+      \draw[edge] (t4) -- (b); \draw[edge] (t4) -- (a2);
+    \end{tikzpicture}
+    }
+    \caption{}
+    \label{fig:norespect}
+  \end{subfigure}
+  \caption{A vtree (a) defining an order $(A,B,C,D)$, a 2-standard structure decomposable
+    probabilistic circuit that respects the vtree (b), and a 2-standard decomposable probabilistic
+    circuit that does not (c).}
+  \label{fig:vtreeresp}
+\end{figure}
+
+We say that a vtree is linear, if either it is left-linear or right-linear. A left- (resp. right)
+linear vtree is a vtree whose inner nodes all have leaf nodes on their right (resp. left) child.
+Similarly, a vtree is said to be left- (resp. right) leaning if the number of leaf nodes as right
+(resp. left) children is much higher then left (resp. right) children. Otherwise, it is a balanced
+vtree. \cref{fig:vtree} shows a balanced vtree.
+
+Now that we understand what a vtree is, we can properly introduce \emph{structure decomposability},
+a stronger variant of decomposability. We say that a PC is 2-standard if it is standard and all of
+its product nodes have exactly two children.
+
+\begin{definition}[Structure decomposability]
+  Let $\mathcal{C}$ a 2-standard probabilistic circuit and $\vtree$ a vtree with same scope as
+  $\mathcal{C}$. $\mathcal{C}$ is said to be \emph{structure decomposable} if every $i$-th product
+  layer of $\mathcal{C}$ respects every $i$-th inner node layer of $\vtree$.
+\end{definition}
+
+Although we assume a \emph{2-standard} PC in the above definition, its assumption was only for
+convenience, and does not imply in a loss of expressivity. As a matter of fact, any PC can be
+2-standardized, i.e.\ to standardize the circuit such that every product node only has two children
+(see \cref{thm:2standard}). Intuitively, structure decomposability merely states that every two
+product nodes whose scopes are the same must partition their scopes (between their two children)
+exactly the same (and according to their corresponding vtree node).
+
+\cref{fig:vtreeresp} shows a vtree $\vtree$ and two probabilistic circuits, say
+$\mathcal{C}_1$ for the one in the middle and $\mathcal{C}_2$ for the one on the right. Notice how
+$\mathcal{C}_1$ respects $\vtree$, as each \inode[fill=boxred!70]{\newProdNode} respects the split
+at vtree node $1$ (namely $\{A,B\}$). The primes are then \inode[fill=boxpurple!60]{\newSumNode}
+whose scopes are $\{A,B\}$, while the sub is the one with two parents and scope $\{C,D\}$. For each
+of these, their children \inode[fill=boxbrown!60]{\newProdNode} also respect $\vtree$: they either
+encode he same split as $2$ or as $3$, depending on whether they are descendants from the sub or
+prime of $1$. Although $\mathcal{C}_2$ is decomposable, it does \emph{not} respect $\vtree$, as
+\inode[fill=boxred!70]{\newProdNode} encode different variable partionings ($(\{A\},\{B,C,D\})$ and
+$(\{A,B,C\},\{D\}))$. In fact, it is not structure decomposable, as it does not respect any vtree.
+
+\begin{example}[sidebyside,lefthand width=0.55\textwidth]{Hidden Markov models as probabilistic circuits}{hmm}
+  Say we wish to model a temporal structured dependence between three variables, for example a
+  subject $X_1$, verb $X_2$ and object $X_3$ phrase in a natural language. Each observation $Y_i$
+  is a fragment of a complete sentence composed of all fragments $\set{y}=(y_1,y_2,y_3)$. We can
+  do this through the first-order Hidden Markov Model (HMM) on the right, i.e. computing
+  \begin{equation*}
+    p(X_{1..3},Y_{1..3})=p(X_1)\prod_{i=2}^3 p(X_i|X_{i-1})\prod_{i=1}^3 p(Y_i|X_i).
+  \end{equation*}
+
+  \tcblower
+  \begin{center}
+    \begin{tikzpicture}
+      \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxorange!80] (x1) at (0,0) {$X_1$};
+      \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxpink!50] (x2) at ($(x1) + (1,0)$) {$X_2$};
+      \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxgoldenrod!70] (x3) at ($(x2) + (1,0)$) {$X_3$};
+      \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxorange!80] (y1) at ($(x1) + (0,-1)$) {$Y_1$};
+      \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxpink!50] (y2) at ($(x2) + (0,-1)$) {$Y_2$};
+      \node[inner sep=0pt,thick,minimum size=12pt,draw,circle,fill=boxgoldenrod!70] (y3) at ($(x3) + (0,-1)$) {$Y_3$};
+      \draw[edge] (x1) -- (y1); \draw[edge] (x1) -- (x2);
+      \draw[edge] (x2) -- (y2); \draw[edge] (x2) -- (x3);
+      \draw[edge] (x3) -- (y3);
+    \end{tikzpicture}
+
+    \vskip -0.25cm
+    \small%
+    Hidden Markov Model
+
+    \begin{tikzpicture}
+      \newSumNode[fill=boxgreen]{r}{0,0};
+      \newProdNode[fill=boxred!70]{p1}{$(r) + (-0.5,-1)$};
+      \newProdNode[fill=boxred!70]{p2}{$(r) + (0.5,-1)$};
+      \newGaussNode[label=right:{$p(Y_1|X_3=0)$},fill=boxorange!80]{x11}{$(p2) + (1,0.75)$};
+      \newGaussNode[label=right:{$p(Y_1|X_3=1)$},fill=boxorange!80]{x12}{$(p2) + (1,0.0)$};
+      \newSumNode[fill=boxpurple!60]{s1}{$(p1) + (0,-1)$};
+      \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (0,-1)$};
+      \newProdNode[fill=boxbrown!60]{q1}{$(s1) + (0,-0.8)$};
+      \newProdNode[fill=boxbrown!60]{q2}{$(s2) + (0,-0.8)$};
+      \newGaussNode[label=right:{$p(Y_2|X_3=0)$},fill=boxpink!50]{x21}{$(q2) + (1,0.75)$};
+      \newGaussNode[label=right:{$p(Y_2|X_3=1)$},fill=boxpink!50]{x22}{$(q2) + (1,0.0)$};
+      \newSumNode[fill=boxblue!80]{z1}{$(q1) + (0,-1)$};
+      \newSumNode[fill=boxblue!80]{z2}{$(q2) + (0,-1)$};
+      \newProdNode[fill=boxgray!80]{t1}{$(z1) + (0,-0.8)$};
+      \newProdNode[fill=boxgray!80]{t2}{$(z2) + (0,-0.8)$};
+      \newGaussNode[label=right:{$p(Y_3|X_3=0)$},fill=boxgoldenrod!70]{x31}{$(t2) + (1,0.75)$};
+      \newGaussNode[label=right:{$p(Y_3|X_3=1)$},fill=boxgoldenrod!70]{x32}{$(t2) + (1,0.0)$};
+      \draw[edge] (r) -- (p1); \draw[edge] (r) -- (p2);
+      \draw[edge] (p1) -- (x11); \draw[edge] (p2) -- (x12);
+      \draw[edge] (p1) -- (s1); \draw[edge] (p2) -- (s2);
+      \draw[edge] (s1) -- (q1); \draw[edge] (s1) -- (q2);
+      \draw[edge] (s2) -- (q1); \draw[edge] (s2) -- (q2);
+      \draw[edge] (q1) -- (x21); \draw[edge] (q2) -- (x22);
+      \draw[edge] (q1) -- (z1); \draw[edge] (q2) -- (z2);
+      \draw[edge] (z1) -- (t1); \draw[edge] (z1) -- (t2);
+      \draw[edge] (z2) -- (t1); \draw[edge] (z2) -- (t2);
+      \draw[edge] (t1) -- (x31); \draw[edge] (t2) -- (x32);
+    \end{tikzpicture}
+
+    \vskip -0.25cm
+    Equivalent PC
+
+    \begin{tikzpicture}
+      \newVtreeNode{r}{0,0}{1};
+      \newVtreeNode{l}{$(r) + (-0.75,-1)$}{2};
+      \node (x1) at ($(r) + (0.75,-1)$) {$X_1$};
+      \node (x2) at ($(l) + (-0.75,-1)$) {$X_2$};
+      \node (x3) at ($(l) + (0.75,-1)$) {$X_3$};
+      \draw (r) -- (l); \draw (r) -- (x1);
+      \draw (l) -- (x2); \draw (l) -- (x3);
+    \end{tikzpicture}
+
+    \vskip -0.25cm
+    Vtree
+  \end{center}
+\end{example}

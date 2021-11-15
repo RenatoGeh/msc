@@ -123,6 +123,97 @@
   \end{center}
 \end{proof}
 
+\begin{theorem}[2-Standardization]
+\label{thm:2standard}
+Any probabilistic circuit $\mathcal{C}$ can be transformed into a circuit where every sum node
+contains only products or inputs and every product node contains only \emph{two} sums or inputs.
+\end{theorem}
+\begin{proof}
+  For sums, apply the same standardization procedure as \cref{thm:standard}. Let $\Prod$ a product
+  and call $n=|\Ch(\Prod)|$. If $n=1$ and $\Ch(\Prod)$ is a product, then remove $\Prod$ and
+  connect all previous parents of $\Prod$ with its child. If $n=1$ and $\Ch(\Prod)$ is not a
+  product, remove $\Prod$ and apply the standardization procedure for sums on all of $\Pa(\Prod)$.
+
+  For $n>2$, we simply need to split into 2-products recursively. We prove this by induction. The
+  base case is when $n=2$, which is already done, or $n=3$, in which case we need apply the
+  transformation below.
+  \begin{center}
+    \begin{tikzpicture}
+      \newProdNode{r}{0,0};
+      \newSumNode{s1}{$(r) + (-1.5,-2)$};
+      \newSumNode{s2}{$(r) + (0,-2)$};
+      \newSumNode{s3}{$(r) + (1.5,-2)$};
+      \draw[edge] (r) -- (s1);
+      \draw[edge] (r) -- (s2);
+      \draw[edge] (r) -- (s3);
+
+      \draw[edge,very thick,red] (2.25,-0.5) -- node[midway,above] {2-Standardize} (5.5,-0.5);
+
+      \newProdNode{r}{7,0};
+      \newSumNode[fill=boxorange!80]{t}{$(r) + (-0.5,-1)$};
+      \newSumNode{s1}{$(r) + (0.5,-1)$};
+      \newProdNode[fill=boxgoldenrod!70]{p}{$(t) + (-0.5,-1)$};
+      \newSumNode{s2}{$(p) + (-0.5,-1)$};
+      \newSumNode{s3}{$(p) + (0.5,-1)$};
+      \draw[edge] (r) -- (t);
+      \draw[edge] (r) -- (s1);
+      \draw[edge] (t) -- (p);
+      \draw[edge] (p) -- (s2);
+      \draw[edge] (p) -- (s3);
+    \end{tikzpicture}
+  \end{center}
+  Where \inode[fill=boxorange!80]{\newSumNode} and \inode[fill=boxgoldenrod!70]{\newProdNode} are
+  newly introduced nodes. When $n>3$, we create two products $\Prod_1$ and $\Prod_2$, each
+  connected with a sum and product, and with $\left\lfloor\frac{n}{2}\right\rfloor$ and
+  $\left\lceil\frac{n}{2}\right\rceil$ potential children. By the induction hypothesis, we can
+  recursively binarize the subsequent grandchildren products.
+  \begin{center}
+    \begin{tikzpicture}
+      \newProdNode{r}{0,0};
+      \newSumNode{s1}{$(r) + (-2,-2)$};
+      \newSumNode{s2}{$(r) + (-1,-2)$};
+      \newSumNode{s3}{$(r) + (0,-2)$};
+      \newSumNode{s4}{$(r) + (1,-2)$};
+      \newSumNode{s5}{$(r) + (2,-2)$};
+      \draw[edge] (r) -- (s1);
+      \draw[edge] (r) -- (s2);
+      \draw[edge] (r) -- (s3);
+      \draw[edge] (r) -- (s4);
+      \draw[edge] (r) -- (s5);
+
+      \draw[edge,very thick,red] (2.25,-0.5) -- node[midway,above] {2-Standardize} (5.5,-0.5);
+
+      \newProdNode{r}{7,0};
+      \newSumNode[fill=boxorange!80]{t1}{$(r) + (-0.5,-1)$};
+      \newSumNode[fill=boxorange!80]{t2}{$(r) + (0.5,-1)$};
+      \newProdNode[fill=boxgoldenrod!70]{p1}{$(t1) + (-0.5,-1)$};
+      \newProdNode[fill=boxgoldenrod!70]{p2}{$(t2) + (0.5,-1)$};
+      \newSumNode{s1}{$(p1) + (-0.5,-1)$};
+      \newSumNode{s2}{$(p1) + (0.5,-1)$};
+      \newSumNode{s3}{$(p2) + (-0.75,-1)$};
+      \newSumNode{s4}{$(p2) + (0.0,-1)$};
+      \newSumNode{s5}{$(p2) + (0.75,-1)$};
+      \draw[edge] (r) -- (t1);
+      \draw[edge] (r) -- (t2);
+      \draw[edge] (t1) -- (p1);
+      \draw[edge] (t2) -- (p2);
+      \draw[edge] (p1) -- (s1);
+      \draw[edge] (p1) -- (s2);
+      \draw[edge] (p2) -- (s3);
+      \draw[edge] (p2) -- (s4);
+      \draw[edge] (p2) -- (s5);
+    \end{tikzpicture}
+  \end{center}
+  As an example, we have $n=5$ in the figure above. We introduce the sums
+  \inode[fill=boxorange!80]{\newSumNode} and products \inode[fill=boxgoldenrod!70]{\newProdNode}
+  and then recursively apply the transformation again on the
+  \inode[fill=boxgoldenrod!70]{\newProdNode}s.
+
+  When $\Ch(\Prod)$ are product nodes we do the same procedure as before, but with the added
+  post-process addition of a sum node connecting \inode[fill=boxgoldenrod!70]{\newProdNode} to
+  every $\Ch(\Prod)$.
+\end{proof}
+
 \linevi*
 \begin{proof}
   \label{proof:linevi}
