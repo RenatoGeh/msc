@@ -468,7 +468,9 @@ while $\Sc(\inode[fill=boxpink!50]{\newGaussNode})=\Sc(\inode[fill=boxgoldenrod!
 =\{Y\}$. Consequentially, their parent sum nodes will have the same scope as their children
 $\Sc(\inode[fill=boxred!70]{\newSumNode})=\{X\}$ and $\Sc(\inode[fill=boxpurple!60]{\newSumNode})=
 \{Y\}$, yet the root node's scope is $\Sc(\inode[fill=boxgreen]{\newProdNode})=\{X,Y\}$, since its
-childrens' scopes are distinct.
+childrens' scopes are distinct. The size of a probabilistic circuit is the number of nodes and
+edges of its computational graph. We use $|\mathcal{C}|$ to denote the size of a probabilistic
+circuit $\mathcal{C}$.
 
 Let $\mathcal{C}$ a probabilistic circuit and node $\Node\in\mathcal{C}$. We say that
 $\mathcal{S}_{\Node}$ is a subcircuit of $\mathcal{C}$ rooted at $\Node$ if $\mathcal{S}_{\Node}$'s
@@ -652,8 +654,8 @@ formally define them next.
 In this section we are interested in studying how the structural constraints in PCs enable
 different inference tasks. We shall first cover the more basic queries, namely \emph{probability of
 evidence} (\evi), \emph{marginal probability} (\mar), \emph{conditional probability} (\con) and
-\emph{maximum a posteriori probability} (\map). After that we address more complex queries such as
-\emph{mutual information} (\mi) and \emph{expectation} (\expc).
+\emph{maximum a posteriori probability} (\map). After that we briefly address more complex queries
+such as mutual information, entropies and \emph{expectation} (\expc).
 
 \subsection{Basic Queries}
 
@@ -850,11 +852,12 @@ the circuit \emph{deterministic}.
 
 \begin{definition}[Determinism]
   A probabilistic circuit $\mathcal{C}$ is said to be \emph{deterministic} if for every sum node
-  $\Sum\in\mathcal{C}$ only one child of $\Sum$ has nonnegative value at a time for any assignment.
+  $\Sum\in\mathcal{C}$ only one child of $\Sum$ has nonnegative value at a time for any complete
+  assignment.
 \end{definition}
 
 At this point, we must introduce a graphical notation for \emph{indicator} nodes. An indicator node
-is an input node whose function is the characteristic function $f(x)=\ind_{\{x=k\}}$, i.e. a
+is an input node whose function is the characteristic function $f(x)=\liv x=k\riv$, i.e. a
 degenerate function with all of its mass on $k$ and zero anywhere else. A special case is when $X$
 is binary and $k=1$, in which case we say the input node is a literal node, denoting by the usual
 propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, we shall use
@@ -948,9 +951,9 @@ proof on its validity).
     \newProdNode[fill=boxred!70]{p1}{$(r) + (1,-2.25)$};
     \newProdNode[fill=boxred!70]{p2}{$(r) + (1,0)$};
     \newProdNode[fill=boxred!70]{p3}{$(r) + (1,2.25)$};
-    \newLeafNode[fill=boxteal,label={[label distance=-0.1cm]below right:{\scriptsize$\ind_{y=1}$}}]{i1}{$(p1) + (0.5,-1.5)$};
-    \newLeafNode[fill=boxteal,label={[label distance=-0.1cm]below right:{\scriptsize$\ind_{y=2}$}}]{i2}{$(p2) + (0.5,-1.5)$};
-    \newLeafNode[fill=boxteal,label={[label distance=-0.1cm]below right:{\scriptsize$\ind_{y=3}$}}]{i3}{$(p3) + (0.5,-1.5)$};
+    \newLeafNode[fill=boxteal,label={[label distance=-0.1cm]below right:{\scriptsize$\liv y=1\riv$}}]{i1}{$(p1) + (0.5,-1.5)$};
+    \newLeafNode[fill=boxteal,label={[label distance=-0.1cm]below right:{\scriptsize$\liv y=2\riv$}}]{i2}{$(p2) + (0.5,-1.5)$};
+    \newLeafNode[fill=boxteal,label={[label distance=-0.1cm]below right:{\scriptsize$\liv y=3\riv$}}]{i3}{$(p3) + (0.5,-1.5)$};
     \newGaussNode[label={[label distance=-0.1cm]below right:{$A$}},fill=boxorange!80]{g11}{$(p1) + (1,-1)$};
     \newGaussNode[label={[label distance=-0.1cm]below right:{$B$}},fill=boxpink!50]{g12}{$(p1) + (1.5,-0.5)$};
     \newGaussNode[label={[label distance=-0.1cm]below right:{$C$}},fill=boxgoldenrod!70]{g13}{$(p1) + (2,0)$};
@@ -984,11 +987,10 @@ proof on its validity).
 
 \subsection{Complex Queries}
 
-Although base queries cover most of the needs of the usual data scientist, for more complex tasks
-involving information-theoretic measures, logical queries or distributional divergences we need
-stronger assumptions on how PCs are constructed.
-
-A key requirement for most of these tasks is based on the notion of \emph{structure
+Although base queries cover most of the needs of the usual data scientist, more complex tasks
+involving information-theoretic measures, logical queries or distributional divergences are also
+(tractably) computable under the right conditions. Particularly, we are interested in a key
+component for tractability in all these tasks: the notion of \emph{vtrees} and \emph{structure
 decomposability}, a stronger variant of decomposability where variable partitionings on product
 nodes follow a hierarchy. This hierarchy is easily visualized through a \emph{vtree} (variable
 tree), a data structure that defines a (partial) ordering of variables.
@@ -1165,14 +1167,20 @@ prime of $1$. Although $\mathcal{C}_2$ is decomposable, it does \emph{not} respe
 $(\{A,B,C\},\{D\}))$. In fact, it is not structure decomposable, as it does not respect any vtree.
 
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Hidden Markov models as probabilistic circuits}{hmm}
-  Say we wish to model a temporal structured dependence between three variables, for example a
-  subject $X_1$, verb $X_2$ and object $X_3$ phrase in a natural language. Each observation $Y_i$
-  is a fragment of a complete sentence composed of all fragments $\set{y}=(y_1,y_2,y_3)$. We can
-  do this through the first-order Hidden Markov Model (HMM) on the right, i.e. computing
+  Say we wish to model a temporal structured dependence between three latent binary variables, for
+  example the presence of a subject $X_1$, verb $X_2$ and object $X_3$ in a natural language
+  phrase. Each observation $Y_i$ is a fragment (of $X_i$) taken from a complete sentence
+  $\set{y}=(y_1,y_2,y_3)$. The first-order Hidden Markov Model (HMM) (on the right) models the
+  joint probability of sentences
   \begin{equation*}
     p(X_{1..3},Y_{1..3})=p(X_1)\prod_{i=2}^3 p(X_i|X_{i-1})\prod_{i=1}^3 p(Y_i|X_i).
   \end{equation*}
-
+  This is computationally equivalent to the PC on the right. Each input node $p(Y_i|X_i)$ is a
+  conditional distribution model (possibly another PC) for each assignment (here two) of $X_i$,
+  meaning that if $p(Y_i|X_i=0)>0$, then $p(Y_i|X_i=1)=0$ and vice-versa. Further, notice how every
+  product (except for \inode[fill=boxgray!80]{\newProdNode}s which are redundant nodes) follows the
+  partitionings imposed by the vtree below it. What this means is that this PC is not only smooth,
+  but structure decomposable and deterministic.
   \tcblower
   \begin{center}
     \begin{tikzpicture}
@@ -1237,4 +1245,56 @@ $(\{A,B,C\},\{D\}))$. In fact, it is not structure decomposable, as it does not 
     \vskip -0.25cm
     Vtree
   \end{center}
+\end{example}
+
+Despite our structure decomposability definition relying on a vtree, there is at least one
+alternative definition that defines it in terms of \emph{circuit compatibility}. Essentially, a
+circuit $\mathcal{C}_1$ is \emph{compatible} with $\mathcal{C}_2$ if they can be 2-standardized and
+rearranged such that any two products with same scope, one from $\mathcal{C}_1$ and the other
+$\mathcal{C}_2$, partition the scope the same way \citep{vergari21}. A structure decomposable PC is
+then defined as a PC that is compatible with a copy of itself. In summary, the two definitions of
+structure decomposability are equivalent, except compatibility implicitly assumes an arrangement of
+product scopes that is analogous to a vtree.
+
+The notion of a vtree (or compatibility for that matter) is key to more complex queries. For
+instance, given two probabilistic circuits $\mathcal{C}_1$ and $\mathcal{C}_2$, computing cross
+entropy between the two is $\bigo(|\mathcal{C}_1||\mathcal{C}_2|)$ as long as both have the same
+vtree and at least the circuit that needs to be log-computable is also deterministic. Likewise,
+computing the Kullback-Leibler (KL) divergence between $\mathcal{C}_1$ and $\mathcal{C}_2$ requires
+that the two share the same vtree and both be deterministic. Mutual Information (MI), in turn,
+calls for the circuit to be smooth, structure decomposable and an even stronger version of
+determinism where sums can only have one nonnegative valued child for any \emph{partial}
+assignment at a time. For a more detailed insight on the tractability of these (and other) queries,
+as well as proofs on these results, we point to the comprehensive study of \citet{vergari21}.
+
+A particularly interesting class of queries that becomes tractable when circuits are structure
+decomposable is expectation (\expc{}). One notable example from this class is computing the
+probability of logical events. This leads us to logic circuits, a parallel version of probabilistic
+circuits for logical reasoning.
+
+\section{Probabilistic Circuits as Knowledge Bases}
+
+We briefly and superficially mentioned in \cref{rem:optract} that PCs under a Boolean semiring with
+conjunctions and disjunctions as operators are known as Logic Circuits (LCs). In this section, we
+formally define LCs and more precisely show the connection between PCs and LCs.
+
+Logic circuits are computational graphs just like PCs, but whose input are always Booleans, scope
+is over propositional variables and computational units define either a conjunction, disjunction,
+literal ou constant. Similar to PCs, computing the satisfiability of an assignment is done by a
+bottom-up feedforward evaluation of the circuit.
+
+In terms of notation, we shall use \inode{\newOrNode} for disjunction nodes, \inode{\newAndNode}
+for conjunction nodes, $\bot$ and $\top$ for true and false constant nodes respectively, and $X$
+and $\neg X$ for propositional nodes.
+
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.3\textwidth}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+    \caption{}
+    \label{fig:lc1}
+  \end{subfigure}
+\end{figure}
+
+\begin{example}[breakable,sidebyside,lefthand width=0.55\textwidth]{BDDs as logic circuits}{bdd}
 \end{example}

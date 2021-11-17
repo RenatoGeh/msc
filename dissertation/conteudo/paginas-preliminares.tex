@@ -95,9 +95,10 @@ written in boldface (e.g. $\set{X}$, $\set{x}$). Given a Boolean formula $f$, we
 f\rangle$ to denote its semantics, i.e. the Boolean function represented by $f$. For Boolean
 formulas $f$ and $g$, we write $f\equiv g$ if they are logically equivalent, that is, if $\langle
 f\rangle = \langle g\rangle$; we abuse notation and write $\phi\equiv f$ to indicate that $\phi=
-\langle f\rangle$ for a Boolean function $\phi$. We use the notation $\lint a,b\rint$, with $b\geq
-a$ to denote the integer set $\{a,a+1,\ldots,b\}\subset\mathbb{Z}$. Similarly, we use $\lint b
-\rint$ as an equivalent for $\lint 1,b\rint$. In the context of graph theory, we use sans serif
+\langle f\rangle$ for a Boolean function $\phi$. We use the notation $[a..b]$, with $b\geq
+a$ to denote the integer set $\{a,a+1,\ldots,b\}\subset\mathbb{Z}$. Similarly, we use $[b]$ as an
+equivalent for $[1..b]$. We denote the Iverson bracket as $\liv\phi\riv$, i.e.\ a function that
+returns 1 if $\phi$ is true and 0 otherwise. In the context of graph theory, we use sans serif
 letters for graph nodes (e.g. $\Node$, $\Sum$, $\Prod$, $\Leaf$) and bold variants for sets of
 nodes (e.g. $\Nodes$, $\Sums$, $\Prods$, $\Leaves$). We call $\Ch(\Node)$ the set of all children
 of a node $\Node$, $\Pa(\Node)$ as the set of all parents, and $\Desc(\Node)$ the set of all
