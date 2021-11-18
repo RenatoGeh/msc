@@ -916,7 +916,7 @@ is the scope of $\mathcal{C}$. This reduces the problem to a divide-and-conquer 
 input node is individually maximized (see \Cref{alg:argmap} and \cpageref{proof:det} for a formal
 proof on its validity).
 
-\begin{example}[breakable,sidebyside,lefthand width=0.55\textwidth]{Naïve Bayes as probabilistic circuits}{nbayes}
+\begin{example}[sidebyside,lefthand width=0.55\textwidth]{Naïve Bayes as probabilistic circuits}{nbayes}
   Suppose we have samples of per capita census measurements on three different features, say age
   $A$, body mass index $B$ and average amount of cheese consumed daily $C$ from three different
   cities $Y$.  Assuming $A$, $B$ and $C$ are independent, given a sample $x=(a,b,c)$ we can use
@@ -1136,7 +1136,8 @@ We say that a vtree is linear, if either it is left-linear or right-linear. A le
 linear vtree is a vtree whose inner nodes all have leaf nodes on their right (resp. left) child.
 Similarly, a vtree is said to be left- (resp. right) leaning if the number of leaf nodes as right
 (resp. left) children is much higher then left (resp. right) children. Otherwise, it is a balanced
-vtree. \Cref{fig:vtree} shows a balanced vtree.
+vtree. The variable order of a vtree is the sequence of leaf nodes (i.e.\ variables) read from left
+to right. \Cref{fig:vtree} shows a balanced vtree with order $(A,B,C,D)$.
 
 Now that we understand what a vtree is, we can properly introduce \emph{structure decomposability},
 a stronger variant of decomposability. We say that a PC is 2-standard if it is standard and all of
@@ -1278,9 +1279,11 @@ circuits for logical reasoning.
 
 \section{Probabilistic Circuits as Knowledge Bases}
 
-We briefly and superficially mentioned in \Cref{rem:optract} that PCs under a Boolean semiring with
+We superficially mentioned in \Cref{rem:optract} that PCs under a Boolean semiring with
 conjunctions and disjunctions as operators are known as Logic Circuits (LCs). In this section, we
-formally define LCs and more precisely show the connection between PCs and LCs.
+formally yet briefly define LCs and more precisely show the connection between PCs and LCs.
+
+\subsection{From Certainty...}
 
 Logic circuits are computational graphs just like PCs, but whose input are always Booleans (and as
 such the scope is over propositional variables) and computational units define either a
@@ -1293,25 +1296,25 @@ conjunction nodes, and $X$ and $\neg X$ for literal nodes.
   \begin{subfigure}[t]{0.45\textwidth}
     \resizebox{\textwidth}{!}{
     \begin{tikzpicture}
-      \newOrNode[inputs=nn,fill=boxgreen]{r}{0,0};
-      \newAndNode[inputs=nn,fill=boxred!70]{p1}{$(r) + (-1,-1)$};
-      \newAndNode[inputs=nn,fill=boxred!70]{p2}{$(r) + (1,-1)$};
-      \newOrNode[inputs=nn,fill=boxpurple!60]{s1}{$(p1) + (-1.5,-1)$};
-      \newOrNode[inputs=nn,fill=boxpurple!60]{s2}{$(p2) + (1.5,-1)$};
-      \newAndNode[inputs=nn,fill=boxblue!80]{q1}{$(s1) + (-0.5,-1)$};
-      \newAndNode[inputs=nn,fill=boxblue!80]{q2}{$(s1) + (0.5,-1)$};
-      \newAndNode[inputs=nn,fill=boxblue!80]{q3}{$(s1) + (1.75,-1)$};
-      \newAndNode[inputs=nn,fill=boxblue!80]{q4}{$(s2) + (-1.75,-1)$};
-      \newAndNode[inputs=nn,fill=boxblue!80]{q5}{$(s2) + (-0.5,-1)$};
-      \newAndNode[inputs=nn,fill=boxblue!80]{q6}{$(s2) + (0.5,-1)$};
+      \newNamedOrNode[inputs=nn,fill=boxgreen]{r}{0,0}{1};
+      \newNamedAndNode[inputs=nn,fill=boxred!70]{p1}{$(r) + (-1,-1)$}{0};
+      \newNamedAndNode[inputs=nn,fill=boxred!70]{p2}{$(r) + (1,-1)$}{1};
+      \newNamedOrNode[inputs=nn,fill=boxpurple!60]{s1}{$(p1) + (-1.5,-1)$}{1};
+      \newNamedOrNode[inputs=nn,fill=boxpurple!60]{s2}{$(p2) + (1.5,-1)$}{1};
+      \newNamedAndNode[inputs=nn,fill=boxblue!80]{q1}{$(s1) + (-0.5,-1)$}{0};
+      \newNamedAndNode[inputs=nn,fill=boxblue!80]{q2}{$(s1) + (0.5,-1)$}{1};
+      \newNamedAndNode[inputs=nn,fill=boxblue!80]{q3}{$(s1) + (1.75,-1)$}{1};
+      \newNamedAndNode[inputs=nn,fill=boxblue!80]{q4}{$(s2) + (-1.75,-1)$}{0};
+      \newNamedAndNode[inputs=nn,fill=boxblue!80]{q5}{$(s2) + (-0.5,-1)$}{1};
+      \newNamedAndNode[inputs=nn,fill=boxblue!80]{q6}{$(s2) + (0.5,-1)$}{0};
       \node (c) at ($(q1) + (-0.5,-1)$) {$C$};
-      \newOrNode[inputs=nn,fill=boxorange!80]{z1}{$(q1) + (0.5,-1.5)$};
+      \newNamedOrNode[inputs=nn,fill=boxorange!80]{z1}{$(q1) + (0.5,-1.5)$}{1};
       \node (nc1) at ($(q2) + (0.5,-1)$) {$\neg C$};
       \node (nc2) at ($(q3) + (0.5,-1)$) {$\neg C$};
       \node (a1) at ($(q4) + (-0.5,-1)$) {$A$};
       \node (a2) at ($(q5) + (-0.5,-1)$) {$A$};
       \node (nb1) at ($(q5) + (0.3,-1)$) {$\neg B$};
-      \newOrNode[inputs=nn,fill=boxorange!80]{z2}{$(q6.input 1) + (0,-1.25)$};
+      \newNamedOrNode[inputs=nn,fill=boxorange!80]{z2}{$(q6.input 1) + (0,-1.25)$}{1};
       \node (na) at ($(q6) + (0.75,-1)$) {$\neg A$};
       \node (nd) at ($(z1) + (-0.5,-1)$) {$\neg D$};
       \node (d) at ($(z1) + (1.5,-1)$) {$D$};
@@ -1319,8 +1322,8 @@ conjunction nodes, and $X$ and $\neg X$ for literal nodes.
       \node (nb2) at ($(z2) + (0.5,-1)$) {$\neg B$};
       \draw[edge] (r.input 1) -- ++(0,-0.2) -| (p1);
       \draw[edge] (r.input 2) -- ++(0,-0.2) -| (p2);
-      \draw[edge] (p1.input 1) -- ++(0,-0.2) -| (s1);
-      \draw[edge] (p2.input 2) -- ++(0,-0.2) -| (s2);
+      \draw[edge] (p1.input 1) -- ++(0,-0.2) -| (s1.east);
+      \draw[edge] (p2.input 2) -- ++(0,-0.2) -| (s2.east);
       \draw[edge] (p1.input 2) -- ++(0,-0.4) -| (q4);
       \draw[edge] (p2.input 1) -- ++(0,-0.7) -| (q3);
       \draw[edge] (s1.input 1) -- ++(0,-0.2) -| (q1);
@@ -1328,8 +1331,8 @@ conjunction nodes, and $X$ and $\neg X$ for literal nodes.
       \draw[edge] (s2.input 1) -- ++(0,-0.2) -| (q5);
       \draw[edge] (s2.input 2) -- ++(0,-0.2) -| (q6);
       \draw[edge] (q1.input 1) -- ++(0,-0.2) -| (c);
-      \draw[edge] (q1.input 2) -- ++(0,-0.2) -| (z1);
-      \draw[edge] (q2.input 1) -- ++(0,-0.2) -| (z1);
+      \draw[edge] (q1.input 2) -- ++(0,-0.2) -| (z1.east);
+      \draw[edge] (q2.input 1) -- ++(0,-0.2) -| (z1.east);
       \draw[edge] (q2.input 2) -- ++(0,-0.2) -| (nc1);
       \draw[edge] (q3.input 1) -- ++(0,-0.2) -| (d);
       \draw[edge] (q3.input 2) -- ++(0,-0.2) -| (nc2);
@@ -1337,12 +1340,41 @@ conjunction nodes, and $X$ and $\neg X$ for literal nodes.
       \draw[edge] (q4.input 2) -- ++(0,-0.2) -| (b);
       \draw[edge] (q5.input 1) -- ++(0,-0.2) -| (a2);
       \draw[edge] (q5.input 2) -- ++(0,-0.2) -| (nb1);
-      \draw[edge] (q6.input 1) -- (z2);
+      \draw[edge] (q6.input 1) -- (z2.east);
       \draw[edge] (q6.input 2) -- ++(0,-0.2) -| (na);
       \draw[edge] (z1.input 2) -- ++(0,-0.2) -| (d);
       \draw[edge] (z1.input 1) -- ++(0,-0.2) -| (nd);
       \draw[edge] (z2.input 1) -- ++(0,-0.2) -| (b);
       \draw[edge] (z2.input 2) -- ++(0,-0.2) -| (nb2);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (r.input 1) -- ++(0,-0.15) -| (p1);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (r.input 2) -- ++(0,-0.15) -| (p2);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (p1.input 1) -- ++(0,-0.15) -| (s1.east);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (p2.input 2) -- ++(0,-0.15) -| (s2.east);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (p1.input 2) -- ++(0,-0.35) -| (q4);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (p2.input 1) -- ++(0,-0.65) -| (q3);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (s1.input 1) -- ++(0,-0.15) -| (q1);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (s1.input 2) -- ++(0,-0.15) -| (q2);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (s2.input 1) -- ++(0,-0.15) -| (q5);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (s2.input 2) -- ++(0,-0.15) -| (q6);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (q1.input 1) -- ++(0,-0.15) -| (c);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (q1.input 2) -- ++(0,-0.15) -| (z1.east);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (q2.input 1) -- ++(0,-0.15) -| (z1.east);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (q2.input 2) -- ++(0,-0.15) -| (nc1);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (q3.input 1) -- ++(0,-0.15) -| (d);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (q3.input 2) -- ++(0,-0.15) -| (nc2);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (q4.input 1) -- ++(0,-0.15) -| (a1);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (q4.input 2) -- ++(0,-0.15) -| (b);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (q5.input 1) -- ++(0,-0.15) -| (a2);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (q5.input 2) -- ++(0,-0.15) -| (nb1);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (q6.input 1) -- (z2.east);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (q6.input 2) -- ++(0,-0.15) -| (na);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (z1.input 2) -- ++(0,-0.15) -| (d);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (z1.input 1) -- ++(0,-0.15) -| (nd);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (z2.input 1) -- ++(0,-0.15) -| (b);
+      \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (z2.input 2) -- ++(0,-0.15) -| (nb2);
+      \node at ($(r) + (0,-6.5)$) {\colorbox{boxpink!50}{\color{white}$A=1\quad B=0\quad C=0\quad D=1$}};
+      \node (out) at ($(r) + (0,1.5)$) {\colorbox{boxgreen}{\color{white}$\phi(x)=1$}};
+      \draw[edge,boxdgray] (r.east) -- (out);
     \end{tikzpicture}
     }
     \caption{}
@@ -1362,16 +1394,16 @@ conjunction nodes, and $X$ and $\neg X$ for literal nodes.
       \newAndNode[inputs=nn,fill=boxblue!80]{q2}{$(s1) + (0.75,-1)$};
       \newAndNode[inputs=nn,fill=boxblue!80]{q3}{$(s2) + (-0.75,-1.5)$};
       \newOrNode[inputs=nn,fill=boxblue!80]{q4}{$(s2) + (0.75,-1.5)$};
-      \newOrNode[inputs=nn,fill=boxteal]{z1}{$(q1.input 1) + (0,-0.75)$};
+      \newOrNode[inputs=nn,fill=boxorange!80]{z1}{$(q1.input 1) + (0,-0.75)$};
       \node (b1) at ($(q1) + (0.5,-1)$) {$B$};
       \node (nb1) at ($(q2) + (-0.5,-1)$) {$\neg B$};
-      \newAndNode[inputs=nn,fill=boxteal]{z2}{$(q2) + (0.5,-1.0)$};
+      \newAndNode[inputs=nn,fill=boxorange!80]{z2}{$(q2) + (0.5,-1.0)$};
       \node (nc1) at ($(q3) + (-0.5,-1.5)$) {$\neg C$};
       \node (d1) at ($(q3) + (0.5,-1.5)$) {$D$};
       \node (b2) at ($(q4) + (-0.5,-1.5)$) {$B$};
       \node (nb2) at ($(q4) + (0.5,-1.5)$) {$\neg B$};
-      \newAndNode[inputs=nn,fill=boxorange!80]{t1}{$(z1) + (-0.5,-1)$};
-      \newAndNode[inputs=nn,fill=boxorange!80]{t2}{$(z1) + (0.5,-1)$};
+      \newAndNode[inputs=nn,fill=boxteal]{t1}{$(z1) + (-0.5,-1)$};
+      \newAndNode[inputs=nn,fill=boxteal]{t2}{$(z1) + (0.5,-1)$};
       \node (d2) at ($(z2) + (-0.5,-1)$) {$D$};
       \node (nc2) at ($(t1) + (-0.5,-1)$) {$\neg C$};
       \newOrNode[inputs=nn,fill=boxpink!50]{r1}{$(t1) + (0.5,-1)$};
@@ -1411,9 +1443,146 @@ conjunction nodes, and $X$ and $\neg X$ for literal nodes.
     \caption{}
     \label{fig:lc2}
   \end{subfigure}
-  \caption{Logic circuits encoding the logic constraint $\phi\equiv(A\wedge B)\vee(\neg C\wedge
-  D)$.}
+  \caption{Two smooth, structure decomposable and deterministic logic circuits encoding the same
+    logic constraint $\phi\equiv(A\wedge B)\vee(\neg C\wedge D)$ for a balanced (a) and a
+    right-linear (b) vtree with order $(A,B,C,D)$. In (a), a circuit evaluation for an assignment,
+    with each node value in the bottom-up evaluation pass shown inside nodes.}
+  \label{fig:logic}
 \end{figure}
 
-\begin{example}[breakable,sidebyside,lefthand width=0.55\textwidth]{BDDs as logic circuits}{bdd}
+\begin{definition}[Logic circuit]
+  A logic circuit $\mathcal{L}$ is a rooted connected DAG whose nodes compute either a conjunction
+  or a disjunction of their children. Nodes with no outgoing edges, i.e.\ \emph{literal} nodes, are
+  indicator functions of either a positive (true) or negative (false) assignment. Computing the
+  satisfiability of $\mathcal{L}$ amounts to a bottom-up feedforward pass from literal nodes to
+  root.
+\end{definition}
+
+Evidently, logic circuits are closely related to probabilistic circuits. The strikingly similar
+definitions are not coincidence: much of the literature on PCs have their origins on LCs. In fact,
+most structural constraints in PCs are the exact same (up to even their names\footnote{There are
+some exceptions. Smoothness is sometimes referred to as \emph{completeness} in PCs, while
+determinism has the alternative name of \emph{selectivity}.}) as their LC analogues. In this
+dissertation, we are particularly interested in the specific subset of smooth, structure
+decomposable and deterministic LCs, known as Sentential Decision Diagrams (SDDs,
+\cite{darwiche11}). \Cref{fig:logic} shows two SDDs encoding the same knowledge base but under
+different vtrees. The one on the left respects a balanced vtree and the one on the right a
+right-linear vtree, both with variable order $(A,B,C,D)$.
+
+Logic circuits have appeared in literature under the name of Negated Normal Form (NNF)
+\citep{darwiche01b,darwiche99}, a superset of other propositional compilation languages such as
+Binary Decision Diagrams (BDDs, \cite{bryant86}), Propositional DAGs (PDAGs, \cite{wachter06}),
+Sentential Decision Diagrams (SDDs, \cite{darwiche11}), DNFs and CNFs. Although no structural
+constraint is required for correctly evaluating satistifiability in logic circuits, the same
+properties defined in past sections have come up in LCs to enable other more complex queries like
+equivalence, implicates, sentential entailment and model counting, as well as transformations such
+as closed conditionings, forgetting, conjunctions and disjunctions \citep{darwiche02}. The
+succinctness (i.e. expressive efficiency) of LCs are also impacted by these structural restrictions
+\citep{gogic95,papadimitriou94,darwiche02}.  See \citet{darwiche02} and \citet{darwiche20} for more
+on logic circuits.
+
+\begin{example}[sidebyside,lefthand width=0.55\textwidth]{BDDs as logic circuits}{bdd}
+  A Binary Decision Diagram (BDD, \cite{bryant86}) defines a Boolean function over binary variables
+  as a rooted DAG. BDDs are a subset of smooth, structure decomposable and deterministic LCs (i.e.\
+  SDDs) whose vtrees are always right-linear.
+  \begin{center}
+    \begin{tikzpicture}
+      \node[draw,inner sep=2mm] (a) at (0,0) {$A$};
+      \node[draw,inner sep=2mm] (b1) at (-1.5, -1.0) {$B$};
+      \node[draw,inner sep=2mm] (b2) at (1.5, -1.0) {$B$};
+      \node[draw,inner sep=2mm] (c) at (0.0, -1.25) {$C$};
+      \node (F) at (-1.5, -3.0) {\large$\bot$};
+      \node (T) at (1.5, -3.0) {\large$\top$};
+      \draw[dashed] (a) -- (b1);
+      \draw (a) -- (b2);
+      \draw[dashed] (b1) -- (T);
+      \draw (b1) -- (F);
+      \draw[dashed] (b2) -- (T);
+      \draw (b2) -- (c);
+      \draw[dashed] (c) -- (F);
+      \draw (c) -- (T);
+    \end{tikzpicture}
+  \end{center}
+  In their usual notation, inner nodes are variables and leaves are constants $\bot$ and $\top$.
+  Evaluating an assignment $\set{x}\subseteq\{0,1\}^n$ is equivalent to a path from the root to a
+  leaf where each variable $X$ determines a decision to go through the dashed line when $x=0$ or
+  solid line when $x=1$. If the path ends at a $\top$, the function returns 1, otherwise it must
+  end at a $\bot$ and therefore returns 0. The BDD above encodes the following logic formula
+  \begin{equation*}
+    \phi(A,B,C)=(A\vee\neg B)\wedge(\neg B\vee C),
+  \end{equation*}
+  also shown as a truth table on the right, together with a logic circuit that encodes the same
+  truth table and its vtree.
+  \tcblower
+  \small%
+  \begin{center}
+    \begin{tabular}{ccc|c}
+      \hline
+      $A$ & $B$ & $C$ & $\phi(\set{x})$\\
+      \hline
+      0 & 0 & 0 & 1\\
+      1 & 0 & 0 & 1\\
+      0 & 1 & 0 & 0\\
+      1 & 1 & 0 & 0\\
+      0 & 0 & 1 & 1\\
+      1 & 0 & 1 & 1\\
+      0 & 1 & 1 & 0\\
+      1 & 1 & 1 & 1\\
+      \hline
+    \end{tabular}
+
+    Truth Table
+
+    \begin{tikzpicture}
+      \newOrNode[inputs=nn,fill=boxgreen]{r}{0,0};
+      \newAndNode[inputs=nn,fill=boxred!70]{p1}{$(r) + (-1,-1)$};
+      \newAndNode[inputs=nn,fill=boxred!70]{p2}{$(r) + (1,-1)$};
+      \node (a) at ($(p1) + (-0.5,-1)$) {$A$};
+      \newOrNode[inputs=nn,fill=boxpurple!60]{s1}{$(p1) + (0.5,-1)$};
+      \node (na) at ($(p2) + (0.5,-1)$) {$\neg A$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q1}{$(s1) + (-0.75,-1)$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q2}{$(s1) + (0.75,-1)$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q3}{$(p2.input 1) + (0,-1.75)$};
+      \node (b) at ($(q1) + (-0.5,-1)$) {$B$};
+      \node (c1) at ($(q1) + (0.5,-1)$) {$C$};
+      \newOrNode[inputs=nn,fill=boxorange!80]{z1}{$(q2.input 1) + (0,-0.75)$};
+      \node (nb) at ($(q3.input 2) + (0,-0.75)$) {$\neg B$};
+      \node (c) at ($(z1) + (-0.5,-1)$) {$C$};
+      \node (nc) at ($(z1) + (0.5,-1)$) {$C$};
+      \draw[edge] (r.input 1) -- ++(0,-0.2) -| (p1);
+      \draw[edge] (r.input 2) -- ++(0,-0.2) -| (p2);
+      \draw[edge] (s1.input 1) -- ++(0,-0.2) -| (q1);
+      \draw[edge] (s1.input 2) -- ++(0,-0.2) -| (q2);
+      \draw[edge] (p1.input 1) -- ++(0,-0.2) -| (a);
+      \draw[edge] (p1.input 2) -- ++(0,-0.2) -| (s1);
+      \draw[edge] (p2.input 1) -- (q3);
+      \draw[edge] (p2.input 2) -- ++(0,-0.2) -| (na);
+      \draw[edge] (q1.input 1) -- ++(0,-0.2) -| (b);
+      \draw[edge] (q1.input 2) -- ++(0,-0.2) -| (c1);
+      \draw[edge] (q2.input 1) -- (z1.east);
+      \draw[edge] (q2.input 2) -- (nb.north);
+      \draw[edge] (q3.input 1) -- (z1.east);
+      \draw[edge] (q3.input 2) -- (nb.north);
+      \draw[edge] (z1.input 1) -- ++(0,-0.2) -| (c);
+      \draw[edge] (z1.input 2) -- ++(0,-0.2) -| (nc);
+    \end{tikzpicture}
+
+    \vskip -0.25cm
+    Equivalent LC
+
+    \begin{tikzpicture}
+      \newVtreeNode{r}{0,0}{1};
+      \newVtreeNode{l}{$(r) + (0.75,-1)$}{2};
+      \node (x1) at ($(r) + (-0.75,-1)$) {$A$};
+      \node (x2) at ($(l) + (-0.75,-1)$) {$B$};
+      \node (x3) at ($(l) + (0.75,-1)$) {$C$};
+      \draw (r) -- (l); \draw (r) -- (x1);
+      \draw (l) -- (x2); \draw (l) -- (x3);
+    \end{tikzpicture}
+
+    \skip -0.35cm
+    Vtree
+  \end{center}
 \end{example}
+
+\subsection{...to Uncertainty}

@@ -105,7 +105,7 @@
   pages = {122--128},
 }
 
-@article{darwiche01,
+@article{darwiche01a,
   author = {Adnan Darwiche},
   title = {On the Tractable Counting of Theory Models and its Application to Truth Maintenance and Belief Revision},
   journal = {Journal of Applied Non-Classical Logics},
@@ -1783,4 +1783,76 @@ pages = {2100–2106},
 numpages = {7},
 location = {Barcelona, Catalonia, Spain},
 series = {IJCAI'11}
+}
+
+@inproceedings{darwiche99,
+  title={Compiling knowledge into decomposable negation normal form},
+  author={Darwiche, Adnan},
+  booktitle={IJCAI},
+  volume={99},
+  pages={284--289},
+  year={1999},
+}
+
+@article{darwiche01b,
+author = {Darwiche, Adnan},
+title = {Decomposable Negation Normal Form},
+year = {2001},
+issue_date = {July 2001},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {48},
+number = {4},
+issn = {0004-5411},
+url = {https://doi.org/10.1145/502090.502091},
+doi = {10.1145/502090.502091},
+abstract = {Knowledge compilation has been emerging recently as a new direction of research for dealing with the computational intractability of general propositional reasoning. According to this approach, the reasoning process is split into two phases: an off-line compilation phase and an on-line query-answering phase. In the off-line phase, the propositional theory is compiled into some target language, which is typically a tractable one. In the on-line phase, the compiled target is used to efficiently answer a (potentially) exponential number of queries. The main motivation behind knowledge compilation is to push as much of the computational overhead as possible into the off-line phase, in order to amortize that overhead over all on-line queries. Another motivation behind compilation is to produce very simple on-line reasoning systems, which can be embedded cost-effectively into primitive computational platforms, such as those found in consumer electronics.One of the key aspects of any compilation approach is the target language into which the propositional theory is compiled. Previous target languages included Horn theories, prime implicates/implicants and ordered binary decision diagrams (OBDDs). We propose in this paper a new target compilation language, known as decomposable negation normal form (DNNF), and present a number of its properties that make it of interest to the broad community. Specifically, we show that DNNF is universal; supports a rich set of polynomial--time logical operations; is more space-efficient than OBDDs; and is very simple as far as its structure and algorithms are concerned. Moreover, we present an algorithm for converting any propositional theory in clausal form into a DNNF and show that if the clausal form has a bounded treewidth, then its DNNF compilation has a linear size and can be computed in linear time (treewidth is a graph-theoretic parameter that measures the connectivity of the clausal form). We also propose two techniques for approximating the DNNF compilation of a theory when the size of such compilation is too large to be practical. One of the techniques generates a sound but incomplete compilation, while the other generates a complete but unsound compilation. Together, these approximations bound the exact compilation from below and above in terms of their ability to answer clausal entailment queries. Finally, we show that the class of polynomial--time DNNF operations is rich enough to support relatively complex AI applications, by proposing a specific framework for compiling model-based diagnosis systems.},
+journal = {J. ACM},
+month = {jul},
+pages = {608–647},
+numpages = {40},
+keywords = {Boolean functions, satisfiability, knowledge compilation, model-based diagnosis, propositional logic}
+}
+
+@book{papadimitriou94,
+  title={Computational Complexity},
+  author={Papadimitriou, C.H.},
+  isbn={9780201530827},
+  lccn={93005662},
+  series={Theoretical computer science},
+  year={1994},
+  publisher={Addison-Wesley}
+}
+
+@inproceedings{gogic95,
+author = {Gogic, Goran and Kautz, Henry and Papadimitriou, Christos and Selman, Bart},
+title = {The Comparative Linguistics of Knowledge Representation},
+year = {1995},
+isbn = {1558603638},
+abstract = {We develop a methodology for comparing knowledge representation formalisms in terms of their "representational succinctness," that is, their ability to express knowledge situations relatively efficiently. We use this framework for comparing many important formalisms for knowledge base representation: propositional logic, default logic, circumscription, and model preference defaults; and, at a lower level, Horn formulas, characteristic models, decision trees, disjunctive normal form, and conjunctive normal form. We also show that adding new variables improves the effective expressibility of certain knowledge representation formalisms.},
+booktitle = {Proceedings of the 14th International Joint Conference on Artificial Intelligence - Volume 1},
+pages = {862–869},
+numpages = {8},
+location = {Montreal, Quebec, Canada},
+series = {IJCAI'95}
+}
+
+@inproceedings{darwiche20,
+  author    = {Adnan Darwiche},
+  title     = {Three Modern Roles for Logic in AI},
+  year      = {2020},
+  booktitle = {Proceedings of the 39th Symposium on Principles of Database Systems (PODS)},
+}
+
+@inproceedings{wachter06,
+author = {Wachter, Michael and Haenni, Rolf},
+title = {Propositional DAGs: A New Graph-Based Language for Representing Boolean Functions},
+year = {2006},
+isbn = {9781577352716},
+abstract = {This paper continues the line of research on knowledge compilation in the context of Negation Normal Forms (NNF) and Binary Decision Diagrams (BDD). The idea is to analyze different target languages according to their succinctness and the classes of queries and transformations supported in polytime. We identify a new property called simple-negation, which is an implicit restriction of all NNFs and BDDs. The removal of this restriction leads to Propositional Directed Acyclic Graphs (PDAG), a more general family of graph-based languages for representing Boolean functions or propositional theories. With respect to certain NNF-based languages, we will show that corresponding PDAG-based languages are at least as succinct and support the same transformations. The most interesting language even supports the same queries and an additional transformation, making it more flexible.},
+booktitle = {Proceedings of the Tenth International Conference on Principles of Knowledge Representation and Reasoning},
+pages = {277–285},
+numpages = {9},
+location = {Lake District, UK},
+series = {KR'06}
 }
