@@ -772,7 +772,7 @@ procedures are formalized in the theorem below.
     \end{center}
     \caption{}
   \end{subfigure}
-  \caption{Decomposable but unsmooth (a), smooth but undecomposable (b), and smooth and
+  \caption{Decomposable but non-smooth (a), smooth but non-decomposable (b), and smooth and
   decomposable (c) circuits.}
 \end{figure}
 
@@ -1014,15 +1014,15 @@ especially interested in the scope partitioning aspect of vtrees.
   \Sc(\rch{v})$.
 \end{definition}
 
-Obviously the above definition is vague with regards to which child (i.e.\ graphically, left or
+Obviously, the above definition is vague with regards to which child (i.e.\ graphically, left or
 right) of $\Prod$ should respect the scope of which $v$ child. We therefore assume a fixed order
 for $\Prod$'s children and say that the (graphically) left child is called the \emph{prime} and
-(graphically) right child the \emph{sub}. This ultimately means that the scope of the prime (resp.
-sub) of $\Prod$ must be the same as the scope of the left (resp. right) child of $v$. Although the
-graphical concept of left and right is needed for easily visualizing the scope partitioning of a
-product with respect to a vtree node, we do not use it strictly. In fact, when the situation is
-unambiguous, we compactly represent the computational graph without adhering to the left-right
-convention in favor of readability.
+(graphically) right child the \emph{sub}, and refer to $\Prod$ as an \emph{element}. This
+ultimately means that the scope of the prime (resp.  sub) of $\Prod$ must be the same as the scope
+of the left (resp. right) child of $v$. Although the graphical concept of left and right is needed
+for easily visualizing the scope partitioning of a product with respect to a vtree node, we do not
+use it strictly. In fact, when the situation is unambiguous, we compactly represent the
+computational graph without adhering to the left-right convention in favor of readability.
 
 \begin{figure}[t]
   \begin{subfigure}[t]{0.25\textwidth}
@@ -1287,10 +1287,12 @@ formally yet briefly define LCs and more precisely show the connection between P
 
 Logic circuits are computational graphs just like PCs, but whose input are always Booleans (and as
 such the scope is over propositional variables) and computational units define either a
-conjunction, disjunction or literal of their inputs. Similar to PCs, computing the satisfiability
-of an assignment is done by a bottom-up feedforward evaluation of the circuit. In terms of
-notation, we shall use \inode{\newOrNode} for disjunction nodes, \inode{\newAndNode} for
-conjunction nodes, and $X$ and $\neg X$ for literal nodes.
+conjunction, disjunction or literal of their inputs. While the computational graph in PCs encodes
+uncertainty as a probability distribution, in LCs their computational graph encodes certain
+knowledge as a propositional language. Similar to PCs, computing the satisfiability of an
+assignment is done by a bottom-up feedforward evaluation of the circuit. In terms of notation, we
+shall use \inode{\newOrNode} for disjunction nodes, \inode{\newAndNode} for conjunction nodes, and
+$X$ and $\neg X$ for literal nodes.
 
 \begin{figure}[t]
   \begin{subfigure}[t]{0.45\textwidth}
@@ -1372,8 +1374,8 @@ conjunction nodes, and $X$ and $\neg X$ for literal nodes.
       \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (z1.input 1) -- ++(0,-0.15) -| (nd);
       \draw[<-,>=latex',boxdgray,transform canvas={xshift=-2pt}] (z2.input 1) -- ++(0,-0.15) -| (b);
       \draw[<-,>=latex',boxdgray,transform canvas={xshift=2pt}]  (z2.input 2) -- ++(0,-0.15) -| (nb2);
-      \node at ($(r) + (0,-6.5)$) {\colorbox{boxpink!50}{\color{white}$A=1\quad B=0\quad C=0\quad D=1$}};
-      \node (out) at ($(r) + (0,1.5)$) {\colorbox{boxgreen}{\color{white}$\phi(x)=1$}};
+      \node at ($(r) + (0,-6.5)$) {\colorbox{boxpink!50}{\color{white}$\mathbf{A=1\quad B=0\quad C=0\quad D=1}$}};
+      \node (out) at ($(r) + (0,1.5)$) {\colorbox{boxgreen}{\color{white}$\mathbf{\bm{\phi}(x)=1}$}};
       \draw[edge,boxdgray] (r.east) -- (out);
     \end{tikzpicture}
     }
@@ -1445,8 +1447,8 @@ conjunction nodes, and $X$ and $\neg X$ for literal nodes.
   \end{subfigure}
   \caption{Two smooth, structure decomposable and deterministic logic circuits encoding the same
     logic constraint $\phi\equiv(A\wedge B)\vee(\neg C\wedge D)$ for a balanced (a) and a
-    right-linear (b) vtree with order $(A,B,C,D)$. In (a), a circuit evaluation for an assignment,
-    with each node value in the bottom-up evaluation pass shown inside nodes.}
+  right-linear (b) vtree. In (a), a circuit evaluation for an assignment, with each node value in
+the bottom-up evaluation pass shown inside nodes.}
   \label{fig:logic}
 \end{figure}
 
@@ -1467,7 +1469,7 @@ dissertation, we are particularly interested in the specific subset of smooth, s
 decomposable and deterministic LCs, known as Sentential Decision Diagrams (SDDs,
 \cite{darwiche11}). \Cref{fig:logic} shows two SDDs encoding the same knowledge base but under
 different vtrees. The one on the left respects a balanced vtree and the one on the right a
-right-linear vtree, both with variable order $(A,B,C,D)$.
+right-linear vtree.
 
 Logic circuits have appeared in literature under the name of Negated Normal Form (NNF)
 \citep{darwiche01b,darwiche99}, a superset of other propositional compilation languages such as
@@ -1548,7 +1550,7 @@ on logic circuits.
       \newOrNode[inputs=nn,fill=boxorange!80]{z1}{$(q2.input 1) + (0,-0.75)$};
       \node (nb) at ($(q3.input 2) + (0,-0.75)$) {$\neg B$};
       \node (c) at ($(z1) + (-0.5,-1)$) {$C$};
-      \node (nc) at ($(z1) + (0.5,-1)$) {$C$};
+      \node (nc) at ($(z1) + (0.5,-1)$) {$\neg C$};
       \draw[edge] (r.input 1) -- ++(0,-0.2) -| (p1);
       \draw[edge] (r.input 2) -- ++(0,-0.2) -| (p2);
       \draw[edge] (s1.input 1) -- ++(0,-0.2) -| (q1);
@@ -1586,3 +1588,110 @@ on logic circuits.
 \end{example}
 
 \subsection{...to Uncertainty}
+
+Logic circuits are easily extensible to probabilistic circuits. In fact, if we think of an LC as
+the support of a PC the connections between the two come naturally. Suppose a 2-standard smooth,
+structure decomposable and deterministic probabilistic circuit $\mathcal{C}$ over binary variables.
+We can construct an identically structured logic circuit (up to input nodes) $\mathcal{L}$ with
+same vtree as $\mathcal{C}$ whose underlying Boolean function encodes $\phi(\set{x})=
+\left\liv\mathcal{C}(\set{x})>0\right\riv$. Products in $\mathcal{L}$ are replaced with
+conjunctions in $\mathcal{L}$, and sums with disjunctions. Input nodes from $\mathcal{C}$ are
+replaced with a literal node if the function is degenerate, or with a disjunction over positive and
+negative literals otherwise. This makes sure $\mathcal{L}$ acts as the support of $\mathcal{C}$, as
+each disjunction node $\Sum_{\mathcal{L}}$ of $\mathcal{L}$ defines
+\begin{equation*}
+  \Sum_\mathcal{L}(\set{x})=\bigvee_{\Child\in\Ch_{\mathcal{C}}(\Sum_\mathcal{L})}\left\liv
+  \Child_p(\set{x})>0\right\riv\wedge\left\liv\Child_s(\set{x})>0\right\riv,
+\end{equation*}
+where $\Ch_{\mathcal{C}}(\Sum)$ retrieves the children of $\Sum$'s corresponding sum node in
+$\mathcal{C}$, with $\Child_p(\set{x})$ and $\Child_s(\set{x})$ the probabilities of $\Child$'s
+prime and sub respectively. The corresponding sum node $\Sum_{\mathcal{C}}$ in $\mathcal{C}$ then
+only attributes a weight (i.e.\ probability) to each positive element as usual
+\begin{equation*}
+  \Sum_\mathcal{C}(\set{x})=\sum_{\Child\in\Ch(\Sum_\mathcal{C})}w_{\Sum_\mathcal{C},\Child}\cdot
+  \Child_p(\set{x})\cdot\Child_s(\set{x}).
+\end{equation*}
+
+\begin{example}[sidebyside,lefthand width=0.55\textwidth]{Embedding certain knowledge in probabilistic circuits}{pcsupp}
+
+  Recall the logic circuit $\mathcal{L}$ from \Cref{eg:bdd}. Imagine we wish to model the
+  uncertainty coming from all assignments where $\mathcal{L}(\set{x})=1$. In other words, we want
+  to assign a positive probability to all true entries in the previous example's truth table,
+  turning it into a probability table. The table on the right shows the chosen probabilities for
+  each instance. Naturally, they all sum to one, with logically impossible assignments set to zero.
+
+  Compiling an LC into a PC is straightforward: replace conjunctions with product nodes and
+  disjunctions with sum nodes. Input nodes are left untouched, as literal nodes are just degenerate
+  probability distributions. Sum weights are what ultimately define the probabilities in the
+  probability table. The PC on the right is the result of the compilation of $\mathcal{L}$ into a
+  probabilistic circuit whose distribution is defined by the probability table above it. When we
+  mean to say that a PC has its support defined by its underlying LC, then we use the logic gate
+  notation with the added weights on edges coming out from \inode{\newOrNode} nodes.
+
+  \tcblower
+  \small%
+  \begin{center}
+    \begin{tabular}{ccc|cc}
+      \hline
+      $A$ & $B$ & $C$ & $\phi(\set{x})$ & $p(\set{x})$\\
+      \hline
+      0 & 0 & 0 & 1 & 0.140\\
+      1 & 0 & 0 & 1 & 0.024\\
+      0 & 1 & 0 & 0 & 0.000\\
+      1 & 1 & 0 & 0 & 0.000\\
+      0 & 0 & 1 & 1 & 0.560\\
+      1 & 0 & 1 & 1 & 0.096\\
+      0 & 1 & 1 & 0 & 0.000\\
+      1 & 1 & 1 & 1 & 0.180\\
+      \hline
+    \end{tabular}
+
+    Probability Table
+
+    \begin{tikzpicture}
+      \newOrNode[inputs=nn,fill=boxgreen]{r}{0,0};
+      \newAndNode[inputs=nn,fill=boxred!70]{p1}{$(r) + (-1,-1)$};
+      \newAndNode[inputs=nn,fill=boxred!70]{p2}{$(r) + (1.5,-1)$};
+      \node (a) at ($(p1) + (-0.5,-1)$) {$A$};
+      \newOrNode[inputs=nn,fill=boxpurple!60]{s1}{$(p1) + (0.5,-1.25)$};
+      \node (na) at ($(p2) + (0.5,-1)$) {$\neg A$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q1}{$(s1) + (-0.75,-1)$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q2}{$(s1) + (0.75,-1)$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q3}{$(p2.input 1) + (0,-2.0)$};
+      \node (b) at ($(q1) + (-0.5,-1)$) {$B$};
+      \node (c1) at ($(q1) + (0.5,-1)$) {$C$};
+      \newOrNode[inputs=nn,fill=boxorange!80]{z1}{$(q2.input 1) + (0,-1.0)$};
+      \node (nb) at ($(q3.input 2) + (0,-1.0)$) {$\neg B$};
+      \node (c) at ($(z1) + (-0.5,-1)$) {$C$};
+      \node (nc) at ($(z1) + (0.5,-1)$) {$\neg C$};
+      \draw[edge] (r.input 1) -- ++(0,-0.2) -| node[near start,above left] {$0.3$} (p1);
+      \draw[edge] (r.input 2) -- ++(0,-0.2) -| node[near start,above right] {$0.7$} (p2);
+      \draw[edge] (s1.input 1) -- ++(0,-0.2) -| node[near start,above left] {$0.6$} (q1);
+      \draw[edge] (s1.input 2) -- ++(0,-0.2) -| node[near start,above right] {$0.4$} (q2);
+      \draw[edge] (p1.input 1) -- ++(0,-0.2) -| (a);
+      \draw[edge] (p1.input 2) -- ++(0,-0.2) -| (s1);
+      \draw[edge] (p2.input 1) -- (q3);
+      \draw[edge] (p2.input 2) -- ++(0,-0.2) -| (na);
+      \draw[edge] (q1.input 1) -- ++(0,-0.2) -| (b);
+      \draw[edge] (q1.input 2) -- ++(0,-0.2) -| (c1);
+      \draw[edge] (q2.input 1) -- (z1.east);
+      \draw[edge] (q2.input 2) -- (nb.north);
+      \draw[edge] (q3.input 1) -- (z1.east);
+      \draw[edge] (q3.input 2) -- (nb.north);
+      \draw[edge] (z1.input 1) -- ++(0,-0.2) -| node[near start,above left] {$0.8$} (c);
+      \draw[edge] (z1.input 2) -- ++(0,-0.2) -| node[near start,above right] {$0.2$} (nc);
+    \end{tikzpicture}
+
+    \vskip -0.25cm
+    Probabilistic Circuit
+  \end{center}
+\end{example}
+
+This compatibility between logic and probabilistic circuits allows certain knowledge to be embedded
+into an uncertain model by constructing a computational graph whose underlying logic circuit
+correctly attributes positive values only to the support of the distribution. An alternative use
+case for logic circuits within the context of probabilistic reasoning is querying for the
+probability of logical events.
+
+Let $\mathcal{C}$ a 
+
