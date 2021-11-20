@@ -262,3 +262,33 @@ contains only products or inputs and every product node contains only \emph{two}
   all input nodes, in which case we simply maximize the supposedly tractable functions. Once these
   are computed, we unroll the induction, maximizing over all values.
 \end{proof}
+
+\expc*
+\begin{proof}
+  For completeness, we show the proof of this claim as stated in \cite{choi20}. We assume, without
+  loss of generality, that the layers of both $\mathcal{C}$ and $\mathcal{L}$ are compatible, i.e.\
+  they both have the same number of layers and if the $i$-th layer of $\mathcal{C}$ is made out of
+  sums (resp. products), then the $i$-th layer of $\mathcal{L}$ is made out of disjunctions (resp.
+  conjunctions). The expectation $\mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]$ has the following
+  form when the root of $\mathcal{C}$ is a product
+  \begin{align*}
+    \mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]&=\int\mathcal{C}(\set{x})\mathcal{L}(\set{x})\dif\set{x}=
+    \int\left(\mathcal{C}_p(\set{x})\mathcal{C}_s(\set{x})\right)
+    \left(\mathcal{L}_p(\set{x})\mathcal{L}_s(\set{x})\right)\dif\set{x}\\
+    &=\int\left(\mathcal{C}_p(\set{x})\mathcal{L}_p(\set{x})\right)\left(\mathcal{C}_s(\set{x})\mathcal{L}_s(\set{x})\right)\dif\set{x}
+    =\int\left(\mathcal{C}_p(\set{x})\mathcal{L}_p(\set{x})\right)\dif\set{x}
+    \int\left(\mathcal{C}_s(\set{x})\mathcal{L}_s(\set{x})\right)\dif\set{x}\\
+    &=\mathbb{E}_{\mathcal{C}_p}\left[\mathcal{L}_p\right]\cdot\mathbb{E}_{\mathcal{C}_s}\left[\mathcal{L}_s\right],
+  \end{align*}
+  where the subscript $p$ and $s$ indicate the prime and sub of a node. When the root is a sum
+  \begin{align*}
+    \mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]&=\int\mathcal{C}(\set{x})\mathcal{L}(\set{x})\dif\set{x}
+    =\int\left(\sum_{\Child'\in\Ch(\mathcal{C})}w_{\mathcal{C},\Child'}\Child'(\set{x})\right)
+    \left(\sum_{\Child''\in\Ch(\mathcal{L})}\Child''(\set{x})\right)\dif\set{x}\\
+    &=\int\sum_{\Child'\in\Ch(\mathcal{C})}\sum_{\Child''\in\Ch(\mathcal{L})}w_{\mathcal{C},\Child'}\cdot\Child'(\set{x})\cdot\Child''(\set{x})\dif\set{x}
+    =\sum_{\Child'\in\Ch(\mathcal{C})}\sum_{\Child''\in\Ch(\mathcal{L})}w_{\mathcal{C},\Child'}\int\Child'(\set{x})\Child''(\set{x})\dif\set{x}\\
+    &=\sum_{\Child'\in\Ch(\mathcal{C})}\sum_{\Child''\in\Ch(\mathcal{L})}w_{\mathcal{C},\Child'}\cdot\mathbb{E}_{\Child'}\left[\Child''\right].
+  \end{align*}
+  Therefore, if expectation is tractable for input nodes, then expectation is tractable for the
+  whole circuit.
+\end{proof}

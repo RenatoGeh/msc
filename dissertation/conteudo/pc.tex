@@ -795,9 +795,9 @@ $\mathcal{C}$. For \con{}, it suffices to run two \mar{}s.
     \For{each $\Node$ in reverse topological order}
       \IIf{$\Node$ is an input}{$v_{\Node}\gets\Node(\set{x})$}
       \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
-      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}
+      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
     \EndFor%
-    \State \textbf{return} $v_{\normalfont{R}}$, where $\normalfont{R}$ is $\mathcal{C}$'s root
+    \State \textbf{return} $v_{\normalfont{R}}$, where $\textsf{R}$ is $\mathcal{C}$'s root
   \end{algorithmic}
 \end{algorithm}
 \begin{algorithm}[t]
@@ -809,9 +809,9 @@ $\mathcal{C}$. For \con{}, it suffices to run two \mar{}s.
     \For{each $\Node$ in reverse topological order}
       \IIf{$\Node$ is an input}{$v_{\Node}\gets\int\Node(\set{x},\set{y})\dif\set{y}$}
       \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
-      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}
+      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
     \EndFor%
-    \State \textbf{return} $v_{\normalfont{R}}$, where $\normalfont{R}$ is $\mathcal{C}$'s root
+    \State \textbf{return} $v_{\normalfont{R}}$, where $\textsf{R}$ is $\mathcal{C}$'s root
   \end{algorithmic}
 \end{algorithm}
 
@@ -874,9 +874,9 @@ propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, w
     \For{each $\Node$ in reverse topological order}
       \IIf{$\Node$ is an input}{$v_{\Node}\gets\max_{\set{y}}\Node(\set{y},\set{x})$}
       \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\max_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
-      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}
+      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
     \EndFor%
-    \State \textbf{return} $v_{\normalfont{R}}/\mathcal{\set{x}}$, where $\normalfont{R}$ is
+    \State \textbf{return} $v_{\normalfont{R}}/\mathcal{C}(\set{x})$, where $\textsf{R}$ is
     $\mathcal{C}$'s root
   \end{algorithmic}
 \end{algorithm}
@@ -889,7 +889,7 @@ propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, w
     \State $\Nodes\gets\textproc{MaxInducedTree}(\mathcal{C}, v)$
     \State Call $\set{y}$ the set of initially empty $\argmax$ states
     \For{each input node $\Leaf\in\Nodes$}
-      \State $\set{y}\gets\set{y}\cup\argmax_{\set{z}}\Node(\set{z},\set{x})$
+      \State $\set{y}\gets\set{y}\cup\argmax_{\set{z}}\Node(\set{z},\set{x})$%
     \EndFor%
     \State \textbf{return} $\set{y}$
   \end{algorithmic}
@@ -1594,7 +1594,8 @@ the support of a PC the connections between the two come naturally. Suppose a 2-
 structure decomposable and deterministic probabilistic circuit $\mathcal{C}$ over binary variables.
 We can construct an identically structured logic circuit (up to input nodes) $\mathcal{L}$ with
 same vtree as $\mathcal{C}$ whose underlying Boolean function encodes $\phi(\set{x})=
-\left\liv\mathcal{C}(\set{x})>0\right\riv$. Products in $\mathcal{L}$ are replaced with
+\left\liv\mathcal{C}(\set{x})>0\right\riv$. Since sums act exactly like disjunctions and products
+like conjunctions under the Boolean semiring, products in $\mathcal{L}$ are replaced with
 conjunctions in $\mathcal{L}$, and sums with disjunctions. Input nodes from $\mathcal{C}$ are
 replaced with a literal node if the function is degenerate, or with a disjunction over positive and
 negative literals otherwise. This makes sure $\mathcal{L}$ acts as the support of $\mathcal{C}$, as
@@ -1637,11 +1638,11 @@ only attributes a weight (i.e.\ probability) to each positive element as usual
       \hline
       0 & 0 & 0 & 1 & 0.140\\
       1 & 0 & 0 & 1 & 0.024\\
-      0 & 1 & 0 & 0 & 0.000\\
-      1 & 1 & 0 & 0 & 0.000\\
+      0 & 1 & 0 & 0 & \textcolor{gray}{0.000}\\
+      1 & 1 & 0 & 0 & \textcolor{gray}{0.000}\\
       0 & 0 & 1 & 1 & 0.560\\
       1 & 0 & 1 & 1 & 0.096\\
-      0 & 1 & 1 & 0 & 0.000\\
+      0 & 1 & 1 & 0 & \textcolor{gray}{0.000}\\
       1 & 1 & 1 & 1 & 0.180\\
       \hline
     \end{tabular}
@@ -1691,7 +1692,47 @@ This compatibility between logic and probabilistic circuits allows certain knowl
 into an uncertain model by constructing a computational graph whose underlying logic circuit
 correctly attributes positive values only to the support of the distribution. An alternative use
 case for logic circuits within the context of probabilistic reasoning is querying for the
-probability of logical events.
+probability of logical events, i.e.\ the expectation of a logic query with respect to a
+distribution. This kind of query is enabled by the following result.
 
-Let $\mathcal{C}$ a 
+\begin{algorithm}[t]
+  \caption{\expc}\label{alg:expc}
+  \begin{algorithmic}[1]
+    \Require A smooth, structure decomposable PC $\mathcal{C}$ and LC $\mathcal{L}$ both with vtree
+      $\vtree$
+    \Ensure The expectation $\mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]=\int\mathcal{C}(\set{x})
+      \mathcal{L}(\set{x})\dif\set{x}$
+    \State Let $v$ a hash function mapping a node to its expectation
+    \For{each pair of nodes $(\Node_\mathcal{C},\Node_\mathcal{L})$ in reverse topological order}\label{alg:expc:line:top}
+      \IIf{$\Node_\mathcal{C}$ is an input}{$v_{\Node_\mathcal{C}}\gets
+        \mathbb{E}_{\Node_\mathcal{C}}\left[\Node_\mathcal{L}\right]$}
+      \IElseIf{$\Node_\mathcal{C}$ is a product}{$v_{\Node_\mathcal{C}}\gets
+        \prod_{\Child\in\Ch(\Node_\mathcal{C})}v_{\Child}$}
+      \IElseIf{$\Node_\mathcal{C}$ is a sum}{$v_{\Node_\mathcal{C}}\gets
+        \sum_{\Child'\in\Ch(\Node_\mathcal{C})}\sum_{\Child''\in\Ch(\Node_\mathcal{L})}
+        w_{\Sum,\Child'}\cdot v_{\Node_{\Child'}}$}%
+    \EndFor%
+    \State \textbf{return} $v_R$, where $\textsf{R}$ is $\mathcal{C}$'s root
+  \end{algorithmic}
+\end{algorithm}
 
+\begin{restatable}[\cite{choi20}]{theorem}{expc}
+  If $\mathcal{C}$ is a smooth and structure decomposable probabilistic circuit with vtree
+  $\vtree$, and $\mathcal{L}$ a structure decomposable logic circuit also respecting $\vtree$, then
+  $\mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]$ is polynomial time computable (in the number of
+  edges).
+\end{restatable}
+
+Let $\mathcal{C}$ a smooth and structure decomposable circuit with vtree $\vtree$, and
+$\mathcal{L}$ a logic circuit representing a logical query whose vtree is also $\vtree$. Computing
+the probability of $\mathcal{L}$ with respect to the distribution encoded by $\mathcal{C}$ is done
+by a bottom-up evaluation over both circuits at the same time. \Cref{alg:expc} shows the procedure
+algorithmically. Importantly, the procedure relies on evaluating the expectation for each node in
+a reverse topological fashion according to \ref{alg:expc:line:top}. This paired reverse
+topological sorting is done by a recursive assignment. For product nodes, primes are paired with
+primes, and subs with subs; for sums, each combination of PC child with LC child is paired up.
+
+\begin{example}[sidebyside,lefthand width=0.55\textwidth]{Computing the probability of logical events}{problog}
+\tcblower
+
+\end{example}
