@@ -1781,7 +1781,7 @@ primes, and subs with subs; for sums, each combination of PC child with LC child
   compute the probability of a logical event, say $\phi\equiv A\vee\neg B$. A naïve approach would
   be to go over each assignment $\set{x}$ where $\phi(\set{x})=1$, and compute their sum. This is
   obviously exponential on the number of variables. Instead, we may compile $\phi$ into the logic
-  circuit below and run the \expc{} algorithm to (in polynomial time) compute this otherwise
+  circuit above and run the \expc{} algorithm to (in polynomial time) compute this otherwise
   intractable marginalization. Running the \expc{} gives us a probability of
   $0.6415=1.0-(0.1365+0.2220)$, which is exactly the desired probability.
 \tcblower

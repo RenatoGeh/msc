@@ -1,4 +1,36 @@
 \chapter{Learning Probabilistic Circuits}
 \label{ch:learning}
 
-asdkladj
+As we have seen in \Cref{ch:pc}, inference in probabilistic circuits is, for the most part,
+straightforward.  This is not so much the case when \emph{learning} PCs. Despite the uncomplicated
+syntax, learning sufficiently expressive PCs in a principled way is comparatively harder to, say
+the usual neural network. For a start, we are usually required to comply with smoothness and
+decomposability to ensure marginalization at the least. This restriction excludes the possibility
+of adopting any of the most popular neural network patterns or architectures used in deep learning
+today. To make matters worse, constructing a PC graph more often than not involves costly
+statistical tests that make learning their structure a challenge for high dimensional data.
+
+In this chapter, we review the most popular PC structure learning algorithms, their pros and cons,
+and more importantly, what can we learn from them to efficiently build scalable probabilistic
+circuits. We broadly divide existing structure learners into three main categories:
+divide-and-conquer (\divclass{}, \Cref{sec:divconq}), iterative methods (\iterclass{},
+\Cref{sec:iterative}) and random approaches (\randclass{}, \Cref{sec:random}).
+
+\section{Divide-and-Conquer Learning}
+\label{sec:divconq}
+
+Arguably the most popular approach to learning the structure of probabilistic circuits are
+algorithms that follow a \emph{divide-and-conquer} scheme. This class of PC learning algorithms,
+which here we denote by \divclass{}, are characterized by recursive calls over partitions of data
+in true divide-and-conquer fashion. This kind of procedure is more clearly visualized by
+\textproc{LearnSPN}, the first (and most well-known) of its class.
+
+\subsection{\textproc{LearnSPN}}
+
+aslk
+
+\section{Iterative Learning}
+\label{sec:iterative}
+
+\section{Random Learning}
+\label{sec:random}
