@@ -439,7 +439,7 @@ form circuit. Any PC can be transformed into a \emph{standardized} circuit, a pr
   inducing a credal set \citep{cozman00} for measuring imprecision.
 
   Other works include PCs with quotients \citep{sharir18a}, transformations \citep{pevny20a}, max
-  \citep{melibari16}, and einsum \citep{peharz20b} operations.
+  \citep{melibari16a}, and einsum \citep{peharz20b} operations.
 \end{remark}
 
 Before we address the key components that make PCs interesting tractable
@@ -1702,21 +1702,21 @@ distribution. This kind of query is enabled by the following result.
       $\vtree$
     \Ensure The expectation $\mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]=\int\mathcal{C}(\set{x})
       \mathcal{L}(\set{x})\dif\set{x}$
-    \State Let $v$ a hash function mapping a node to its expectation
+    \State Let $v$ a hash function mapping a pair of nodes to an expectation
     \For{each pair of nodes $(\Node_\mathcal{C},\Node_\mathcal{L})$ in reverse topological order}\label{alg:expc:line:top}
-      \IIf{$\Node_\mathcal{C}$ is an input}{$v_{\Node_\mathcal{C}}\gets
+      \IIf{$\Node_\mathcal{C}$ is an input}{$v_{\Node_\mathcal{C},\Node_\mathcal{L}}\gets
         \mathbb{E}_{\Node_\mathcal{C}}\left[\Node_\mathcal{L}\right]$}
-      \IElseIf{$\Node_\mathcal{C}$ is a product}{$v_{\Node_\mathcal{C}}\gets
-        \prod_{\Child\in\Ch(\Node_\mathcal{C})}v_{\Child}$}
-      \IElseIf{$\Node_\mathcal{C}$ is a sum}{$v_{\Node_\mathcal{C}}\gets
+      \IElseIf{$\Node_\mathcal{C}$ is a product}{$v_{\Node_\mathcal{C},\Node_\mathcal{L}}\gets
+        \prod_{\Child\in\Ch(\Node_\mathcal{C})}v_{\Child_\mathcal{C},\Child_\mathcal{L}}$}
+      \IElseIf{$\Node_\mathcal{C}$ is a sum}{$v_{\Node_\mathcal{C},\Node_\mathcal{L}}\gets
         \sum_{\Child'\in\Ch(\Node_\mathcal{C})}\sum_{\Child''\in\Ch(\Node_\mathcal{L})}
-        w_{\Sum,\Child'}\cdot v_{\Node_{\Child'}}$}%
+        w_{\Sum,\Child'}\cdot v_{\Child',\Child''}$}%
     \EndFor%
     \State \textbf{return} $v_R$, where $\textsf{R}$ is $\mathcal{C}$'s root
   \end{algorithmic}
 \end{algorithm}
 
-\begin{restatable}[\cite{choi20}]{theorem}{expc}
+\begin{restatable}[\cite{choi20}]{theorem}{expcthm}
   If $\mathcal{C}$ is a smooth and structure decomposable probabilistic circuit with vtree
   $\vtree$, and $\mathcal{L}$ a structure decomposable logic circuit also respecting $\vtree$, then
   $\mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]$ is polynomial time computable (in the number of
@@ -1733,6 +1733,157 @@ topological sorting is done by a recursive assignment. For product nodes, primes
 primes, and subs with subs; for sums, each combination of PC child with LC child is paired up.
 
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Computing the probability of logical events}{problog}
+  \begin{wrapfigure}{r}{0.45\textwidth}
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \newOrNode[inputs=nn,fill=boxgreen]{r}{0,0};
+      \newAndNode[inputs=nn,fill=boxred!70]{p1}{$(r) + (-1,-1)$};
+      \newAndNode[inputs=nn,fill=boxred!70]{p2}{$(r) + (1,-1)$};
+      \node (a) at ($(p1) + (-1,-1)$) {$A$};
+      \newOrNode[inputs=nn,fill=boxpurple!60]{s1}{$(p1.input 2) + (0,-0.75)$};
+      \node (na) at ($(p2) + (-1,-1)$) {$\neg A$};
+      \newOrNode[inputs=nn,fill=boxpurple!60]{s2}{$(p2.input 2) + (0,-0.75)$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q1}{$(s1) + (0,-0.75)$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q2}{$(s2) + (0,-0.75)$};
+      \newOrNode[inputs=nn,fill=orange!80]{bb}{$(q1) + (-1,-1)$};
+      \newOrNode[inputs=nn,fill=orange!80]{bc1}{$(q1) + (1,-1)$};
+      \node (nb) at ($(q2.input 1) + (0,-0.75)$) {$\neg B$};
+      \newOrNode[inputs=nn,fill=orange!80]{bc2}{$(q2) + (1,-1)$};
+      \node (b1) at ($(bb) + (-0.5,-1)$) {$B$};
+      \node (nb1) at ($(bb) + (0.5,-1)$) {$\neg B$};
+      \node (c1) at ($(bc1) + (-0.5,-1)$) {$C$};
+      \node (nc1) at ($(bc1) + (0.5,-1)$) {$\neg C$};
+      \node (c2) at ($(bc2) + (-0.5,-1)$) {$C$};
+      \node (nc2) at ($(bc2) + (0.5,-1)$) {$\neg C$};
+      \draw[edge] (r.input 1) -- ++(0,-0.2) -| (p1);
+      \draw[edge] (r.input 2) -- ++(0,-0.2) -| (p2);
+      \draw[edge] (p1.input 1) -- ++(0,-0.2) -| (a);
+      \draw[edge] (p2.input 1) -- ++(0,-0.2) -| (na);
+      \draw[edge] (p1.input 2) -- (s1);
+      \draw[edge] (p2.input 2) -- (s2);
+      \draw[edge] (s1) -- (q1);
+      \draw[edge] (s2) -- (q2);
+      \draw[edge] (q1.input 1) -- ++(0,-0.2) -| (bb);
+      \draw[edge] (q1.input 2) -- ++(0,-0.2) -| (bc1);
+      \draw[edge] (q2.input 1) -- (nb);
+      \draw[edge] (q2.input 2) -- ++(0,-0.2) -| (bc2);
+      \draw[edge] (bb.input 1) -- ++(0,-0.2) -| (b1);
+      \draw[edge] (bb.input 2) -- ++(0,-0.2) -| (nb1);
+      \draw[edge] (bc1.input 1) -- ++(0,-0.2) -| (c1);
+      \draw[edge] (bc1.input 2) -- ++(0,-0.2) -| (nc1);
+      \draw[edge] (bc2.input 1) -- ++(0,-0.2) -| (c2);
+      \draw[edge] (bc2.input 2) -- ++(0,-0.2) -| (nc2);
+    \end{tikzpicture}
+    }
+  \end{wrapfigure}
+  Say we have a PC encoding the distribution shown in the table on the right. Suppose we wish to
+  compute the probability of a logical event, say $\phi\equiv A\vee\neg B$. A naïve approach would
+  be to go over each assignment $\set{x}$ where $\phi(\set{x})=1$, and compute their sum. This is
+  obviously exponential on the number of variables. Instead, we may compile $\phi$ into the logic
+  circuit below and run the \expc{} algorithm to (in polynomial time) compute this otherwise
+  intractable marginalization. Running the \expc{} gives us a probability of
+  $0.6415=1.0-(0.1365+0.2220)$, which is exactly the desired probability.
 \tcblower
+\begin{center}
+  \resizebox{\textwidth}{!}{
+  \begin{tikzpicture}
+    \newOrNode[inputs=nn,fill=boxgreen]{r}{0,0};
+    \newAndNode[inputs=nn,fill=boxred!70]{p1}{$(r) + (-1,-1)$};
+    \newAndNode[inputs=nn,fill=boxred!70]{p2}{$(r) + (1,-1)$};
+    \newOrNode[inputs=nn,fill=boxpurple!60]{ba1}{$(p1) + (-1.5,-1)$};
+    \newOrNode[inputs=nn,fill=boxpurple!60]{s1}{$(p1.input 2) + (0.0,-0.75)$};
+    \newOrNode[inputs=nn,fill=boxpurple!60]{s2}{$(p2.input 1) + (0.0,-0.75)$};
+    \newOrNode[inputs=nn,fill=boxpurple!60]{ba2}{$(p2) + (1.5,-1)$};
+    \node (a1) at ($(ba1) + (-0.75,-1)$) {$A$};
+    \node (na1) at ($(ba1.input 2) + (0.0,-0.75)$) {$\neg A$};
+    \newAndNode[inputs=nn,fill=boxblue!80]{q1}{$(s1.input 1) + (0,-0.75)$};
+    \newAndNode[inputs=nn,fill=boxblue!80]{q2}{$(s2.input 2) + (0,-0.75)$};
+    \node (a2) at ($(ba2.input 1) + (0.0,-0.75)$) {$A$};
+    \node (na2) at ($(ba2) + (0.75,-1)$) {$\neg A$};
+    \newOrNode[inputs=nn,fill=orange!80]{bb1}{$(q1) + (-1.5,-1)$};
+    \newOrNode[inputs=nn,fill=orange!80]{bc1}{$(q1.input 2) + (0,-0.75)$};
+    \newOrNode[inputs=nn,fill=orange!80]{bb2}{$(q2.input 1) + (0,-0.75)$};
+    \newOrNode[inputs=nn,fill=orange!80]{bc2}{$(q2) + (1.5,-1)$};
+    \node (b1) at ($(bb1) + (-0.75,-1)$) {$B$};
+    \node (nb1) at ($(bb1.input 2) + (0.0,-0.75)$) {$\neg B$};
+    \node (c1) at ($(bc1) + (-0.5,-1)$) {$C$};
+    \node (nc1) at ($(bc1) + (0.5,-1)$) {$\neg C$};
+    \node (b2) at ($(bb2) + (-0.5,-1)$) {$B$};
+    \node (nb2) at ($(bb2) + (0.5,-1)$) {$\neg B$};
+    \node (c2) at ($(bc2.input 1) + (0.0,-0.75)$) {$C$};
+    \node (nc2) at ($(bc2) + (0.75,-1)$) {$\neg C$};
+    \draw[edge] (r.input 1) -- ++(0,-0.2) -| node[near start,above left] {$.45$} (p1);
+    \draw[edge] (r.input 2) -- ++(0,-0.2) -| node[near start,above right] {$.55$} (p2);
+    \draw[edge] (p1.input 1) -- ++(0,-0.2) -| (ba1);
+    \draw[edge] (ba1.input 1) -- ++(0,-0.2) -| node[near start, above left] {$.7$} (a1);
+    \draw[edge] (ba1.input 2) -- node[midway, right] {$.3$} (na1);
+    \draw[edge] (p2.input 2) -- ++(0,-0.2) -| (ba2);
+    \draw[edge] (ba2.input 1) -- node[midway, left] {$.6$} (a2);
+    \draw[edge] (ba2.input 2) -- ++(0,-0.2) -| node[near start, above right] {$.4$} (na2);
+    \draw[edge] (p1.input 2) -- ++(0,-0.2) -| (s1);
+    \draw[edge] (p2.input 1) -- ++(0,-0.2) -| (s2);
+    \draw[edge] (s1.input 1) -- node[midway,left] {$.2$} (q1.east);
+    \draw[edge] (s1.input 2) -- node[near start,above right,xshift=-0.1cm] {$.8$} (q2.east);
+    \draw[edge] (s2.input 1) -- node[near start,above left,xshift=0.1cm] {$.9$} (q1.east);
+    \draw[edge] (s2.input 2) -- node[midway,right] {$.1$} (q2.east);
+    \draw[edge] (q1.input 1) -- ++(0,-0.2) -| (bb1);
+    \draw[edge] (q1.input 2) -- ++(0,-0.2) -| (bc1);
+    \draw[edge] (q2.input 1) -- ++(0,-0.2) -| (bb2);
+    \draw[edge] (q2.input 2) -- ++(0,-0.2) -| (bc2);
+    \draw[edge] (bb1.input 1) -- ++(0,-0.2) -| node[near start,above left] {$.4$} (b1);
+    \draw[edge] (bb1.input 2) -- node[midway,right] {$.6$} (nb1);
+    \draw[edge] (bc1.input 1) -- ++(0,-0.2) -| node[near start,above left] {$.5$} (c1);
+    \draw[edge] (bc1.input 2) -- ++(0,-0.2) -| node[near start,above right] {$.5$} (nc1);
+    \draw[edge] (bb2.input 1) -- ++(0,-0.2) -| node[near start,above left] {$.5$} (b2);
+    \draw[edge] (bb2.input 2) -- ++(0,-0.2) -| node[near start,above right] {$.5$} (nb2);
+    \draw[edge] (bc2.input 1) -- node[midway, left] {$.2$} (c2);
+    \draw[edge] (bc2.input 2) -- ++(0,-0.2) -| node[near start,above right] {$.8$} (nc2);
+  \end{tikzpicture}
+  }
 
+  \begin{tabular}{ccc|cc}
+    \hline
+    $A$ & $B$ & $C$ & $\phi(\set{x})$ & $p(\set{x})$\\
+    \hline
+    0 & 0 & 0 & 1 & .1000\\
+    1 & 0 & 0 & 1 & .0580\\
+    0 & 1 & 0 & 0 & \textcolor{gray}{.1365}\\
+    1 & 1 & 0 & 1 & .0805\\
+    0 & 0 & 1 & 1 & .1860\\
+    1 & 0 & 1 & 1 & .0970\\
+    0 & 1 & 1 & 0 & \textcolor{gray}{.2220}\\
+    1 & 1 & 1 & 1 & .1195\\
+    \hline
+  \end{tabular}
+\end{center}
 \end{example}
+
+\begin{remark}[breakable]{On applications of probabilistic circuits}{applications}
+  So far, we have not yet addressed real-world applications of probabilistic circuits. Although
+  their usage has not yet gained popularity among the data science crowd, they have been
+  successfuly employed in a multitude of interdisciplinary tasks. Here, we give a brief survey on
+  the different use cases of probabilistic circuits present in literature.
+
+  Computer vision is perhaps the most popular application for deep learning, and this could not be
+  different for probabilistic circuits. PCs have been used for image classification
+  \citep{gens12,sguerra16,llerena17,geh19,peharz20a}, image reconstruction and sampling
+  \citep{poon11,dennis17,peharz20b,butz19}, image segmentation and scene understanding
+  \citep{friesen17,yuan16,friesen18,rathke17}, and activity recognition
+  \citep{wang18,amer12,nourani20,amer16}.
+
+  Probabilistic circuits have also been used for sequential data \citep{melibari16b}, such as
+  speech recognition and reconstruction \citep{peharz14b,ratajczak14,ratajczak18} and natural
+  language processing \citep{cheng14}.
+
+  Remarkably, probabilistic circuits have seen a recent boom in hardware-aware research
+  \citep{shah19,olascoaga19} and dedicated hardware for PCs in embedded systems
+  \citep{sommer18,shah20,shah21}.
+
+  Some other applications include robotics \citep{sguerra16,geh19,zheng18,pronobis17}, biology
+  \citep{butz18,friesen15}, probabilistic programming \citep{stuhlmuller12,saad21}, and fault
+  localization \citep{nath16}.
+\end{remark}
+
+Now that we have addressed the (arguably) most important aspects of probabilistic circuits, we are
+now ready to understand how to build them in a principled way.
