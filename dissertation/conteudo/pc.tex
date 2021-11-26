@@ -248,7 +248,7 @@ by $\Prod(\set{X}=\set{x})=\prod_{\Child\in\Ch(\Prod)}\Child(\set{X}=\set{x})$.
     grid = major
   ]
     \addplot3[
-      surf, samples=50,
+      surf, samples=20,
       domain=0.5:6.5,
       y domain=1:6
     ] {((0.3*exp(-((x-\xmone)^2)/(2*\xsone^2))/\xsone+0.7*exp(-((x-\xmtwo)^2)/(2*\xstwo^2))/\xstwo)/2.5066)*(((0.6*exp(-((y-\ymone)^2)/(2*\ysone^2))/\ysone+0.4*exp(-((y-\ymtwo)^2)/(2*\ystwo^2))/\ystwo)/2.5066))};
@@ -1728,7 +1728,7 @@ $\mathcal{L}$ a logic circuit representing a logical query whose vtree is also $
 the probability of $\mathcal{L}$ with respect to the distribution encoded by $\mathcal{C}$ is done
 by a bottom-up evaluation over both circuits at the same time. \Cref{alg:expc} shows the procedure
 algorithmically. Importantly, the procedure relies on evaluating the expectation for each node in
-a reverse topological fashion according to \ref{alg:expc:line:top}. This paired reverse
+a reverse topological fashion according to line \ref{alg:expc:line:top}. This paired reverse
 topological sorting is done by a recursive assignment. For product nodes, primes are paired with
 primes, and subs with subs; for sums, each combination of PC child with LC child is paired up.
 

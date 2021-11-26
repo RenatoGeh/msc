@@ -138,12 +138,6 @@ procedures continues recursively until data are reduced to a $k\times 1$ matrix,
 univariate distribution acting as input node is learned from it. This recursive procedure is shown
 more formally in \Cref{alg:learnspn}.
 
-Notably, \citep{gens13} purposely does not strictly specify which techniques should be used for
-assigning rows and columns, although they do provide empirical results on a particular form of
-\textproc{LearnSPN} where row assignments are computed through EM clustering and products by
-pairwise G-testing. Instead, they call the algorithm a \emph{schema} that incorporates several
-actual learning algorithms whose concrete form depends on the choice of how to split data.
-
 \begin{algorithm}[t]
   \caption{\textproc{LearnSPN}}\label{alg:learnspn}
   \begin{algorithmic}[1]
@@ -151,12 +145,120 @@ actual learning algorithms whose concrete form depends on the choice of how to s
     \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
     \IIf{$|\set{X}|=1$}{\textbf{return} an input node learned from $\set{D}$}
     \NIElse
-      \State Find scope partitions $\{\set{X}_1,\ldots,\set{X}_k\}$ st $\set{X}_i\indep\set{X}_j$ for $i\neq j$
-      \IIf{$k>1$}{\textbf{return} $\prod_{j=1}^k \textproc{LearnSPN}(\set{D}_{:,\set{X}_j},
+      \State Find scope partitions $\set{X}_1,\ldots,\set{X}_t\subseteq\set{X}$ st
+        $\set{X}_i\indep\set{X}_j$ for $i\neq j$
+      \IIf{$k>1$}{\textbf{return} $\prod_{j=1}^t \textproc{LearnSPN}(\set{D}_{:,\set{X}_j},
         \set{X}_j)$}
+      \NIElse
+        \State Find subsets of data $\set{x}_1,\ldots,\set{x}_k\subseteq\set{D}$ st all assignments
+          within $\set{x}_i$ are all similar
+        \State \textbf{return} $\sum_{i=1}^k \frac{|\set{x}_i|}{|\set{D}|}\cdot
+          \textproc{LearnSPN}(\set{x}_i,\set{X})$
+      \EndNIElse
     \EndNIElse
   \end{algorithmic}
 \end{algorithm}
+
+Notably, \citep{gens13} purposely does not strictly specify which techniques should be used for
+assigning rows and columns, although they do provide empirical results on a particular form of
+\textproc{LearnSPN} where row assignments are computed through EM clustering and products by
+pairwise G-testing. Instead, they call the algorithm a \emph{schema} that incorporates several
+actual learning algorithms whose concrete form depends on the choice of how to split data.
+
+\subsubsection{Complexity}
+
+To be able to analyze the complexity of \textproc{LearnSPN}, we assume a particular form where sums
+are learned from $k$-means clustering, and products through pairwise G-testing. We know learning
+sums is efficient: $k$-means takes $\bigo(n\cdot k\cdot m\cdot c)$ time, where $k$ is the number of
+clusters and $c$ the number of iterations to be run. Products, on the other hand, are much more
+costly. The naïve approach would be to compute whether $X_i\indep X_j$ for every possible
+combination. This is clearly quadratic on the number of variables
+$\bigo\left(\binom{m}{2}=\frac{m!}{2\cdot (m-2)!}\right)$ assuming an $\bigo(1)$ oracle for
+independence testing. In reality, G-test takes $\bigo(n\cdot m)$ time, as we must compute a ratio
+of observed versus expected values for each cell in the contingency table. This brings the total
+runtime for products to a whopping $\bigo\left(n\cdot m^3\right)$, prohibitive to any reasonably
+large dataset.
+
+Alternatively, instead of computing the G-test for every possible combination of variables,
+\citep{gens13} constructs an independence graph $\mathcal{G}$ whose nodes are variables and edges
+indicate whether two variables are statistically dependent. Within this context, the variable
+partitions we attribute to product children are exactly the connected components of $\mathcal{G}$,
+meaning it suffices testing only some combinations. Even so, this heuristic is still quadratic
+worst case.
+
+\subsubsection{Pros and cons}
+
+\paragraph{Pros.} Perhaps the main factor for \textproc{LearnSPN}'s popularity is how easily
+implementable, intuitive and modular it is. Even more remarkably, it is an empirically competitive
+PC learning algorithm despite its age, serving as a baseline for most subsequent works in PC
+literature. Lastly, the fact that each recursive call from \textproc{LearnSPN} is completely
+independent from each the other makes it an attractive candidate for CPU parallelization.
+
+\paragraph{Cons.} Debatably, one of the key weakness of \textproc{LearnSPN} is its tree-shaped
+computational graph, meaning that they are strictly less expressive compared to non-tree DAG PCs
+\citep{martens14}. In terms of runtime efficiency, the algorithm struggles on high dimensional
+data due to the complexity involved in computing costly statistical tests. Despite
+\Cref{alg:learnspn} giving the impression that no hyperparameter tuning is needed for
+\textproc{LearnSPN}, in practice the modules for learning sums and products often take many
+parameters, most of which are fixed for all recursive calls. This can have a negative impact on the
+algorithm's performance, since even when data might have completely different shapes between calls
+the same parameters are used repeatedly.
+
+\subsection{\textproc{ID-SPN}}
+
+A subtle but effective way of improving the performance of \textproc{LearnSPN} is to consider
+tractable probabilistic models over many variables as input nodes instead of a single univariate
+distribution. \textproc{ID-SPN} \citep{rooshenas14} does so by assuming that input nodes are Markov
+networks. Further, instead of blindly applying the recursion over subsequent sub-data, it attempts
+to compute some metric of quality from each node. The worst scored node is then replaced with a
+\textproc{LearnSPN}-like tree. This is repeated until no significant increase in likelihood is
+observed. \Cref{alg:idspn} shows the \textproc{ID-SPN} pipeline, where \textproc{ExtendID} is used
+in line \ref{alg:idspn:line:extend} to grow the circuit in a divide-and-conquer fashion.
+
+\begin{algorithm}[t]
+  \caption{\textproc{ExtendID}}\label{alg:extendid}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$, and memoization
+      function $\mathcal{M}$
+    \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
+    \State Find scope partitions $\set{X}_1,\ldots,\set{X}_t\subseteq\set{X}$ st
+    \If{$k>1$}
+      \For{each $j\in\left[t\right]$}
+        \State $\Node_j\gets\textproc{LearnMarkov}(\set{D}_{:,\set{X}_j},\set{X}_j)$
+        \State Associate $\mathcal{M}(\Node_j)$ with $\set{D}_{:,\set{X}_j}$ and $\set{X}_j$
+      \EndFor
+      \State \textbf{return} $\prod_{j=1}^t \Node_j$
+    \Else
+      \State Find subsets of data $\set{x}_1,\ldots,\set{x}_k\subseteq\set{D}$ st all assignments
+        within $\set{x}_i$ are all similar
+      \For{each $i\in\left[k\right]$}
+        \State $\Node_i\gets\textproc{LearnMarkov}(\set{x}_i,\set{X})$
+        \State Associate $\mathcal{M}(\Node_i)$ with $\set{x}_i$ and $\set{X}$
+      \EndFor
+      \State \textbf{return} $\sum_{i=1}^k \frac{|\set{x}_i|}{|\set{D}|}\cdot\Node_i$
+    \EndIf
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+  \caption{\textproc{ID-SPN}}\label{alg:idspn}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
+    \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
+    \State Create a single-node PC: $\mathcal{C}\gets\textproc{LearnMarkov}(\set{D},\set{X})$
+    \State Let $\mathcal{M}$ a memoization function associating a node with a dataset and scope
+    \State Call $\mathcal{C}'$ a copy of $\mathcal{C}$
+    \While{improving $\mathcal{C}$ yields better likelihood}
+      \State Pick worse node $\Node$ from $\mathcal{C}'$
+      \State Extract sub-data $\set{D}'$ and sub-scope $\set{X}'$ from $\mathcal{M}(\Node)$
+      \State Replace $\Node$ with $\textproc{ExtendID}(\set{D}',\set{X}',\mathcal{M})$\label{alg:idspn:line:extend}
+      \IIf{$\mathcal{C}'$ has better likelihood than $\mathcal{C}$}{$\mathcal{C}\gets\mathcal{C}$}
+    \EndWhile
+    \State \textbf{return} $\mathcal{C}$
+  \end{algorithmic}
+\end{algorithm}
+
+\subsection{\textproc{Prometheus}}
 
 
 \section{Iterative Learning}
