@@ -21,13 +21,143 @@ divide-and-conquer (\divclass{}, \Cref{sec:divconq}), iterative methods (\itercl
 
 Arguably the most popular approach to learning the structure of probabilistic circuits are
 algorithms that follow a \emph{divide-and-conquer} scheme. This class of PC learning algorithms,
-which here we denote by \divclass{}, are characterized by recursive calls over partitions of data
-in true divide-and-conquer fashion. This kind of procedure is more clearly visualized by
-\textproc{LearnSPN}, the first (and most well-known) of its class.
+which here we denote by \divclass{}, are characterized by recursive calls over (usually mutually
+exclusive) subsets of data in true divide-and-conquer fashion. This kind of procedure is more
+clearly visualized by \textproc{LearnSPN}, the first (and most well-known) of its class.
+
+Before we start however, we must first address how we denote data. Data is commonly represented as
+a matrix where rows are assignments (of all variables), and columns are the values that each variable
+takes at each assignment. Let $\set{D}\in\mathbb{R}^{m \times n}$ a matrix with $m$ rows and $n$
+columns. We use $\set{D}_{i,j}$ to access an element of $\set{D}$ at the $i$-th row, $j$-th column
+of matrix $\set{D}$. We denote by $\set{D}_{\set{i},\set{j}}$, where $\set{i}\subseteq
+\left[1..n\right]$ and $\set{j}\subseteq\left[1..m\right]$ are sets of indices, a submatrix from
+the extraction of the $\set{i}$ rows and $\set{j}$ columns of $\set{D}$. We use a colon as a
+shorthand for selecting all rows or columns, e.g.\ $\set{D}_{:,:}=\set{D}$, $\set{D}_{:,j}$ is the
+$j$-th column and $\set{D}_{i,:}$ is the $i$-th row.
 
 \subsection{\textproc{LearnSPN}}
 
-aslk
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.48\textwidth}
+    \begin{subfigure}{0.45\textwidth}
+      \resizebox{\textwidth}{!}{
+      \begin{tabular}{ccccc}
+        \hline
+        $A$ & $B$ & $C$ & $D$ & $E$\\
+        \hline
+        \rowcolor{boxgreen!70}
+        0 & 1 & 0 & 0 & 1\\
+        \rowcolor{boxgreen!70}
+        1 & 0 & 1 & 1 & 1\\
+        \rowcolor{boxblue!50}
+        1 & 1 & 0 & 1 & 1\\
+        \rowcolor{boxblue!50}
+        0 & 0 & 1 & 0 & 0\\
+        \rowcolor{boxgreen!70}
+        1 & 1 & 0 & 1 & 0\\
+        \rowcolor{boxblue!50}
+        0 & 1 & 1 & 0 & 1\\
+        \rowcolor{boxorange!60}
+        1 & 0 & 1 & 1 & 1\\
+        \rowcolor{boxorange!60}
+        1 & 1 & 0 & 0 & 0\\
+        \rowcolor{boxblue!50}
+        0 & 1 & 1 & 0 & 1\\
+        \hline
+      \end{tabular}
+      }
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+      \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxpink!50]{r}{0,0};
+        \newProdNode[fill=boxgreen!70]{p1}{$(r) + (-1.5,-1.5)$};
+        \newProdNode[fill=boxorange!60]{p2}{$(r) + (0,-1.5)$};
+        \newProdNode[fill=boxblue!50]{p3}{$(r) + (1.5,-1.5)$};
+        \draw[edge] (r) -- node[midway,above left] {$\frac{3}{9}$} (p1);
+        \draw[edge] (r) -- node[midway,left] {$\frac{2}{9}$} (p2);
+        \draw[edge] (r) -- node[midway,above right] {$\frac{4}{9}$} (p3);
+      \end{tikzpicture}
+      }
+    \end{subfigure}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.48\textwidth}
+    \begin{subfigure}{0.45\textwidth}
+      \newcolumntype{x}{>{\columncolor{boxgreen!70}}c}
+      \newcolumntype{y}{>{\columncolor{boxorange!60}}c}
+      \newcolumntype{z}{>{\columncolor{boxblue!50}}c}
+      \resizebox{\textwidth}{!}{
+      \begin{tabular}{xyyzx}
+        \hline
+        \multicolumn{1}{c}{$A$} & \multicolumn{1}{c}{$B$} & \multicolumn{1}{c}{$C$} &
+        \multicolumn{1}{c}{$D$} & \multicolumn{1}{c}{$E$}\\
+        \hline
+        0 & 1 & 0 & 0 & 1\\
+        1 & 0 & 1 & 1 & 1\\
+        1 & 1 & 0 & 1 & 1\\
+        0 & 0 & 1 & 0 & 0\\
+        1 & 1 & 0 & 1 & 0\\
+        0 & 1 & 1 & 0 & 1\\
+        1 & 0 & 1 & 1 & 1\\
+        1 & 1 & 0 & 0 & 0\\
+        0 & 1 & 1 & 0 & 1\\
+        \hline
+      \end{tabular}
+      }
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+      \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}
+        \newProdNode[fill=boxpink!50]{r}{0,0};
+        \newSumNode[label=below:{$\{A,E\}$},fill=boxgreen!70]{s1}{$(r) + (-1.5,-1.5)$};
+        \newSumNode[label=below:{$\{B,C\}$},fill=boxorange!60]{s2}{$(r) + (0,-1.5)$};
+        \newSumNode[label=below:{$\{D\}$},fill=boxblue!50]{s3}{$(r) + (1.5,-1.5)$};
+        \draw[edge] (r) -- (s1); \draw[edge] (r) -- (s2); \draw[edge] (r) -- (s3);
+      \end{tikzpicture}
+      }
+    \end{subfigure}
+    \caption{}
+  \end{subfigure}
+  \caption{\textproc{LearnSPN} assigns either rows (a) or columns (b) for sum and product nodes
+    respectively. For sums, their edge weights are set proportionally to the assignments. For
+    product children, scopes are defined by which columns are assigned to them.}
+  \label{fig:learnspn}
+\end{figure}
+
+Recall the semantics of sum and product nodes in a smooth and decomposable probabilistic circuit.
+A sum is a mixture of distributions $p(\set{X})=\sum_{i=1}^m w_i\cdot p_i(\set{X})$ whose children
+scopes are all the same. A product is a factorization $p(\set{X}_1,\ldots,\set{X}_n)=\prod_{i=1}^n
+p(\set{X}_i)$, implying that $\set{X}_i\indep\set{X}_j$ for $i,j\in [n]$ and $i\neq j$.
+\textproc{LearnSPN} \citep{gens13} exploits these semantics in an intuitive and uncomplicated
+manner: sum children are defined by sub-PCs learned from similar (by some arbitrary metric)
+assignments, and product children are sub-PCs learned from data conditioned on the variables
+defined by their scope. In practice, this means that, for a dataset $\set{D}\in\mathbb{R}^{m\times
+n}$, sums assign rows to their children, while product children are assigned columns. This
+procedures continues recursively until data are reduced to a $k\times 1$ matrix, in which case a
+univariate distribution acting as input node is learned from it. This recursive procedure is shown
+more formally in \Cref{alg:learnspn}.
+
+Notably, \citep{gens13} purposely does not strictly specify which techniques should be used for
+assigning rows and columns, although they do provide empirical results on a particular form of
+\textproc{LearnSPN} where row assignments are computed through EM clustering and products by
+pairwise G-testing. Instead, they call the algorithm a \emph{schema} that incorporates several
+actual learning algorithms whose concrete form depends on the choice of how to split data.
+
+\begin{algorithm}[t]
+  \caption{\textproc{LearnSPN}}\label{alg:learnspn}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
+    \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
+    \IIf{$|\set{X}|=1$}{\textbf{return} an input node learned from $\set{D}$}
+    \NIElse
+      \State Find scope partitions $\{\set{X}_1,\ldots,\set{X}_k\}$ st $\set{X}_i\indep\set{X}_j$ for $i\neq j$
+      \IIf{$k>1$}{\textbf{return} $\prod_{j=1}^k \textproc{LearnSPN}(\set{D}_{:,\set{X}_j},
+        \set{X}_j)$}
+    \EndNIElse
+  \end{algorithmic}
+\end{algorithm}
+
 
 \section{Iterative Learning}
 \label{sec:iterative}
