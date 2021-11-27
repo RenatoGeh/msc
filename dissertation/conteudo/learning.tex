@@ -206,14 +206,28 @@ the same parameters are used repeatedly.
 
 \subsection{\textproc{ID-SPN}}
 
-A subtle but effective way of improving the performance of \textproc{LearnSPN} is to consider
-tractable probabilistic models over many variables as input nodes instead of a single univariate
-distribution. \textproc{ID-SPN} \citep{rooshenas14} does so by assuming that input nodes are Markov
-networks. Further, instead of blindly applying the recursion over subsequent sub-data, it attempts
-to compute some metric of quality from each node. The worst scored node is then replaced with a
-\textproc{LearnSPN}-like tree. This is repeated until no significant increase in likelihood is
-observed. \Cref{alg:idspn} shows the \textproc{ID-SPN} pipeline, where \textproc{ExtendID} is used
-in line \ref{alg:idspn:line:extend} to grow the circuit in a divide-and-conquer fashion.
+A subtle yet effective way of improving the performance of \textproc{LearnSPN} is to consider
+tractable probabilistic models over many variables as input nodes instead of univariate
+distributions. \textproc{ID-SPN} \citep{rooshenas14} does so by assuming that input nodes are
+Markov networks. Further, instead of blindly applying the recursion over subsequent sub-data, it
+attempts to compute some metric of quality from each node. The worst scored node is then replaced
+with a \textproc{LearnSPN}-like tree. This is repeated until no significant increase in likelihood
+is observed. \Cref{alg:idspn} shows the \textproc{ID-SPN} pipeline, where \textproc{ExtendID} is
+used in line \ref{alg:idspn:line:extend} to grow the circuit in a divide-and-conquer fashion. The
+name \textproc{ID-SPN} comes from \emph{direct} variable interactions, meaning the relationships
+modeled through the Markov networks as input nodes; and \emph{indirect} interactions brought from
+the latent variable interpretation of sum nodes.
+
+With respect to its implementation, \textproc{ID-SPN} is as modular as \textproc{LearnSPN} in the
+sense that the data partitioning is left as a subroutine. Indeed, even the choice of input
+distributions is customizable: although \citeauthor{rooshenas14} recommend Markov networks, any
+tractable distribution will do. Despite this seemingly small change compared to the original
+\textproc{LearnSPN} algorithm, \textproc{ID-SPN} seems to perform better compared to its
+counterpart most of the time \citep{rooshenas14,jaini18a}, although at a cost to learning speed.
+Further, because of the enormous parameter space brought by having to learn Markov networks as
+inputs \emph{and} perform the optimizations from sums and products, grid search hyperparameter
+tuning is infeasible. \citep{rooshenas14} recommend random search \citep{bergstra12a} as an
+alternative.
 
 \begin{algorithm}[t]
   \caption{\textproc{ExtendID}}\label{alg:extendid}
@@ -257,6 +271,12 @@ in line \ref{alg:idspn:line:extend} to grow the circuit in a divide-and-conquer 
     \State \textbf{return} $\mathcal{C}$
   \end{algorithmic}
 \end{algorithm}
+
+\subsubsection{Complexity}
+
+As \textproc{ID-SPN} is a special case of \textproc{LearnSPN}, the analysis of the sums and
+products subroutines holds. The only difference is on the Markov network input nodes learning time
+complexity. 
 
 \subsection{\textproc{Prometheus}}
 
