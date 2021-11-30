@@ -186,7 +186,67 @@ Alternatively, instead of computing the G-test for every possible combination of
 indicate whether two variables are statistically dependent. Within this context, the variable
 partitions we attribute to product children are exactly the connected components of $\mathcal{G}$,
 meaning it suffices testing only some combinations. Even so, this heuristic is still quadratic
-worst case.
+worst case. \Cref{fig:indepgraph} shows $\mathcal{G}$, the spanning forest resulted from the
+connected component heuristic, and the equivalent product node from this decomposition.
+
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.3\textwidth}
+    \centering
+    \resizebox{0.8\textwidth}{!}{
+    \begin{tikzpicture}
+      \node[regular polygon,regular polygon sides=8,minimum size=4cm] (p) {};
+      \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+      \node[circle,fill=boxpurple!60] (p2) at (p.corner 2) {$B$};
+      \node[circle,fill=boxgreen] (p3) at (p.corner 3) {$C$};
+      \node[circle,fill=boxred!70] (p4) at (p.corner 4) {$D$};
+      \node[circle,fill=boxpink!50] (p5) at (p.corner 5) {$E$};
+      \node[circle,fill=boxgray] (p6) at (p.corner 6) {$F$};
+      \node[circle,fill=boxgoldenrod!70] (p7) at (p.corner 7) {$G$};
+      \node[circle,fill=boxblue!50] (p8) at (p.corner 8) {$H$};
+      \draw[thick] (p1) -- (p2) -- (p3); \draw[thick] (p1) -- (p3);
+      \draw[thick] (p3) -- (p4); \draw[thick] (p1) -- (p4);
+      \draw[thick] (p5) -- (p6) -- (p7); \draw[thick] (p5) -- (p7);
+    \end{tikzpicture}
+    }
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.3\textwidth}
+    \centering
+    \resizebox{0.8\textwidth}{!}{
+    \begin{tikzpicture}
+      \node[regular polygon,regular polygon sides=8,minimum size=4cm] (p) {};
+      \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+      \node[circle,fill=boxpurple!60] (p2) at (p.corner 2) {$B$};
+      \node[circle,fill=boxgreen] (p3) at (p.corner 3) {$C$};
+      \node[circle,fill=boxred!70] (p4) at (p.corner 4) {$D$};
+      \node[circle,fill=boxpink!50] (p5) at (p.corner 5) {$E$};
+      \node[circle,fill=boxgray] (p6) at (p.corner 6) {$F$};
+      \node[circle,fill=boxgoldenrod!70] (p7) at (p.corner 7) {$G$};
+      \node[circle,fill=boxblue!50] (p8) at (p.corner 8) {$H$};
+      \draw[thick] (p1) -- (p2); \draw[thick] (p1) -- (p3);
+      \draw[thick] (p1) -- (p4); \draw[thick] (p1) -- (p4);
+      \draw[thick] (p5) -- (p6); \draw[thick] (p5) -- (p7);
+    \end{tikzpicture}
+    }
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.3\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \newProdNode[fill=boxgreen]{r}{0,0};
+      \newSumNode[label=below:{$\{A,B,C,D\}$},fill=boxorange!80]{s1}{$(r) + (-1.25,-2.5)$};
+      \newSumNode[label=below:{$\{E,F,G\}$},fill=boxpink!50]{s2}{$(r) + (0,-1.75)$};
+      \newSumNode[label=below:{$\{H\}$},fill=boxblue!50]{s3}{$(r) + (1.25,-1.0)$};
+      \draw[edge] (r) -- (s1); \draw[edge] (r) -- (s2); \draw[edge] (r) -- (s3);
+    \end{tikzpicture}
+    \caption{}
+  \end{subfigure}
+  \caption{The pairwise (in)dependence graph where each node is a variable. In (a) we show the full
+    graph, computing independence tests for each pair of variables in $\bigo(m^2)$. However, it
+    suffices to compute for only the connected components (b), saving up pairwise computation time
+    for reachable nodes.  The resulting product node and scope partitioning is shown in (c).}
+  \label{fig:indepgraph}
+\end{figure}
 
 \subsubsection{Pros and cons}
 
@@ -295,17 +355,17 @@ alternative.
     \newProdNode[fill=boxgreen]{r}{6.25,0};
 
     % Markov 2
-    \node[fill=boxteal] (a) at ($(r) + (0.75,-1)$) {$A$};
-    \node[fill=boxorange!80] (b) at ($(a) + (1,0)$) {$B$};
-    \node[fill=boxpink!50] (c) at ($(b) + (0,-1)$) {$C$};
+    \node[fill=boxpink!50] (a) at ($(r) + (0.75,-1)$) {$A$};
+    \node[fill=boxteal] (b) at ($(a) + (1,0)$) {$B$};
+    \node[fill=boxorange!80] (c) at ($(b) + (0,-1)$) {$C$};
     \draw (a) -- (b); \draw (b) -- (c);
     \draw[edge] (r) -- ($(a) + (0.5,0.5)$);
     \draw[red,very thick,dashed] ($(a) + (-0.5,0.5)$) rectangle ($(c) + (0.5,-0.5)$);
 
     % Markov 3
-    \node[fill=boxpink!50] (f) at ($(r) + (-0.75,-1)$) {$F$};
-    \node[fill=boxteal] (d) at ($(f) + (-1,0)$) {$D$};
-    \node[fill=boxorange!80] (e) at ($(d) + (1,-1)$) {$E$};
+    \node[fill=boxgoldenrod!70] (f) at ($(r) + (-0.75,-1)$) {$F$};
+    \node[fill=boxred!70] (d) at ($(f) + (-1,0)$) {$D$};
+    \node[fill=boxpurple!60] (e) at ($(d) + (1,-1)$) {$E$};
     \draw (d) -- (f); \draw (e) -- (d);
     \draw[edge] (r) -- ($(d) + (0.5,0.5)$);
     \draw[boxdgray,thick,dashed] ($(d) + (-0.5,0.5)$) rectangle ($(e) + (0.5,-0.5)$);
@@ -337,9 +397,9 @@ alternative.
     \draw[edge] (s) -- (m2.north);
 
     % Markov 3
-    \node[fill=boxpink!50] (f) at ($(r) + (-2,-1)$) {$F$};
-    \node[fill=boxteal] (d) at ($(f) + (-1,0)$) {$D$};
-    \node[fill=boxorange!80] (e) at ($(d) + (1,-1)$) {$E$};
+    \node[fill=boxgoldenrod!70] (f) at ($(r) + (-2,-1)$) {$F$};
+    \node[fill=boxred!70] (d) at ($(f) + (-1,0)$) {$D$};
+    \node[fill=boxpurple!60] (e) at ($(d) + (1,-1)$) {$E$};
     \draw (d) -- (f); \draw (e) -- (d);
     \draw[edge] (r) -- ($(d) + (0.5,0.5)$);
     \draw[boxdgray,thick,dashed] ($(d) + (-0.5,0.5)$) rectangle ($(e) + (0.5,-0.5)$);
@@ -381,12 +441,156 @@ bottleneck for most executions with resonably large number of variables. However
 relies on a likelihood improvement for the computational graph to be extended, which ends up
 curbing the easy parallelization aspect of \textproc{LearnSPN}. Besides, the complexity involved in
 learning Markov networks (or any other complex multivariate distribution as input node) carries a
-heavy weight during learning. This, coupled with the fact that hypertuning in the huge parameter
-space of \textproc{ID-SPN} must be done by a random search method, can take a heavy price in terms
-of learning time.
+heavy weight during learning. This, coupled with the fact that hyperparameter tuning in the huge
+parameter space of \textproc{ID-SPN} must be done by a random search method, can take a heavy price
+in terms of learning time.
 
 \subsection{\textproc{Prometheus}}
 
+So far, we have only considered structure learning algorithms that produce tree-shaped circuits.
+Even though \textproc{ID-SPN} \emph{might} produce non-tree graphs at the input nodes depending on
+the choice of families of multivariate distributions, it does not do so as a rule. We now turn our
+attention to a PC learner that \emph{does} generate non-tree computational graphs in a
+divide-and-conquer manner.
+
+Recall that in both \textproc{LearnSPN} and \textproc{ID-SPN} the scope partitioning is done
+greedily; we define a graph encoding the pairwise (in)dependencies of variables and greedily search
+for connected components by comparing independence test results with some correlation threshold,
+adding an edge if the correlation is sufficiently high. The choice of this threshold is often
+arbitrary and subject to hyperparameter tuning during learning, which is especially worrying when
+dealing with high dimensional data. In this section we review \textproc{Prometheus}, a
+divide-and-conquer \textproc{LearnSPN}-like PC learning algorithm with two main features that stand
+out compared to the last two methods we have seen so far: (1) it requires no hyperparameter tuning
+for variable partitionings, and (2) accepts a more scalable alternative to computing all pairwise
+correlations.
+
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.25\textwidth}
+    \centering
+    \resizebox{0.9\textwidth}{!}{
+    \begin{tikzpicture}
+      \node[regular polygon,regular polygon sides=5,minimum size=4cm] (p) {};
+      \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+      \node[circle,fill=boxred!70] (p2) at (p.corner 2) {$B$};
+      \node[circle,fill=boxpink!50] (p3) at (p.corner 3) {$C$};
+      \node[circle,fill=boxgoldenrod!70] (p4) at (p.corner 4) {$D$};
+      \node[circle,fill=boxblue!50] (p5) at (p.corner 5) {$E$};
+      \draw[thick] (p1) -- node[midway,above left] {$0.8$} (p2);
+      \draw[thick] (p1) -- node[midway,left,yshift=0.1cm] {$0.2$} (p3);
+      \draw[thick] (p1) -- node[midway,right,yshift=0.1cm] {$0.4$} (p4);
+      \draw[thick] (p1) -- node[midway,above right] {$0.3$} (p5);
+      \draw[thick] (p2) -- node[midway,below left] {$0.6$} (p3);
+      \draw[thick] (p2) -- node[midway,below left,xshift=0.2cm] {$0.4$} (p4);
+      \draw[thick] (p2) -- node[midway,above] {$0.1$} (p5);
+      \draw[thick] (p3) -- node[midway,below] {$0.9$} (p4);
+      \draw[thick] (p3) -- node[midway,below right,xshift=-0.2cm] {$0.5$} (p5);
+      \draw[thick] (p4) -- node[midway,right] {$0.7$} (p5);
+    \end{tikzpicture}
+    }
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.25\textwidth}
+    \centering
+    \resizebox{0.9\textwidth}{!}{
+    \begin{tikzpicture}
+      \node[regular polygon,regular polygon sides=5,minimum size=4cm] (p) {};
+      \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+      \node[circle,fill=boxred!70] (p2) at (p.corner 2) {$B$};
+      \node[circle,fill=boxpink!50] (p3) at (p.corner 3) {$C$};
+      \node[circle,fill=boxgoldenrod!70] (p4) at (p.corner 4) {$D$};
+      \node[circle,fill=boxblue!50] (p5) at (p.corner 5) {$E$};
+      \draw[very thick,blue] (p1) -- node[midway,above left,xshift=-0.1cm,yshift=0.1cm] {$\mathbf{0.8}$} node[fill=white,inner sep=1pt] {$e_2$} (p2);
+      \draw[very thick,red] (p2) -- node[midway,left,xshift=-0.1cm,yshift=-0.1cm] {$\mathbf{0.6}$} node[fill=white,inner sep=1pt] {$e_4$} (p3);
+      \draw[very thick,boxdgray] (p3) -- node[midway,below,yshift=-0.1cm] {$\mathbf{0.9}$} node[fill=white,inner sep=1pt] {$e_1$} (p4);
+      \draw[very thick,orange!80] (p4) -- node[midway,right,xshift=0.1cm,yshift=-0.1cm] {$\mathbf{0.7}$} node[fill=white,inner sep=1pt] {$e_3$} (p5);
+    \end{tikzpicture}
+    }
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \newSumNode[fill=boxgreen]{r}{0,0};
+      \newProdNode[fill=blue!50]{p1}{$(r) + (-3,-1)$};
+      \newProdNode[fill=red!60]{p2}{$(r) + (-1,-1)$};
+      \newProdNode[fill=boxdgray!80]{p3}{$(r) + (1,-1)$};
+      \newProdNode[fill=orange!80]{p4}{$(r) + (3,-1)$};
+      \newSumNode[label=below:{$\{A,B,C\}$},fill=green!80!black]{s1}{$(r) + (-3.5,-3.0)$};
+      \newSumNode[label=below:{$\{D,E\}$},fill=green!80!black]{s2}{$(r) + (-2.5,-2.5)$};
+      \newSumNode[label=below:{$\{B,C\}$},fill=green!80!black]{s3}{$(r) + (-1.5,-2.0)$};
+      \newSumNode[label=below:{$\{A\}$},fill=green!80!black]{s4}{$(r) + (-0.5,-2.0)$};
+      \newSumNode[label=below:{$\{D\}$},fill=green!80!black]{s5}{$(r) + (0.5,-2.0)$};
+      \newSumNode[label=below:{$\{E\}$},fill=green!80!black]{s6}{$(r) + (1.5,-2.0)$};
+      \newSumNode[label=below:{$\{B\}$},fill=green!80!black]{s7}{$(r) + (2.5,-2.0)$};
+      \newSumNode[label=below:{$\{C\}$},fill=green!80!black]{s8}{$(r) + (3.5,-2.0)$};
+      \draw[edge] (r) -- (p1.north);
+      \draw[edge] (r) -- (p2.north);
+      \draw[edge] (r) -- (p3.north);
+      \draw[edge] (r) -- (p4.north);
+      \draw[edge,blue!80] (p1) -- (s1.north);
+      \draw[edge,blue!80] (p1) -- (s2.north);
+      \draw[edge,red!80] (p2) -- (s2.north);
+      \draw[edge,red!80] (p2) -- (s3.north);
+      \draw[edge,red!80] (p2) -- (s4.north);
+      \draw[edge,boxdgray!80] (p3) -- (s3.north);
+      \draw[edge,boxdgray!80] (p3) -- (s4.north);
+      \draw[edge,boxdgray!80] (p3) -- (s5.north);
+      \draw[edge,boxdgray!80] (p3) -- (s6.north);
+      \draw[edge,orange!80] (p4) -- (s4.north);
+      \draw[edge,orange!80] (p4) -- (s5.north);
+      \draw[edge,orange!80] (p4) -- (s6.north);
+      \draw[edge,orange!80] (p4) -- (s7.north);
+      \draw[edge,orange!80] (p4) -- (s8.north);
+    \end{tikzpicture}
+    }
+    \caption{}
+  \end{subfigure}
+  \caption{The fully connected correlation graph (a) with weights as the pairwise correlation
+    measurements for each pair of variables; the maximum spanning tree for determining
+    decompositions (b); and the mixture of decompositions (c). Colors in (b) match their
+    partitionings in (c).}
+  \label{fig:prometheus}
+\end{figure}
+
+Let $\mathcal{G}$ the independence graph for scope $\set{X}=\{X_1,X_2,\ldots,X_m\}$. Remember that
+$\mathcal{G}$'s vertices are $\set{X}$ and each (undirected) edge $\overline{X_i X_j}$ coming from
+$X_i$ to $X_j$ means that $X_i\notindep X_j$. Previously, we constructed $\mathcal{G}$ by comparing
+the output of an independence test (such as the G-test) against a threshold (e.g.\ a sufficiently
+low $p$-value). Instead, suppose $\mathcal{G}$ is fully connected and that we attribute weights
+corresponding to a correlation metric of $X_i$ against $X_j$ for each edge (e.g.\ Pearson's
+correlation coefficient). The \emph{maximum spanning tree} (MST) of $\mathcal{G}$, here denoted by
+$\mathcal{T}$, defines a graph where the removal of any edge in $\mathcal{T}$ partitions the
+component into two subcomponents. Let $e_i$ the $i$-th lowest (weight) valued edge;
+\textproc{Prometheus} obtains a set of decompositions by iteratively removing edges from $e_1$ to
+$e_{|\set{X}|-1}$. In other words, the algorithm constructs a product node for each decomposition,
+assigning the scope of each child as the scope of each component at each edge removal. These
+products are then joined together by a parent sum node that acts as a mixture of decompositions.
+\Cref{fig:prometheus} shows an example of $\mathcal{T}$, the subsequent decompositions, and the
+resulting mixture of decompositions.
+
+\begin{algorithm}[t]
+  \caption{\textproc{Prometheus}}\label{alg:prometheus}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
+    \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
+    \IIf{$|\set{X}|=1$}{\textbf{return} an input node learned from $\set{D}$}
+    \NIElse
+      \State Find subsets of data $\set{x}^{(1)},\ldots,\set{x}^{(k)}\subseteq\set{D}$ st all assignments
+        within $\set{x}^{(i)}$ are all similar
+      \State Call $\mathcal{S}$ the set of all scopes seen so far
+      \For{each $\set{x}^{(i)}$}
+        \State $\mathcal{T}\gets\textproc{CorrelationMST}(\set{x}^{(i)},set{X})$
+        \For{each weighted edge $e_i$ in \mathcal{T} in decreasing order}
+          \State Remove edge $e_i$ from $\mathcal{T}$
+          \State Save $\set{S}_1,\ldots,\set{S}_t$, the scopes of each component in $\mathcal{T}$, to $\mathcal{S}$
+        \EndFor
+        \State $\Prod_i\gets\prod_{\set{S}\in\mathcal{S}}\textproc{Prometheus}(\set{x}^{(i)}_{:,\set{S}},\set{S})$
+      \EndFor
+      \State \textbf{return} $\sum_{i=1}^k \Prod_i$
+    \EndNIElse
+  \end{algorithmic}
+\end{algorithm}
 
 
 \section{Iterative Learning}

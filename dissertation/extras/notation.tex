@@ -5,6 +5,7 @@
 \usepackage{bm}
 \usepackage{dsfont}
 \usepackage{thm-restate}
+\usepackage{centernot}
 
 \DeclareFontFamily{U}{matha}{\hyphenchar\font45}
 \DeclareFontShape{U}{matha}{m}{n}{ <-6> matha5 <6-7> matha6 <7-8>
@@ -19,7 +20,7 @@ mathx7 <8-9> mathx8 <9-10> mathx9 <10-12> mathx10 <12-> mathx12 }{}
 \DeclareMathDelimiter{\liv} {4}{matha}{"76}{mathx}{"30}
 \DeclareMathDelimiter{\riv} {5}{matha}{"77}{mathx}{"38}
 
-\usetikzlibrary{shapes,arrows,positioning,fit,circuits.logic.US,math}
+\usetikzlibrary{shapes,arrows,positioning,fit,circuits.logic.US,math,shapes.geometric}
 
 \newcommand{\bigo}{\mathcal{O}}
 \newcommand{\set}[1]{\mathbf{#1}}
@@ -68,6 +69,7 @@ mathx7 <8-9> mathx8 <9-10> mathx9 <10-12> mathx10 <12-> mathx12 }{}
 
 \newcommand\indep{\protect\mathpalette{\protect\independenT}{\perp}}
 \def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+\newcommand\notindep{\centernot{\indep}}
 
 \newcommand{\edge}[1]{\overrightarrow{#1}}
 
