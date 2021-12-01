@@ -2130,3 +2130,131 @@ year = {2018}
   url = 	 {https://proceedings.mlr.press/v31/lowd13a.html},
   abstract = 	 {Markov networks are an effective way to represent complex probability distributions.  However, learning their structure and parameters or using them to answer queries is typically intractable.  One approach to making learning and inference tractable is to use approximations, such as pseudo-likelihood or approximate inference.  An alternate approach is to use a restricted class of models where exact inference is always efficient.  Previous work has explored low treewidth models, models with tree-structured features, and latent variable models.  In this paper, we introduce ACMN, the first ever method for learning efficient Markov networks with arbitrary conjunctive features.  The secret to ACMN’s greater flexibility is its use of arithmetic circuits, a linear-time inference representation that can handle many high treewidth models by exploiting local structure.  ACMN uses the size of the corresponding arithmetic circuit as a learning bias, allowing it to trade off accuracy and inference complexity.  In experiments on 12 standard datasets, the tractable models learned by ACMN are more accurate than both tractable models learned by other algorithms and approximate inference in intractable models. }
 }
+
+@article{feldmann15,
+author = {Feldmann, Andreas Emil and Foschini, Luca},
+title = {Balanced Partitions of Trees and Applications},
+year = {2015},
+issue_date = {February  2015},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+volume = {71},
+number = {2},
+issn = {0178-4617},
+url = {https://doi.org/10.1007/s00453-013-9802-3},
+doi = {10.1007/s00453-013-9802-3},
+abstract = {We study the problem of finding the minimum number of edges that, when cut, form a partition of the vertices into k sets of equal size. This is called the k- BALANCED PARTITIONING problem. The problem is known to be inapproximable within any finite factor on general graphs, while little is known about restricted graph classes. We show that the k- BALANCED PARTITIONING problem remains APX-hard even when restricted to unweighted tree instances with constant maximum degree. If instead the diameter of the tree is constant we prove that the problem is NP-hard to approximate within n c , for any constant c&lt;1. If vertex sets are allowed to deviate from being equal-sized by a factor of at most 1+ , we show that solutions can be computed on weighted trees with cut cost no worse than the minimum attainable when requiring equal-sized sets. This result is then extended to general graphs via decompositions into trees and improves the previously best approximation ratio from O(log1.5(n) 2) [Andreev and Rcke in Theory Comput. Syst. 39(6):929---939, 2006 ] to O(logn). This also settles the open problem of whether an algorithm exists for which the number of edges cut is independent of .},
+journal = {Algorithmica},
+month = {feb},
+pages = {354–376},
+numpages = {23}
+}
+
+@article{liu19,
+title = {The optimization of sum-product network structure learning},
+journal = {Journal of Visual Communication and Image Representation},
+volume = {60},
+pages = {391-397},
+year = {2019},
+issn = {1047-3203},
+doi = {https://doi.org/10.1016/j.jvcir.2019.02.012},
+url = {https://www.sciencedirect.com/science/article/pii/S1047320319300653},
+author = {Yang Liu and Tiejian Luo},
+keywords = {Machine learning, Deep learning, Sum-product network, Structure learning},
+abstract = {Sum-Product Network (SPN) are recently introduced deep tractable Probabilistic Graphical Models providing exact and tractable inference. SPN have been successfully employed as density estimators in some artificial intelligence fields, however, most of the proposed structure learning algorithms focus on improving the performance of a certain aspect of model, at the cost of reducing other performance. This is due to the fact that there is no effective balance between network width and depth during learning process. In this paper, we propose two clustering analysis algorithms to replace the clustering part of LearnSPN. We improve the structure quality of the generated model by deepening the network while adjusting the network width adaptively, trying to find a balance between the expressive power, representation ability, inference accuracy and simplicity. Experimental results prove that LearnSPN equipped by our clustering method has different degrees of improvement in various performances.}
+}
+
+@article{molina17,
+  title={Poisson Sum-Product Networks: A Deep Architecture for Tractable Multivariate Poisson Distributions},
+  volume={31},
+  url={https://ojs.aaai.org/index.php/AAAI/article/view/10844},
+  abstractNote={Multivariate count data are pervasive in science in the form of histograms, contingency tables and others. Previous work on modeling this type of distributions do not allow for fast and tractable inference. In this paper we present a novel Poisson graphical model, the first based on sum product networks, called PSPN, allowing for positive as well as negative dependencies. We present algorithms for learning tree PSPNs from data as well as for tractable inference via symbolic evaluation. With these, information-theoretic measures such as entropy, mutual information, and distances among count variables can be computed without resorting to approximations. Additionally, we show a connection between PSPNs and LDA, linking the structure of tree PSPNs to a hierarchy of topics. The experimental results on several synthetic and real world datasets demonstrate that PSPN often outperform state-of-the-art while remaining tractable.},
+  number={1},
+  journal={Proceedings of the AAAI Conference on Artificial Intelligence},
+  author={Molina, Alejandro and Natarajan, Sriraam and Kersting, Kristian},
+  year={2017},
+  month={Feb.}
+}
+
+@article{bueff18,
+  author    = {Andreas Bueff and
+               Stefanie Speichert and
+               Vaishak Belle},
+  title     = {Tractable Querying and Learning in Hybrid Domains via Sum-Product
+               Networks},
+  journal   = {CoRR},
+  volume    = {abs/1807.05464},
+  year      = {2018},
+  url       = {http://arxiv.org/abs/1807.05464},
+  eprinttype = {arXiv},
+  eprint    = {1807.05464},
+  timestamp = {Mon, 13 Aug 2018 16:47:39 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-1807-05464.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{lopez13,
+ author = {Lopez-Paz, David and Hennig, Philipp and Sch\"{o}lkopf, Bernhard},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {C. J. C. Burges and L. Bottou and M. Welling and Z. Ghahramani and K. Q. Weinberger},
+ pages = {},
+ publisher = {Curran Associates, Inc.},
+ title = {The Randomized Dependence Coefficient},
+ url = {https://proceedings.neurips.cc/paper/2013/file/aab3238922bcc25a6f606eb525ffdc56-Paper.pdf},
+ volume = {26},
+ year = {2013}
+}
+
+@article{molina18,
+	author = {Alejandro Molina and Antonio Vergari and Nicola Di Mauro and Sriraam Natarajan and Floriana Esposito and Kristian Kersting},
+	title = {Mixed Sum-Product Networks: A Deep Architecture for Hybrid Domains},
+	conference = {AAAI Conference on Artificial Intelligence},
+	year = {2018},
+	keywords = {sum-product networks, non-parametric density estimation, non-parameteric independency test, hybrid domains, mixed graphical models},
+	abstract = {While all kinds of mixed data---from personal data, over panel and scientific data, to public and commercial data---are collected and stored, building probabilistic graphical models for these hybrid domains becomes more difficult. Users spend significant amounts of time in identifying the parametric form of the random variables (Gaussian, Poisson, Logit, etc.) involved and learning the mixed models. To make this difficult task easier,  we propose the first trainable probabilistic deep architecture for hybrid domains that features tractable queries. It is based on Sum-Product Networks (SPNs) with piecewise polynomial leaf distributions together with novel nonparametric decomposition and conditioning steps using the Hirschfeld-Gebelein-Renyi Maximum Correlation Coefficient. This relieves the user from deciding a-priori the parametric form of the random variables but is still expressive enough to effectively approximate any distribution and permits efficient learning and inference.Our experiments show that the architecture, called Mixed SPNs,  can indeed capture complex distributions across a wide range of hybrid domains.},
+
+	url = {https://www.aaai.org/ocs/index.php/AAAI/AAAI18/paper/view/16865}
+}
+
+@article{nath15,
+  title={Learning Relational Sum-Product Networks},
+  volume={29},
+  url={https://ojs.aaai.org/index.php/AAAI/article/view/9538},
+  abstract={Sum-product networks (SPNs) are a recently-proposed deep architecture that guarantees tractable inference, even on certain high-treewidth models. SPNs are a propositional architecture, treating the instances as independent and identically distributed. In this paper, we introduce Relational Sum-Product Networks (RSPNs), a new tractable first-order probabilistic architecture. RSPNs generalize SPNs by modeling a set of instances jointly, allowing them to influence each other’s probability distributions, as well as modeling probabilities of relations between objects. We also present LearnRSPN, the first algorithm for learning high-treewidth tractable statistical relational models. LearnRSPN is a recursive top-down structure learning algorithm for RSPNs, based on Gens and Domingos’ LearnSPN algorithm for propositional SPN learning. We evaluate the algorithm on three datasets; the RSPN learning algorithm outperforms Markov Logic Networks in both running time and predictive accuracy.},
+  number={1},
+  journal={Proceedings of the AAAI Conference on Artificial Intelligence},
+  author={Nath, Aniruddh and Domingos, Pedro},
+  year={2015},
+  month={Feb.}
+}
+
+@InProceedings{butz18a,
+  title = 	 {An Empirical Study of Methods for SPN Learning and Inference},
+  author =       {Butz, Cory J. and Oliveira, Jhonatan S. and dos Santos, Andr\'{e} E. and Teixeira, Andr\'{e} L. and Poupart, Pascal and Kalra, Agastya},
+  booktitle = 	 {Proceedings of the Ninth International Conference on Probabilistic Graphical Models},
+  pages = 	 {49--60},
+  year = 	 {2018},
+  editor = 	 {Kratochvíl, Václav and Studený, Milan},
+  volume = 	 {72},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {11--14 Sep},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v72/butz18a/butz18a.pdf},
+  url = 	 {https://proceedings.mlr.press/v72/butz18a.html},
+  abstract = 	 {In this study, we provide an empirical comparison of methods for \emph{sum-product network} (SPN) learning and inference. LearnSPN is a popular algorithm for learning SPNs that utilizes chop and slice operations. As \emph{g-test} is a standard chopping method and \emph{Gaussian mixture models} (GMM) using expectation-maximization is a common slicing method, it seems to have been assumed in the literature that this is the best pair in LearnSPN. On the contrary, our results show that g-test for chopping and \emph{k-means} for slicing yields SPNs that are just as accurate. Moreover, it has been shown that implementing SPN leaf nodes as \emph{Chow-Liu Trees} (CLTs) yields more accurate SPNs for the former pair. Our experiments show the same for the latter pair, and that neither pair dominates the other. Lastly, we report an analysis of SPN topology for unstudied pairs. With respect to inference, we derive \emph{partial propagation} (PP), which performs SPN exact inference without requiring a full propagation over all nodes in the SPN as currently done. Experimental results on SPN datasets demonstrate that PP has several advantages over full propagation in SPNs, including relative time savings, absolute time savings in large SPNs, and scalability.}
+}
+
+@inproceedings{tahrima16,
+  author = {Rahman, Tahrima and Gogate, Vibhav},
+  title = {Merging Strategies for Sum-Product Networks: From Trees to Graphs},
+  year = {2016},
+  isbn = {9780996643115},
+  publisher = {AUAI Press},
+  address = {Arlington, Virginia, USA},
+  abstract = {Learning the structure of sum-product networks (SPNs) - arithmetic circuits over latent and observed variables - has been the subject of much recent research. These networks admit linear time exact inference, and thus help alleviate one of the chief disadvantages of probabilistic graphical models: accurate probabilistic inference algorithms are often computationally expensive. Although, algorithms for inducing their structure from data have come quite far and often outperform algorithms that induce probabilistic graphical models, a key issue with existing approaches is that they induce tree SPNs, a small, inefficient sub-class of SPNs. In this paper, we address this limitation by developing post-processing approaches that induce graph SPNs from tree SPNs by merging similar sub-structures. The key benefits of graph SPNs over tree SPNs include smaller computational complexity which facilitates faster online inference, and better generalization accuracy because of reduced variance, at the cost of slight increase in the learning time. We demonstrate experimentally that our merging techniques significantly improve the accuracy of tree SPNs, achieving state-of-the-art performance on several real world benchmark datasets.},
+  booktitle = {Proceedings of the Thirty-Second Conference on Uncertainty in Artificial Intelligence},
+  pages = {617–626},
+  numpages = {10},
+  location = {Jersey City, New Jersey, USA},
+  series = {UAI'16}
+}

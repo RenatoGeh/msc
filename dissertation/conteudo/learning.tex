@@ -23,7 +23,8 @@ Arguably the most popular approach to learning the structure of probabilistic ci
 algorithms that follow a \emph{divide-and-conquer} scheme. This class of PC learning algorithms,
 which here we denote by \divclass{}, are characterized by recursive calls over (usually mutually
 exclusive) subsets of data in true divide-and-conquer fashion. This kind of procedure is more
-clearly visualized by \textproc{LearnSPN}, the first (and most well-known) of its class.
+clearly visualized by \textproc{LearnSPN}, the first, most well-known, and perhaps most archetypal
+of its class.
 
 Before we start however, we must first address how we denote data. Data is commonly represented as
 a matrix where rows are assignments (of all variables), and columns are the values that each variable
@@ -511,19 +512,19 @@ correlations.
     \centering
     \resizebox{\textwidth}{!}{
     \begin{tikzpicture}
-      \newSumNode[fill=boxgreen]{r}{0,0};
+      \newSumNode[fill=boxgreen!75]{r}{0,0};
       \newProdNode[fill=blue!50]{p1}{$(r) + (-3,-1)$};
       \newProdNode[fill=red!60]{p2}{$(r) + (-1,-1)$};
       \newProdNode[fill=boxdgray!80]{p3}{$(r) + (1,-1)$};
       \newProdNode[fill=orange!80]{p4}{$(r) + (3,-1)$};
-      \newSumNode[label=below:{$\{A,B,C\}$},fill=boxgreen]{s1}{$(r) + (-3.5,-3.0)$};
-      \newSumNode[label=below:{$\{D,E\}$},fill=boxgreen]{s2}{$(r) + (-2.5,-2.5)$};
-      \newSumNode[label=below:{$\{B,C\}$},fill=boxgreen]{s3}{$(r) + (-1.5,-2.0)$};
-      \newSumNode[label=below:{$\{A\}$},fill=boxgreen]{s4}{$(r) + (-0.5,-2.0)$};
-      \newSumNode[label=below:{$\{D\}$},fill=boxgreen]{s5}{$(r) + (0.5,-2.0)$};
-      \newSumNode[label=below:{$\{E\}$},fill=boxgreen]{s6}{$(r) + (1.5,-2.0)$};
-      \newSumNode[label=below:{$\{B\}$},fill=boxgreen]{s7}{$(r) + (2.5,-2.0)$};
-      \newSumNode[label=below:{$\{C\}$},fill=boxgreen]{s8}{$(r) + (3.5,-2.0)$};
+      \newSumNode[label=below:{$\{A,B,C\}$},fill=boxgreen!75]{s1}{$(r) + (-3.5,-3.0)$};
+      \newSumNode[label=below:{$\{D,E\}$},fill=boxgreen!75]{s2}{$(r) + (-2.5,-2.5)$};
+      \newSumNode[label=below:{$\{B,C\}$},fill=boxgreen!75]{s3}{$(r) + (-1.5,-2.0)$};
+      \newSumNode[label=below:{$\{A\}$},fill=boxgreen!75]{s4}{$(r) + (-0.5,-2.0)$};
+      \newSumNode[label=below:{$\{D\}$},fill=boxgreen!75]{s5}{$(r) + (0.5,-2.0)$};
+      \newSumNode[label=below:{$\{E\}$},fill=boxgreen!75]{s6}{$(r) + (1.5,-2.0)$};
+      \newSumNode[label=below:{$\{B\}$},fill=boxgreen!75]{s7}{$(r) + (2.5,-2.0)$};
+      \newSumNode[label=below:{$\{C\}$},fill=boxgreen!75]{s8}{$(r) + (3.5,-2.0)$};
       \draw[edge] (r) -- (p1.north);
       \draw[edge] (r) -- (p2.north);
       \draw[edge] (r) -- (p3.north);
@@ -596,9 +597,9 @@ resulting mixture of decompositions.
             \State Let $\set{x}$ the dataset associated with $\Prod$
             \State $\Node\gets\textproc{Prometheus}(\set{x}_{:,\set{S}},\set{S})$
             \State Add $\Node$ as a child of $\Prod$
-            \State $\mathcal{H}\left[\set{S}\right]\gets\Node$
+            \State $\mathcal{H}_\set{S}\gets\Node$
           \Else
-            \State Add $\mathcal{H}\left[\set{S}\right]$ as a child of $\Prod$
+            \State Add $\mathcal{H}_\set{S}$ as a child of $\Prod$
           \EndIf
         \EndFor
       \EndFor
@@ -639,10 +640,56 @@ are learned through correlation metrics, \textproc{Prometheus} is easily adaptab
 data. To some extent, \textproc{Prometheus} also inherits the modularity of $\textproc{LearnSPN}$,
 as the choice of how to cluster and what input nodes to use is open to the the user.
 
-\paragraph{Cons.} The main drawbacks of \textproc{Prometheus} 
+\paragraph{Cons.} Although the construction of the correlation graph in \textproc{Prometheus} is
+not done greedily (at least in the quadratic version), selecting the decompositions (i.e.\
+partitioning the graph into maximal components) is; of course, this is not exactly a drawback but a
+compromise, as graph partitioning is a known NP-hard problem \citep{feldmann15}. Because
+\textproc{Prometheus} accounts for all decompositions yielded from components after the removal of
+each edge from the MST, the circuit can grow considerably, even if we reuse subcircuits at each
+recursive call. An alternative would be to globally reuse subcircuits (i.e.\ share $\mathcal{H}$
+among different recursive calls) throughout learning, although this curbs expressivity somewhat, as
+these subcircuits are learned from possibly (completely) different data. Another option would be to
+bound the number of decompositions, or in other words remove only a bounded number of edges from
+the MST.
+
+\begin{remark}[breakable]{On variations of divide-and-conquer learning}{divconq}
+  Because of \textproc{LearnSPN}'s simplicity and modularity, there is a lot of room for
+  improvement. This is reflected in the many works in literature on refining \textproc{LearnSPN} to
+  specific data, choosing the right parameters, producing non-tree shaped circuits, and choice of
+  input nodes. In this remark segment, we briefly discuss other advances in divide-and-conquer PC
+  learning.
+
+  As we have previously mentioned, one of the drawbacks of \textproc{LearnSPN} is the sheer volume
+  of hyperparameters involved. \citet{vergari15} suggests simplifying clustering to only binary row
+  splits, while \citet{liu19} proposes clustering methods that automatically decide the number of
+  clusters from data. Together with \textproc{Prometheus}, the space of hyperparameters to tune is
+  greatly reduced.
+
+  We again go back to the issue of reducing the cost of learning variable partitions. Apart
+  from \textproc{Prometheus}, \citet{dimauro17a} also investigate more efficient decompositions,
+  proposing two approximate sub-quadratic methods to producing variable splits: one by randomly
+  sampling pairs of variables and running G-test, and the other by a linear time entropy criterion.
+
+  \citet{vergari15} proposes the use of Chow-Liu Trees as input nodes instead of univariate
+  distributions, while \citet{molina17} recommend Poisson distributions for modeling negative
+  dependence. \citet{bueff18} combines \textproc{LearnSPN} with weighted model integration by
+  learning polynomials as input nodes for continuous variables and counts for discrete data.
+  \citet{molina18} adapts \textproc{LearnSPN} to hybrid domains by employing the randomized
+  dependence coefficient for both clustering and variable partitioning, with pairwise polynomial
+  approximations for input nodes.
+
+  Other contributions include adapting \textproc{LearnSPN} to relational data \citep{nath15}, an
+  empirical study comparing different techniques for clustering and partitioning in
+  \textproc{LearnSPN} \citep{butz18a}, and \textproc{LearnSPN} post-processing strategies for
+  deriving non-tree graphs \citep{tahrima16}.
+\end{remark}
 
 \section{Iterative Learning}
 \label{sec:iterative}
+
+\subsection{\textproc{LearnPSDD}}
+
+\subsection{\textproc{Strudel}}
 
 \section{Random Learning}
 \label{sec:random}
