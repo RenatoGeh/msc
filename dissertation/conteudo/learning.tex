@@ -516,14 +516,14 @@ correlations.
       \newProdNode[fill=red!60]{p2}{$(r) + (-1,-1)$};
       \newProdNode[fill=boxdgray!80]{p3}{$(r) + (1,-1)$};
       \newProdNode[fill=orange!80]{p4}{$(r) + (3,-1)$};
-      \newSumNode[label=below:{$\{A,B,C\}$},fill=green!80!black]{s1}{$(r) + (-3.5,-3.0)$};
-      \newSumNode[label=below:{$\{D,E\}$},fill=green!80!black]{s2}{$(r) + (-2.5,-2.5)$};
-      \newSumNode[label=below:{$\{B,C\}$},fill=green!80!black]{s3}{$(r) + (-1.5,-2.0)$};
-      \newSumNode[label=below:{$\{A\}$},fill=green!80!black]{s4}{$(r) + (-0.5,-2.0)$};
-      \newSumNode[label=below:{$\{D\}$},fill=green!80!black]{s5}{$(r) + (0.5,-2.0)$};
-      \newSumNode[label=below:{$\{E\}$},fill=green!80!black]{s6}{$(r) + (1.5,-2.0)$};
-      \newSumNode[label=below:{$\{B\}$},fill=green!80!black]{s7}{$(r) + (2.5,-2.0)$};
-      \newSumNode[label=below:{$\{C\}$},fill=green!80!black]{s8}{$(r) + (3.5,-2.0)$};
+      \newSumNode[label=below:{$\{A,B,C\}$},fill=boxgreen]{s1}{$(r) + (-3.5,-3.0)$};
+      \newSumNode[label=below:{$\{D,E\}$},fill=boxgreen]{s2}{$(r) + (-2.5,-2.5)$};
+      \newSumNode[label=below:{$\{B,C\}$},fill=boxgreen]{s3}{$(r) + (-1.5,-2.0)$};
+      \newSumNode[label=below:{$\{A\}$},fill=boxgreen]{s4}{$(r) + (-0.5,-2.0)$};
+      \newSumNode[label=below:{$\{D\}$},fill=boxgreen]{s5}{$(r) + (0.5,-2.0)$};
+      \newSumNode[label=below:{$\{E\}$},fill=boxgreen]{s6}{$(r) + (1.5,-2.0)$};
+      \newSumNode[label=below:{$\{B\}$},fill=boxgreen]{s7}{$(r) + (2.5,-2.0)$};
+      \newSumNode[label=below:{$\{C\}$},fill=boxgreen]{s8}{$(r) + (3.5,-2.0)$};
       \draw[edge] (r) -- (p1.north);
       \draw[edge] (r) -- (p2.north);
       \draw[edge] (r) -- (p3.north);
@@ -574,24 +574,72 @@ resulting mixture of decompositions.
   \begin{algorithmic}[1]
     \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
     \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
-    \IIf{$|\set{X}|=1$}{\textbf{return} an input node learned from $\set{D}$}
+    \IIf{$|\set{X}|$ is sufficiently small}{\textbf{return} an input node learned from $\set{D}$}
     \NIElse
-      \State Find subsets of data $\set{x}^{(1)},\ldots,\set{x}^{(k)}\subseteq\set{D}$ st all assignments
-        within $\set{x}^{(i)}$ are all similar
-      \State Call $\mathcal{S}$ the set of all scopes seen so far
-      \For{each $\set{x}^{(i)}$}
-        \State $\mathcal{T}\gets\textproc{CorrelationMST}(\set{x}^{(i)},set{X})$
-        \For{each weighted edge $e_i$ in \mathcal{T} in decreasing order}
+      \State Find subsets of data $\set{x}_1,\ldots,\set{x}_k\subseteq\set{D}$ st all assignments
+        within $\set{x}_i$ are all similar
+      \State Create a sum node $\Sum$ with initially no children and uniform weights
+      \For{each $\set{x}_i$}
+        \State $\mathcal{T}\gets\textproc{CorrelationMST}(\set{x}_i,\set{X})$
+        \For{each weighted edge $e_j$ in $\mathcal{T}$ in decreasing order}
           \State Remove edge $e_i$ from $\mathcal{T}$
-          \State Save $\set{S}_1,\ldots,\set{S}_t$, the scopes of each component in $\mathcal{T}$, to $\mathcal{S}$
+          \State Call $\set{S}_1,\ldots,\set{S}_t$ the scopes of each component in $\mathcal{T}$
+          \State Create product node $\Prod_j$ and associate it with $\set{S}_1,\ldots,\set{S}_t$
+          \State Associate $\Prod_j$ with dataset $\set{x}_i$
+          \State Add $\Prod_j$ as a child of $\Sum$
         \EndFor
-        \State $\Prod_i\gets\prod_{\set{S}\in\mathcal{S}}\textproc{Prometheus}(\set{x}^{(i)}_{:,\set{S}},\set{S})$
       \EndFor
-      \State \textbf{return} $\sum_{i=1}^k \Prod_i$
+      \State Let $\mathcal{H}$ a hash table (initially empty) associating scopes to sum nodes
+      \For{each $\Prod\in\Ch(\Sum)$}
+        \For{each scope $\set{S}$ associated with $\Prod$}
+          \If{$\set{S}\not\in\mathcal{H}$}
+            \State Let $\set{x}$ the dataset associated with $\Prod$
+            \State $\Node\gets\textproc{Prometheus}(\set{x}_{:,\set{S}},\set{S})$
+            \State Add $\Node$ as a child of $\Prod$
+            \State $\mathcal{H}\left[\set{S}\right]\gets\Node$
+          \Else
+            \State Add $\mathcal{H}\left[\set{S}\right]$ as a child of $\Prod$
+          \EndIf
+        \EndFor
+      \EndFor
+      \State \textbf{return} $\Sum$
     \EndNIElse
   \end{algorithmic}
 \end{algorithm}
 
+Sum nodes are learned by clustering data into similar instances, just like in previous cases. Since
+the previously mentioned procedure involving products creates a mixture of decompositions (and thus
+a sum node), we can simply collapse the consecutive sum layers into a single sum node.
+\Cref{alg:prometheus} shows the algorithm in its entirety. \textproc{CorrelationMST} computes the
+(fully connected) correlation graph, returning its MST. It is worth mentioning that
+\textproc{Prometheus} makes sure each recursive call shares subcircuits whenever scopes are the
+same (this is when the hash table $\mathcal{H}$ in \Cref{alg:prometheus} comes into play). This
+avoids an exponential growth from the $k\cdot(|\set{X}|-1)$ potential recursive calls.
+
+\subsubsection{Complexity}
+
+Up to now, the computation of decompositions is done by a $\bigo(m^2)$ construction of a fully
+connected correlation graph. This gives \textproc{Prometheus} no asymptotic advantage over neither
+\textproc{LearnSPN} nor \textproc{ID-SPN}. To change this, \citeauthor{jaini18a} propose a more
+scalable alternative: in place of constructing the entire correlation graph, sample $m\log m$
+variables and construct a correlation graph where only $\log m$ edges are added for each of these
+sampled variables instead, bringing down complexity to $\bigo(m\left(\log m\right)^2)$.
+
+The analysis of sum nodes is exactly the same as \textproc{LearnSPN} if we assume the same
+clustering method. If \textproc{Prometheus} is implemented with the same multivariate distributions
+as \textproc{ID-SPN} at the input nodes, the analysis for those also holds.
+
+\subsubsection{Pros and Cons}
+
+\paragraph{Pros.} The notable achievements of \textproc{Prometheus} are evidently the absence of
+parameters for computing scope partitionings, reducing the dimension of hyperparameters to tune; a
+scalable alternative to partitionings that runs in sub-quadratic time; and (more debatably) the
+fact that the algorithm produces non-tree shaped computational graphs. Further, since product nodes
+are learned through correlation metrics, \textproc{Prometheus} is easily adaptable to continuous
+data. To some extent, \textproc{Prometheus} also inherits the modularity of $\textproc{LearnSPN}$,
+as the choice of how to cluster and what input nodes to use is open to the the user.
+
+\paragraph{Cons.} The main drawbacks of \textproc{Prometheus} 
 
 \section{Iterative Learning}
 \label{sec:iterative}
