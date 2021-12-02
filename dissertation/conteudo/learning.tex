@@ -13,8 +13,8 @@ statistical tests that make learning their structure a challenge for high dimens
 In this chapter, we review the most popular PC structure learning algorithms, their pros and cons,
 and more importantly, what can we learn from them to efficiently build scalable probabilistic
 circuits. We broadly divide existing structure learners into three main categories:
-divide-and-conquer (\divclass{}, \Cref{sec:divconq}), iterative methods (\iterclass{},
-\Cref{sec:iterative}) and random approaches (\randclass{}, \Cref{sec:random}).
+divide-and-conquer (\divclass{}, \Cref{sec:divconq}), incremental methods (\incrclass{},
+\Cref{sec:incremental}) and random approaches (\randclass{}, \Cref{sec:random}).
 
 \section{Divide-and-Conquer Learning}
 \label{sec:divconq}
@@ -459,11 +459,11 @@ greedily; we define a graph encoding the pairwise (in)dependencies of variables 
 for connected components by comparing independence test results with some correlation threshold,
 adding an edge if the correlation is sufficiently high. The choice of this threshold is often
 arbitrary and subject to hyperparameter tuning during learning, which is especially worrying when
-dealing with high dimensional data. In this section we review \textproc{Prometheus}, a
-divide-and-conquer \textproc{LearnSPN}-like PC learning algorithm with two main features that stand
-out compared to the last two methods we have seen so far: (1) it requires no hyperparameter tuning
-for variable partitionings, and (2) accepts a more scalable alternative to computing all pairwise
-correlations.
+dealing with high dimensional data. In this section we review \textproc{Prometheus}
+\citep{jaini18a}, a divide-and-conquer \textproc{LearnSPN}-like PC learning algorithm with two main
+features that stand out compared to the last two methods we have seen so far: (1) it requires no
+hyperparameter tuning for variable partitionings, and (2) accepts a more scalable alternative to
+computing all pairwise correlations.
 
 \begin{figure}[t]
   \begin{subfigure}[t]{0.25\textwidth}
@@ -684,10 +684,175 @@ the MST.
   deriving non-tree graphs \citep{tahrima16}.
 \end{remark}
 
-\section{Iterative Learning}
-\label{sec:iterative}
+\section{Incremental Learning}
+\label{sec:incremental}
+
+Learning algorithms from the \divclass{} class heavily rely on recursively constructing a
+probabilistic circuit in a top-down fashion. This facilitates learning, as we need only to greedily
+optimize at a local level. We now draw our attention to incremental algorithms that iteratively
+grow an initial circuit. These usually require a search over possible candidate nodes to be
+extended, and as such involve evaluating the entire circuit to determine best scores. In this
+section, we look at two examples of \incrclass{} class learning algorithms: \textproc{LearnPSDD}
+and \textproc{Strudel}.
 
 \subsection{\textproc{LearnPSDD}}
+
+As the name suggests, \textproc{LearnPSDD} \citep{liang17} learns a smooth, structure decomposable
+and deterministic probabilistic circuit (cf.\ \Cref{subsection:touncertainty}), meaning its
+computational graph must respect a vtree. We therefore must address the issue of learning the vtree
+before we turn to the PC learning algorithm \emph{per se}.
+
+Recall that for a vtree $\vtree$, every inner node $v\in\vtree$ with $\set{X}=\Sc(v^\gets)$ and
+$\set{Y}=\Sc(v^\to)$ determines that $\set{X}$ and $\set{Y}$ are independent, i.e.\
+$p_\mathcal{C}(\set{X},\set{Y})=p_\mathcal{C}(\set{X}) p_\mathcal{C}(\set{Y})$ for a PC $\mathcal{C}$. This
+means that a PC's vtree is pivotal in embedding the independencies of the circuit's distribution.
+With this in mind, \citet{liang17} propose two approaches to inducing vtrees from data, both of
+which use mutual information for deciding independence. To avoid computing an exponential number of
+MI terms, an approximation based on the average pairwise MI is computed instead
+\begin{equation*}
+  \normalfont{pMI}(\set{X},\set{Y})=
+\end{equation*}
+
+\begin{figure}[t]
+  \resizebox{\textwidth}{!}{
+  \begin{tikzpicture}
+    \def\ngon{8}
+    \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (0,0) {};
+    \foreach \i in {1,...,3} {
+      \foreach \j in {2,...,3} {
+        \draw[boxgray,thick] (p.corner \i) -- (p.corner \j);
+      }
+    }
+    \foreach \i in {4,...,\ngon} {
+      \foreach \j in {5,...,\ngon} {
+        \draw[boxgray,thick] (p.corner \i) -- (p.corner \j);
+      }
+    }
+    \foreach \i in {1,...,3} {
+      \foreach \j in {4,...,\ngon} {
+        \draw[thick] (p.corner \i) -- (p.corner \j);
+      }
+    }
+    \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+    \node[circle,fill=boxorange!80] (p2) at (p.corner 2) {$B$};
+    \node[circle,fill=boxorange!80] (p3) at (p.corner 3) {$C$};
+    \node[circle,fill=boxpink!50] (p4) at (p.corner 4) {$D$};
+    \node[circle,fill=boxpink!50] (p5) at (p.corner 5) {$E$};
+    \node[circle,fill=boxpink!50] (p6) at (p.corner 6) {$F$};
+    \node[circle,fill=boxpink!50] (p7) at (p.corner 7) {$G$};
+    \node[circle,fill=boxpink!50] (p8) at (p.corner 8) {$H$};
+
+    \node[draw,inner sep=2pt,minimum size=13pt] (r) at ($(p) + (4.5,1)$) {1};
+    \node[label=below:{$\{A,B,C\}$},draw,fill=boxorange!80,inner sep=2pt,minimum size=13pt] (vl) at ($(r) + (-1,-1)$) {2};
+    \node[label=below:{$\{D,E,F,G,H\}$},draw,fill=boxpink!50,inner sep=2pt,minimum size=13pt] (vr) at ($(r) + (1,-1)$) {3};
+    \draw (r) -- (vl); \draw (r) -- (vr);
+
+    \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (10,0) {};
+    \draw[boxgray,thick] (p.corner 4) -- (p.corner 5);
+    \draw[boxgray,thick] (p.corner 6) -- (p.corner 7);
+    \draw[boxgray,thick] (p.corner 6) -- (p.corner 8);
+    \draw[boxgray,thick] (p.corner 7) -- (p.corner 8);
+    \foreach \i in {4,...,5} {
+      \foreach \j in {6,...,\ngon} {
+        \draw[thick] (p.corner \i) -- (p.corner \j);
+      }
+    }
+    \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+    \node[circle,fill=boxorange!80] (p2) at (p.corner 2) {$B$};
+    \node[circle,fill=boxorange!80] (p3) at (p.corner 3) {$C$};
+    \node[circle,fill=boxpink!50] (p4) at (p.corner 4) {$D$};
+    \node[circle,fill=boxpink!50] (p5) at (p.corner 5) {$E$};
+    \node[circle,fill=boxblue!50] (p6) at (p.corner 6) {$F$};
+    \node[circle,fill=boxblue!50] (p7) at (p.corner 7) {$G$};
+    \node[circle,fill=boxblue!50] (p8) at (p.corner 8) {$H$};
+
+    \node[draw,inner sep=2pt,minimum size=13pt] (r) at ($(p) + (4.5,1.5)$) {1};
+    \node[label=below:{$\{A,B,C\}$},draw,fill=boxorange!80,inner sep=2pt,minimum size=13pt] (vl) at ($(r) + (-1,-1)$) {2};
+    \node[draw,inner sep=2pt,minimum size=13pt] (vr) at ($(r) + (1,-1.5)$) {3};
+    \node[label=below:{$\{D,E\}$},draw,fill=boxpink!50,inner sep=2pt,minimum size=13pt] (vrl) at ($(vr) + (-1,-1.5)$) {4};
+    \node[label=below:{$\{F,G,H\}$},draw,fill=boxblue!50,inner sep=2pt,minimum size=13pt] (vrr) at ($(vr) + (1,-1.5)$) {5};
+    \draw (r) -- (vl); \draw (r) -- (vr); \draw (vr) -- (vrl); \draw (vr) -- (vrr);
+
+    \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (0,-5.5) {};
+    \draw[boxgray,thick] (p.corner 2) -- (p.corner 1);
+    \draw[thick] (p.corner 3) -- (p.corner 1);
+    \draw[thick] (p.corner 3) -- (p.corner 2);
+
+    \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+    \node[circle,fill=boxorange!80] (p2) at (p.corner 2) {$B$};
+    \node[circle,fill=boxgreen!80] (p3) at (p.corner 3) {$C$};
+    \node[circle,fill=boxpink!50] (p4) at (p.corner 4) {$D$};
+    \node[circle,fill=boxpink!50] (p5) at (p.corner 5) {$E$};
+    \node[circle,fill=boxblue!50] (p6) at (p.corner 6) {$F$};
+    \node[circle,fill=boxblue!50] (p7) at (p.corner 7) {$G$};
+    \node[circle,fill=boxblue!50] (p8) at (p.corner 8) {$H$};
+
+    \node[draw,inner sep=2pt,minimum size=13pt] (r) at ($(p) + (4.75,1.5)$) {1};
+    \node[draw,inner sep=2pt,minimum size=13pt] (vl) at ($(r) + (-0.5,-1)$) {2};
+    \node[draw,fill=boxgreen!80,inner sep=2pt,minimum size=13pt] (vll) at ($(vl) + (-1.25,-1)$) {$C$};
+    \node[label=below:{$\{A,B\}$},draw,fill=boxorange!80,inner sep=2pt,minimum size=13pt] (vlr) at ($(vl) + (0.0,-1)$) {6};
+    \node[draw,inner sep=2pt,minimum size=13pt] (vr) at ($(r) + (0.5,-1)$) {3};
+    \node[label=below:{$\{D,E\}$},draw,fill=boxpink!50,inner sep=2pt,minimum size=13pt] (vrl) at ($(vr) + (-0.0,-1)$) {4};
+    \node[label=below:{$\{F,G,H\}$},draw,fill=boxblue!50,inner sep=2pt,minimum size=13pt] (vrr) at ($(vr) + (1.25,-1)$) {5};
+    \draw (r) -- (vl); \draw (r) -- (vr); \draw (vr) -- (vrl); \draw (vr) -- (vrr);
+    \draw (vl) -- (vll); \draw (vl) -- (vlr);
+
+    \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (10,-5.5) {};
+    \draw[thick] (p.corner 1) -- (p.corner 2);
+
+    \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+    \node[circle,fill=boxpurple!60] (p2) at (p.corner 2) {$B$};
+    \node[circle,fill=boxgreen!80] (p3) at (p.corner 3) {$C$};
+    \node[circle,fill=boxpink!50] (p4) at (p.corner 4) {$D$};
+    \node[circle,fill=boxpink!50] (p5) at (p.corner 5) {$E$};
+    \node[circle,fill=boxblue!50] (p6) at (p.corner 6) {$F$};
+    \node[circle,fill=boxblue!50] (p7) at (p.corner 7) {$G$};
+    \node[circle,fill=boxblue!50] (p8) at (p.corner 8) {$H$};
+
+    \node[draw,inner sep=2pt,minimum size=13pt] (r) at ($(p) + (4.75,1.5)$) {1};
+    \node[draw,inner sep=2pt,minimum size=13pt] (vl) at ($(r) + (-0.5,-1)$) {2};
+    \node[draw,fill=boxgreen!80,inner sep=2pt,minimum size=13pt] (vll) at ($(vl) + (-1.25,-1)$) {$C$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (vlr) at ($(vl) + (0.0,-1)$) {6};
+    \node[draw,fill=boxpurple!60,inner sep=2pt,minimum size=13pt] (vlrl) at ($(vlr) + (-1.25,-1)$) {$B$};
+    \node[draw,fill=boxorange!80,inner sep=2pt,minimum size=13pt] (vlrr) at ($(vlr) + (-0,-1)$) {$A$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (vr) at ($(r) + (0.5,-1)$) {3};
+    \node[label=below:{$\{D,E\}$},draw,fill=boxpink!50,inner sep=2pt,minimum size=13pt] (vrl) at ($(vr) + (-0.0,-1)$) {4};
+    \node[label=below:{$\{F,G,H\}$},draw,fill=boxblue!50,inner sep=2pt,minimum size=13pt] (vrr) at ($(vr) + (1.25,-1)$) {5};
+    \draw (r) -- (vl); \draw (r) -- (vr); \draw (vr) -- (vrl); \draw (vr) -- (vrr);
+    \draw (vl) -- (vll); \draw (vl) -- (vlr); \draw (vlr) -- (vlrl); \draw (vlr) -- (vlrr);
+  \end{tikzpicture}
+  }
+  \caption{Snapshots of four iterations from running the vtree top-down learning strategy with
+    pairwise mutual information. Each iteration shows a variable partitioning, the edges that
+    minimize the average pairwise mutual information in black, and the subsequent (partial) vtree.
+    The algorithm finishes when all partitions are singletons.}
+  \label{fig:topdownvtree}
+\end{figure}
+
+\paragraph{Top-down vtree learning.} Let $\mathcal{G}$ a fully connected graph where variables are
+nodes. Each edge 
+
+\begin{figure}[t]
+  \begin{tikzpicture}
+    \def\ngon{8}
+    \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (0,0) {};
+    \pgfmathsetmacro{\ngonm}{\ngon-1}
+    \foreach \i in {1,...,\ngonm} {
+      \pgfmathsetmacro{\k}{int(\i+1)}
+      \foreach \j in {\k,...,\ngon} {
+        \draw[thick] (p.corner \i) -- (p.corner \j);
+      }
+    }
+    \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+    \node[circle,fill=boxpurple!60] (p2) at (p.corner 2) {$B$};
+    \node[circle,fill=boxgreen!80] (p3) at (p.corner 3) {$C$};
+    \node[circle,fill=boxred!70] (p4) at (p.corner 4) {$D$};
+    \node[circle,fill=boxpink!50] (p5) at (p.corner 5) {$E$};
+    \node[circle,fill=boxgray] (p6) at (p.corner 6) {$F$};
+    \node[circle,fill=boxgoldenrod!70] (p7) at (p.corner 7) {$G$};
+    \node[circle,fill=boxblue!50] (p8) at (p.corner 8) {$H$};
+  \end{tikzpicture}
+\end{figure}
 
 \subsection{\textproc{Strudel}}
 

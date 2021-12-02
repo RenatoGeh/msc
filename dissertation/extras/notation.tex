@@ -56,7 +56,7 @@ mathx7 <8-9> mathx8 <9-10> mathx9 <10-12> mathx10 <12-> mathx12 }{}
 \newcommand{\rch}[1]{#1^\to}
 
 \newcommand{\divclass}{\texttt{DIV}}
-\newcommand{\iterclass}{\texttt{ITER}}
+\newcommand{\incrclass}{\texttt{INCR}}
 \newcommand{\randclass}{\texttt{RAND}}
 
 \newcommand{\evi}{\textsf{EVI}}
@@ -125,6 +125,38 @@ mathx7 <8-9> mathx8 <9-10> mathx9 <10-12> mathx10 <12-> mathx12 }{}
 \tikzset{
   edge/.style = {->,>=latex'}
 }
+
+\newcommand{\drawOldGradient}[3]{%
+% #1: starting node
+% #2: ending node
+% #3: attributes for the shape connecting nodes
+\path let
+  \p1 = ($(#2)-(#1)$),
+  \n1 = {veclen(\p1)},
+  \n2 = {atan2(\y1,\x1)} % <- Update
+in
+  (#1) -- (#2) node[#3,midway,sloped,shading angle=\n2-90,minimum width=\n1,minimum height=0.5pt,inner sep=1pt,#3] {};
+}
+
+\newcommand{\drawGradient}[4]{%
+% #1: starting node
+% #2: ending node
+% #3: attributes for the shape connecting nodes
+\path let
+  \p1 = ($(#2)-(#1)$),
+  \n1 = {veclen(\p1)},
+  \n2 = {atan2(\y1,\x1)} % <- Update
+in
+  (#1) -- (#2) node[midway,sloped,shading angle=\n2-90,minimum width=\n1,minimum height=0.5pt,inner sep=1pt,top color=#3,bottom color=#4] {};
+}
+
+%\tikzfading[name=fade down,top color=blue!0, bottom color=red!100]
+%\tikzfading[name=fade up,top color=red!100, bottom color=blue!0]
+
+%\newcommand{\drawSlowGradient}[4]{
+  %\path[path fading=fade down,ultra thick,draw=#3] (#1) -- (#2);
+  %\path[path fading=fade up,ultra thick,draw=#4] (#2) -- (#1);
+%}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{proposition}{Proposition}[section]

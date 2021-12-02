@@ -1237,7 +1237,9 @@ convenience, and does not imply in a loss of expressivity. As a matter of fact, 
 2-standardized, i.e.\ to standardize the circuit such that every product node only has two children
 (see \Cref{thm:2standard}). Intuitively, structure decomposability merely states that every two
 product nodes whose scopes are the same must partition their scopes (between their two children)
-exactly the same (and according to their corresponding vtree node).
+exactly the same (and according to their corresponding vtree node). Semantically speaking, a
+vtree's inner node $v$ defines an independence relationship between $\Sc(v^\gets)$ and $\Sc(v^\to)$
+under the distribution encoded by its PC.
 
 \Cref{fig:vtreeresp} shows a vtree $\vtree$ and two probabilistic circuits, say
 $\mathcal{C}_1$ for the one in the middle and $\mathcal{C}_2$ for the one on the right. Notice how
@@ -1588,6 +1590,7 @@ on logic circuits.
 \end{example}
 
 \subsection{...to Uncertainty}
+\label{subsection:touncertainty}
 
 Logic circuits are easily extensible to probabilistic circuits. In fact, if we think of an LC as
 the support of a PC the connections between the two come naturally. Suppose a 2-standard smooth,
@@ -1690,10 +1693,12 @@ only attributes a weight (i.e.\ probability) to each positive element as usual
 
 This compatibility between logic and probabilistic circuits allows certain knowledge to be embedded
 into an uncertain model by constructing a computational graph whose underlying logic circuit
-correctly attributes positive values only to the support of the distribution. An alternative use
-case for logic circuits within the context of probabilistic reasoning is querying for the
-probability of logical events, i.e.\ the expectation of a logic query with respect to a
-distribution. This kind of query is enabled by the following result.
+correctly attributes positive values only to the support of the distribution. When such a
+computational graph is also smooth, structure decomposable and deterministic, then it belongs to a
+special subclass of PCs called Probabilistic Sentential Decision Diagrams (PSDDs, \cite{kisa14}).
+An alternative use case for logic circuits within the context of probabilistic reasoning is
+querying for the probability of logical events, i.e.\ the expectation of a logic query with respect
+to a distribution. This kind of query is enabled by the following result.
 
 \begin{algorithm}[t]
   \caption{\expc}\label{alg:expc}
