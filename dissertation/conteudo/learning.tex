@@ -513,10 +513,10 @@ computing all pairwise correlations.
     \resizebox{\textwidth}{!}{
     \begin{tikzpicture}
       \newSumNode[fill=boxgreen!75]{r}{0,0};
-      \newProdNode[fill=blue!50]{p1}{$(r) + (-3,-1)$};
-      \newProdNode[fill=red!60]{p2}{$(r) + (-1,-1)$};
-      \newProdNode[fill=boxdgray!80]{p3}{$(r) + (1,-1)$};
-      \newProdNode[fill=orange!80]{p4}{$(r) + (3,-1)$};
+      \newProdNode[fill=boxdgray!80]{p1}{$(r) + (-3,-1)$};
+      \newProdNode[fill=blue!50]{p2}{$(r) + (-1,-1)$};
+      \newProdNode[fill=orange!80]{p3}{$(r) + (1,-1)$};
+      \newProdNode[fill=red!60]{p4}{$(r) + (3,-1)$};
       \newSumNode[label=below:{$\{A,B,C\}$},fill=boxgreen!75]{s1}{$(r) + (-3.5,-3.0)$};
       \newSumNode[label=below:{$\{D,E\}$},fill=boxgreen!75]{s2}{$(r) + (-2.5,-2.5)$};
       \newSumNode[label=below:{$\{B,C\}$},fill=boxgreen!75]{s3}{$(r) + (-1.5,-2.0)$};
@@ -704,14 +704,21 @@ before we turn to the PC learning algorithm \emph{per se}.
 
 Recall that for a vtree $\vtree$, every inner node $v\in\vtree$ with $\set{X}=\Sc(v^\gets)$ and
 $\set{Y}=\Sc(v^\to)$ determines that $\set{X}$ and $\set{Y}$ are independent, i.e.\
-$p_\mathcal{C}(\set{X},\set{Y})=p_\mathcal{C}(\set{X}) p_\mathcal{C}(\set{Y})$ for a PC $\mathcal{C}$. This
-means that a PC's vtree is pivotal in embedding the independencies of the circuit's distribution.
-With this in mind, \citet{liang17} propose two approaches to inducing vtrees from data, both of
-which use mutual information for deciding independence. To avoid computing an exponential number of
-MI terms, an approximation based on the average pairwise MI is computed instead
+$p_\mathcal{C}(\set{X},\set{Y})=p_\mathcal{C}(\set{X}) p_\mathcal{C}(\set{Y})$ for a PC
+$\mathcal{C}$. This means that a PC's vtree is pivotal in embedding the independencies of the
+circuit's distribution. With this in mind, \citet{liang17} propose two approaches to inducing
+vtrees from data, both of which use mutual information
 \begin{equation*}
-  \normalfont{pMI}(\set{X},\set{Y})=
+  \mutualinf(\set{X},\set{Y})=\sum_{\set{X}=\set{x}}\sum_{\set{Y}=\set{y}}p(\set{x},\set{y})\log\frac{p(\set{x},\set{y})}{p(\set{x})p(\set{y})}
 \end{equation*}
+for deciding independence. To avoid computing an exponential number of MI terms, an approximation
+based on the average pairwise MI is computed instead
+\begin{equation*}
+  \pairmi(\set{X},\set{Y})=\frac{1}{|\set{X}||\set{Y}|}\cdot\sum_{X\in\set{X}}\sum_{Y\in\set{Y}}\mutualinf(X,Y).
+\end{equation*}
+The first approach learns vtrees in a top-down fashion, starting with a full scope and recursively
+partitioning down to the unit set. The second learns bottom-up, starting with singletons and
+joining sets of variables up to full scope.
 
 \begin{figure}[t]
   \resizebox{\textwidth}{!}{
@@ -720,12 +727,12 @@ MI terms, an approximation based on the average pairwise MI is computed instead
     \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (0,0) {};
     \foreach \i in {1,...,3} {
       \foreach \j in {2,...,3} {
-        \draw[boxgray,thick] (p.corner \i) -- (p.corner \j);
+        \draw[gray,thick] (p.corner \i) -- (p.corner \j);
       }
     }
     \foreach \i in {4,...,\ngon} {
       \foreach \j in {5,...,\ngon} {
-        \draw[boxgray,thick] (p.corner \i) -- (p.corner \j);
+        \draw[gray,thick] (p.corner \i) -- (p.corner \j);
       }
     }
     \foreach \i in {1,...,3} {
@@ -748,10 +755,10 @@ MI terms, an approximation based on the average pairwise MI is computed instead
     \draw (r) -- (vl); \draw (r) -- (vr);
 
     \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (10,0) {};
-    \draw[boxgray,thick] (p.corner 4) -- (p.corner 5);
-    \draw[boxgray,thick] (p.corner 6) -- (p.corner 7);
-    \draw[boxgray,thick] (p.corner 6) -- (p.corner 8);
-    \draw[boxgray,thick] (p.corner 7) -- (p.corner 8);
+    \draw[gray,thick] (p.corner 4) -- (p.corner 5);
+    \draw[gray,thick] (p.corner 6) -- (p.corner 7);
+    \draw[gray,thick] (p.corner 6) -- (p.corner 8);
+    \draw[gray,thick] (p.corner 7) -- (p.corner 8);
     \foreach \i in {4,...,5} {
       \foreach \j in {6,...,\ngon} {
         \draw[thick] (p.corner \i) -- (p.corner \j);
@@ -774,7 +781,7 @@ MI terms, an approximation based on the average pairwise MI is computed instead
     \draw (r) -- (vl); \draw (r) -- (vr); \draw (vr) -- (vrl); \draw (vr) -- (vrr);
 
     \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (0,-5.5) {};
-    \draw[boxgray,thick] (p.corner 2) -- (p.corner 1);
+    \draw[gray,thick] (p.corner 2) -- (p.corner 1);
     \draw[thick] (p.corner 3) -- (p.corner 1);
     \draw[thick] (p.corner 3) -- (p.corner 2);
 
@@ -823,26 +830,52 @@ MI terms, an approximation based on the average pairwise MI is computed instead
   \end{tikzpicture}
   }
   \caption{Snapshots of four iterations from running the vtree top-down learning strategy with
-    pairwise mutual information. Each iteration shows a variable partitioning, the edges that
-    minimize the average pairwise mutual information in black, and the subsequent (partial) vtree.
-    The algorithm finishes when all partitions are singletons.}
+    pairwise mutual information. Each iteration shows a variable partitioning, the cut-set that
+    minimizes the average pairwise mutual information as black edges, and the subsequent (partial)
+    vtree. The algorithm finishes when all partitions are singletons.}
   \label{fig:topdownvtree}
 \end{figure}
 
-\paragraph{Top-down vtree learning.} Let $\mathcal{G}$ a fully connected graph where variables are
-nodes. Each edge 
+\paragraph{Top-down vtree learning.} Let $\mathcal{G}$ a fully connected weighted graph where
+variables are nodes. For each edge $\edge{X}{Y}$, attribute its weight as $\mutualinf(X,Y)$.
+Learning the vtree top-down amounts to partitioning $\mathcal{G}$ such that the cut-set that
+divides the two partitions $\set{X}$ and $\set{Y}$ is minimal with respect to $\pairmi$.
+\citet{liang17} further argue that balanced vtrees produce smaller PCs, and so they reduce learning
+to a balanced min-cut bipartition problem. Although this is known to be NP-complete
+\citep{garey90}, optimized solvers are able to produce high quality bipartitions efficiently
+\citep{karypsis98}. In a nutshell, the vtree construction goes as follows: find a balanced min-cut
+bipartition $(\set{X}, \set{Y})$ in $\mathcal{G}$ minimizing the $\pairmi$ of the edges; add a
+vtree inner node representing this bipartition and connect it to the two vtrees produced by the
+recursive calls over $\set{X}$ and $\set{Y}$; if $\set{X}=\{X\}$ (resp. $|\set{Y}|=\{Y\}$), produce
+a leaf node $X$ (resp. $Y$). \Cref{fig:topdownvtree} shows four iterations of this procedure.
+
+\paragraph{Bottom-up vtree learning.} Again, take $\mathcal{G}$ as the fully connected weighted
+graph from computing the pairwise mutual information of variables. Now consider that every node of
+$\mathcal{G}$ is a vtree whose only node is the variable itself. To learn a vtree bottom-up is to
+find pairings of vtrees such that the mutual information between them is high, meaning that the
+partitionings at higher levels are minimized (and so determine the ``true'' independence
+relationships between subsets of variables). To produce balanced vtrees, the algorithm attempts to
+join vtrees of same height whose $\pairmi$ is maximal; this is equivalent to min-cost perfect
+matching, which can be solved, in our case, in $\bigo(m^4)$, where $m$ is the number of variables
+\citep{edmonds65,kolmogorov09}.
 
 \begin{figure}[t]
+  \resizebox{\textwidth}{!}{
   \begin{tikzpicture}
     \def\ngon{8}
     \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (0,0) {};
     \pgfmathsetmacro{\ngonm}{\ngon-1}
-    \foreach \i in {1,...,\ngonm} {
+    \draw[thick] (p.corner 1) -- (p.corner 2);
+    \foreach \i in {3,...,\ngon} {\draw[gray,thick] (p.corner 1) -- (p.corner \i);}
+    \foreach \i in {2,...,\ngonm} {
       \pgfmathsetmacro{\k}{int(\i+1)}
       \foreach \j in {\k,...,\ngon} {
-        \draw[thick] (p.corner \i) -- (p.corner \j);
+        \draw[gray,thick] (p.corner \i) -- (p.corner \j);
       }
     }
+    \draw[thick] (p.corner 3) -- (p.corner 4);
+    \draw[thick] (p.corner 5) -- (p.corner 6);
+    \draw[thick] (p.corner 7) -- (p.corner 8);
     \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
     \node[circle,fill=boxpurple!60] (p2) at (p.corner 2) {$B$};
     \node[circle,fill=boxgreen!80] (p3) at (p.corner 3) {$C$};
@@ -851,8 +884,165 @@ nodes. Each edge
     \node[circle,fill=boxgray] (p6) at (p.corner 6) {$F$};
     \node[circle,fill=boxgoldenrod!70] (p7) at (p.corner 7) {$G$};
     \node[circle,fill=boxblue!50] (p8) at (p.corner 8) {$H$};
+
+    \node (r) at ($(p) + (4.75,1.5)$) {};
+    \node[draw,inner sep=2pt,minimum size=13pt] (r1) at ($(r) + (-1,0)$) {1};
+    \node[draw,inner sep=2pt,minimum size=13pt] (r2) at ($(r) + (1,0)$) {2};
+    \node[draw,inner sep=2pt,minimum size=13pt] (r3) at ($(r) + (-1,-3)$) {3};
+    \node[draw,inner sep=2pt,minimum size=13pt] (r4) at ($(r) + (1,-3)$) {4};
+    \node[fill=boxorange!80,draw,inner sep=2pt,minimum size=13pt] (a) at    ($(r) + (-1.5,-1)$) {$A$};
+    \node[fill=boxpurple!60,draw,inner sep=2pt,minimum size=13pt] (b) at    ($(r) + (-0.5,-1)$) {$B$};
+    \node[fill=boxgreen!80,draw,inner sep=2pt,minimum size=13pt] (c) at   ($(r) + (0.5,-1)$) {$C$};
+    \node[fill=boxred!70,draw,inner sep=2pt,minimum size=13pt] (d) at       ($(r) + (1.5,-1)$) {$D$};
+    \node[fill=boxpink!50,draw,inner sep=2pt,minimum size=13pt] (e) at      ($(r) + (-1.5,-2)$) {$E$};
+    \node[fill=boxgray,draw,inner sep=2pt,minimum size=13pt] (f) at         ($(r) + (-0.5,-2)$) {$F$};
+    \node[fill=boxgoldenrod!70,draw,inner sep=2pt,minimum size=13pt] (g) at ($(r) + (0.5,-2)$) {$G$};
+    \node[fill=boxblue!50,draw,inner sep=2pt,minimum size=13pt] (h) at      ($(r) + (1.5,-2)$) {$H$};
+    \draw (r1) -- (a); \draw (r1) -- (b);
+    \draw (r2) -- (c); \draw (r2) -- (d);
+    \draw (r3) -- (e); \draw (r3) -- (f);
+    \draw (r4) -- (g); \draw (r4) -- (h);
+
+    \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (10,0) {};
+
+    \foreach \i in {3,...,4} {\draw[thick] (p.corner 1) -- (p.corner \i);}
+    \foreach \i in {3,...,4} {\draw[thick] (p.corner 2) -- (p.corner \i);}
+    \foreach \i in {5,...,\ngon} {\draw[thick,gray] (p.corner 1) -- (p.corner \i);}
+    \foreach \i in {5,...,\ngon} {\draw[thick,gray] (p.corner 2) -- (p.corner \i);}
+
+    \foreach \i in {5,...,\ngon} {\draw[thick,gray] (p.corner 3) -- (p.corner \i);}
+    \foreach \i in {5,...,\ngon} {\draw[thick,gray] (p.corner 4) -- (p.corner \i);}
+
+    \foreach \i in {7,...,\ngon} {\draw[thick,gray] (p.corner 5) -- (p.corner \i);}
+    \foreach \i in {7,...,\ngon} {\draw[thick,gray] (p.corner 6) -- (p.corner \i);}
+
+    \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+    \node[circle,fill=boxorange!80] (p2) at (p.corner 2) {$B$};
+    \node[circle,fill=boxgreen!80] (p3) at (p.corner 3) {$C$};
+    \node[circle,fill=boxgreen!80] (p4) at (p.corner 4) {$D$};
+    \node[circle,fill=boxpink!50] (p5) at (p.corner 5) {$E$};
+    \node[circle,fill=boxpink!50] (p6) at (p.corner 6) {$F$};
+    \node[circle,fill=boxblue!50] (p7) at (p.corner 7) {$G$};
+    \node[circle,fill=boxblue!50] (p8) at (p.corner 8) {$H$};
+
+    \node (r) at ($(p) + (4.75,1.5)$) {};
+    \node[fill=boxorange!80,draw,inner sep=2pt,minimum size=13pt] (r1) at ($(r) + (-1,0)$) {1};
+    \node[fill=boxgreen!80,draw,inner sep=2pt,minimum size=13pt] (r2) at ($(r) + (1,0)$) {2};
+    \node[fill=boxpink!50,draw,inner sep=2pt,minimum size=13pt] (r3) at ($(r) + (-1,-3)$) {3};
+    \node[fill=boxblue!50,draw,inner sep=2pt,minimum size=13pt] (r4) at ($(r) + (1,-3)$) {4};
+    \node[draw,inner sep=2pt,minimum size=13pt] (rr1) at ($(r) + (0,0.5)$) {5};
+    \node[draw,inner sep=2pt,minimum size=13pt] (a) at    ($(r) + (-1.5,-1)$) {$A$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (b) at    ($(r) + (-0.5,-1)$) {$B$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (c) at   ($(r) + (0.5,-1)$) {$C$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (d) at       ($(r) + (1.5,-1)$) {$D$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (e) at      ($(r) + (-1.5,-2)$) {$E$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (f) at         ($(r) + (-0.5,-2)$) {$F$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (g) at ($(r) + (0.5,-2)$) {$G$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (h) at      ($(r) + (1.5,-2)$) {$H$};
+    \draw (r1) -- (a); \draw (r1) -- (b);
+    \draw (r2) -- (c); \draw (r2) -- (d);
+    \draw (r3) -- (e); \draw (r3) -- (f);
+    \draw (r4) -- (g); \draw (r4) -- (h);
+    \draw (rr1) -- (r1); \draw (rr1) -- (r2);
+
+    \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (0,-5.5) {};
+
+    \foreach \i in {5,...,\ngon} {\draw[thick,gray] (p.corner 1) -- (p.corner \i);}
+    \foreach \i in {5,...,\ngon} {\draw[thick,gray] (p.corner 2) -- (p.corner \i);}
+    \foreach \i in {5,...,\ngon} {\draw[thick,gray] (p.corner 3) -- (p.corner \i);}
+    \foreach \i in {5,...,\ngon} {\draw[thick,gray] (p.corner 4) -- (p.corner \i);}
+
+    \foreach \i in {7,...,\ngon} {\draw[thick] (p.corner 5) -- (p.corner \i);}
+    \foreach \i in {7,...,\ngon} {\draw[thick] (p.corner 6) -- (p.corner \i);}
+
+    \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+    \node[circle,fill=boxorange!80] (p2) at (p.corner 2) {$B$};
+    \node[circle,fill=boxorange!80] (p3) at (p.corner 3) {$C$};
+    \node[circle,fill=boxorange!80] (p4) at (p.corner 4) {$D$};
+    \node[circle,fill=boxpink!50] (p5) at (p.corner 5) {$E$};
+    \node[circle,fill=boxpink!50] (p6) at (p.corner 6) {$F$};
+    \node[circle,fill=boxblue!50] (p7) at (p.corner 7) {$G$};
+    \node[circle,fill=boxblue!50] (p8) at (p.corner 8) {$H$};
+
+    \node (r) at ($(p) + (4.75,1.5)$) {};
+    \node[draw,inner sep=2pt,minimum size=13pt] (r1) at ($(r) + (-1,0)$) {1};
+    \node[draw,inner sep=2pt,minimum size=13pt] (r2) at ($(r) + (1,0)$) {2};
+    \node[fill=boxpink!50,draw,inner sep=2pt,minimum size=13pt] (r3) at ($(r) + (-1,-3)$) {3};
+    \node[fill=boxblue!50,draw,inner sep=2pt,minimum size=13pt] (r4) at ($(r) + (1,-3)$) {4};
+    \node[fill=boxorange!80,draw,inner sep=2pt,minimum size=13pt] (rr1) at ($(r) + (0,0.5)$) {5};
+    \node[draw,inner sep=2pt,minimum size=13pt] (rr2) at ($(r) + (0,-3.5)$) {6};
+    \node[draw,inner sep=2pt,minimum size=13pt] (a) at    ($(r) + (-1.5,-1)$) {$A$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (b) at    ($(r) + (-0.5,-1)$) {$B$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (c) at   ($(r) + (0.5,-1)$) {$C$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (d) at       ($(r) + (1.5,-1)$) {$D$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (e) at      ($(r) + (-1.5,-2)$) {$E$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (f) at         ($(r) + (-0.5,-2)$) {$F$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (g) at ($(r) + (0.5,-2)$) {$G$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (h) at      ($(r) + (1.5,-2)$) {$H$};
+    \draw (r1) -- (a); \draw (r1) -- (b);
+    \draw (r2) -- (c); \draw (r2) -- (d);
+    \draw (r3) -- (e); \draw (r3) -- (f);
+    \draw (r4) -- (g); \draw (r4) -- (h);
+    \draw (rr1) -- (r1); \draw (rr1) -- (r2); \draw (rr2) -- (r3); \draw (rr2) -- (r4);
+
+    \node[regular polygon,regular polygon sides=\ngon,minimum size=4cm] (p) at (10,-5.5) {};
+
+    \foreach \i in {5,...,\ngon} {\draw[thick] (p.corner 1) -- (p.corner \i);}
+    \foreach \i in {5,...,\ngon} {\draw[thick] (p.corner 2) -- (p.corner \i);}
+    \foreach \i in {5,...,\ngon} {\draw[thick] (p.corner 3) -- (p.corner \i);}
+    \foreach \i in {5,...,\ngon} {\draw[thick] (p.corner 4) -- (p.corner \i);}
+
+    \node[circle,fill=boxorange!80] (p1) at (p.corner 1) {$A$};
+    \node[circle,fill=boxorange!80] (p2) at (p.corner 2) {$B$};
+    \node[circle,fill=boxorange!80] (p3) at (p.corner 3) {$C$};
+    \node[circle,fill=boxorange!80] (p4) at (p.corner 4) {$D$};
+    \node[circle,fill=boxpink!50] (p5) at (p.corner 5) {$E$};
+    \node[circle,fill=boxpink!50] (p6) at (p.corner 6) {$F$};
+    \node[circle,fill=boxpink!50] (p7) at (p.corner 7) {$G$};
+    \node[circle,fill=boxpink!50] (p8) at (p.corner 8) {$H$};
+
+    \node (r) at ($(p) + (4.75,1.75)$) {};
+    \node[draw,inner sep=2pt,minimum size=13pt] (r1) at ($(r) + (-1,0)$) {1};
+    \node[draw,inner sep=2pt,minimum size=13pt] (r2) at ($(r) + (1,0)$) {2};
+    \node[draw,inner sep=2pt,minimum size=13pt] (r3) at ($(r) + (-1,-3)$) {3};
+    \node[draw,inner sep=2pt,minimum size=13pt] (r4) at ($(r) + (1,-3)$) {4};
+    \node[fill=boxorange!80,draw,inner sep=2pt,minimum size=13pt] (rr1) at ($(r) + (0,0.5)$) {5};
+    \node[fill=boxpink!50,draw,inner sep=2pt,minimum size=13pt] (rr2) at ($(r) + (0,-3.75)$) {6};
+    \node[draw,inner sep=2pt,minimum size=13pt] (rrr) at ($(r) + (0,-1.65)$) {7};
+    \node[draw,inner sep=2pt,minimum size=13pt] (a) at    ($(r) + (-1.5,-1)$) {$A$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (b) at    ($(r) + (-0.5,-1)$) {$B$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (c) at   ($(r) + (0.5,-1)$) {$C$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (d) at       ($(r) + (1.5,-1)$) {$D$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (e) at      ($(r) + (-1.5,-2.25)$) {$E$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (f) at         ($(r) + (-0.5,-2.25)$) {$F$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (g) at ($(r) + (0.5,-2.25)$) {$G$};
+    \node[draw,inner sep=2pt,minimum size=13pt] (h) at      ($(r) + (1.5,-2.25)$) {$H$};
+    \draw (r1) -- (a); \draw (r1) -- (b);
+    \draw (r2) -- (c); \draw (r2) -- (d);
+    \draw (r3) -- (e); \draw (r3) -- (f);
+    \draw (r4) -- (g); \draw (r4) -- (h);
+    \draw (rr1) -- (r1); \draw (rr1) -- (r2); \draw (rr2) -- (r3); \draw (rr2) -- (r4);
+    \draw (rrr) -- (rr1); \draw (rrr) -- (rr2);
   \end{tikzpicture}
+  }
+  \caption{Snapshots from running the vtree bottom-up learning strategy with pairwise mutual
+    information. Snapshots show pairings of two vtrees, with edges between partitions joined into
+    a single edge whose weight is the average pairwise mutual information of all
+    collapsed edges. In black are edges that correspond to the matchings that maximize the average
+    pairwise mutual information. The algorithm finishes when all vtrees have been joined together
+    into a single tree.}
+  \label{fig:bottomupvtree}
 \end{figure}
+
+\textproc{LearnPSDD} is an incremental learning algorithm. This means that it takes an existing PC
+and incrementally grows the circuit by some criterion, preserving the structural constraints from
+the PC in the process. Once a vtree $\vtree$ has been learned from data, we use it to construct an
+initial circuit that respects $\vtree$. The choice of circuit initialization is dependent on our
+task. For example, within the context of PSDDs, we are mostly interested in starting out with a PC
+induced from an LC encoding a certain knowledge base (cf.\ \Cref{section:pckb}); this is usually
+done in a case-by-case basis, where LCs are compiled for a particular task and then promoted to
+PCs \citep{choi13,oztok15,choi17,shen17}. However, if one does not require specifying the
+distribution's support, any PC will do.
 
 \subsection{\textproc{Strudel}}
 
