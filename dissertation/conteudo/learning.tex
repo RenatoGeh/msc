@@ -698,7 +698,7 @@ and \textproc{Strudel}.
 \subsection{\textproc{LearnPSDD}}
 
 As the name suggests, \textproc{LearnPSDD} \citep{liang17} learns a smooth, structure decomposable
-and deterministic probabilistic circuit (cf.\ \Cref{subsection:touncertainty}), meaning its
+and deterministic probabilistic circuit (see \Cref{subsection:touncertainty}), meaning its
 computational graph must respect a vtree. We therefore must address the issue of learning the vtree
 before we turn to the PC learning algorithm \emph{per se}.
 
@@ -1039,12 +1039,160 @@ and incrementally grows the circuit by some criterion, preserving the structural
 the PC in the process. Once a vtree $\vtree$ has been learned from data, we use it to construct an
 initial circuit that respects $\vtree$. The choice of circuit initialization is dependent on our
 task. For example, within the context of PSDDs, we are mostly interested in starting out with a PC
-induced from an LC encoding a certain knowledge base (cf.\ \Cref{section:pckb}); this is usually
-done in a case-by-case basis, where LCs are compiled for a particular task and then promoted to
-PCs \citep{choi13,oztok15,choi17,shen17}. However, if one does not require specifying the
-distribution's support, any PC will do.
+induced from an LC encoding a certain knowledge base (see \Cref{section:pckb}); this is usually
+done in a case-by-case basis, where LCs are compiled for a particular task and then promoted to PCs
+(see \Cref{rem:initpc}). However, if one does not require specifying the distribution's support,
+any PC will do.
+
+\emph{How} and \emph{where} the circuit is grown -- once we have acquired a vtree and an initial
+circuit -- are the main topics of interest now. We first address the matter of \emph{how}, i.e.\
+how can we increase a PC's expressivity such that we preserve a desired set of structural
+constraints; and later of \emph{where}, i.e.\ which portions of the circuit are eligible for
+growth and how do we know they are good candidates.
+
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \newNamedOrNode[scale=1,draw=red,very thick,inputs=nn]{r}{0,0}{$\alpha$};
+      \newAndNode[draw=red,very thick,inputs=nn]{p1}{0,-1};
+      \newNamedOrNode[draw=red,very thick,inputs=nn]{s1}{$(p1.input 1) + (0,-1)$}{$\beta$};
+      \newNamedOrNode[inputs=nn]{s2}{$(p1.input 2) + (1.5,-1)$}{$\gamma$};
+      \newAndNode[inputs=nn]{p2}{$(s1.input 1) + (-1.0,-1)$};
+      \newAndNode[inputs=nn]{p3}{$(s1.input 2) + (1.0,-1)$};
+      \newOrNode[inputs=nn]{s3}{$(p2.input 2) + (0.5,-1)$};
+      \newOrNode[inputs=nn]{s4}{$(p3.input 2) + (0.5,-1)$};
+      \node (a) at ($(p2.input 1) + (0.0,-1)$) {$A$};
+      \node (na) at ($(p3.input 1) + (0.0,-1)$) {$\neg A$};
+      \draw[draw=red,very thick] (r.west) -- (p1.east);
+      \draw[draw=red,very thick] (p1.input 1) -- (s1.east);
+      \draw[draw=red,very thick] (p1.input 2) -- ++(0,-0.25) -| (s2.east);
+      \draw (s1.input 1) -- ++(0,-0.25) -| (p2.east);
+      \draw (s1.input 2) -- ++(0,-0.25) -| (p3.east);
+      \draw (p2.input 1) -- (a);
+      \draw (p2.input 2) -- ++(0,-0.25) -| (s3.east);
+      \draw (p3.input 1) -- (na);
+      \draw (p3.input 2) -- ++(0,-0.25) -| (s4.east);
+
+      \node[style={single arrow,draw=red,thick}] (arrow) at (1.75,-0.5)
+        {\small\textrm{\textsc{Split}} on $A$};
+
+      \begin{scope}[every node/.style={minimum size=15pt}]
+        \newNamedOrNode[draw=red,very thick,inputs=nn]{r}{$(arrow.east) + (1.25,0.5)$}{$\alpha$};
+        \newAndNode[draw=red,very thick,inputs=nn]{p1}{$(r) + (0.75,-1)$};
+        \newAndNode[draw=red,very thick,inputs=nn]{p12}{$(r) + (-0.75,-1)$};
+        \newNamedOrNode[draw=red,very thick,inputs=nn]{s1}{$(p1.input 1) + (0,-1)$}{\tiny$\beta\wedge\overline{A}$};
+        \newNamedOrNode[draw=red,very thick,inputs=nn]{s12}{$(p12.input 1) + (0,-1)$}{\tiny$\beta\wedge A$};
+        \newNamedOrNode[inputs=nn]{s2}{$(p1.input 2) + (1.25,-1)$}{$\gamma$};
+        \newAndNode[inputs=nn]{p2}{$(s12.west) + (0,-1)$};
+        \newAndNode[inputs=nn]{p3}{$(s1.west) + (0,-1)$};
+        \newOrNode[inputs=nn]{s3}{$(p2.input 2) + (0.5,-1)$};
+        \newOrNode[inputs=nn]{s4}{$(p3.input 2) + (0.5,-1)$};
+      \end{scope}
+
+      \node (a) at ($(p2.input 1) + (0.0,-1)$) {$A$};
+      \node (na) at ($(p3.input 1) + (0.0,-1)$) {$\neg A$};
+      \draw[draw=red,very thick] (r.input 1) -- ++(0,-0.15) -| (p12.east);
+      \draw[draw=red,very thick] (r.input 2) -- ++(0,-0.15) -| (p1.east);
+      \draw[draw=red,very thick] (p1.input 1) -- (s1.east);
+      \draw[draw=red,very thick] (p1.input 2) -- ++(0,-0.25) -| (s2.east);
+      \draw[draw=red,very thick] (p12.input 2) -- ++(0,-0.35) -| (s2.east);
+      \draw[draw=red,very thick] (p12.input 1) -- (s12.east);
+      \draw (s12.west) -- ++(0,-0.25) -| (p2.east);
+      \draw (s1.west) -- ++(0,-0.25) -| (p3.east);
+      \draw (p2.input 1) -- (a);
+      \draw (p2.input 2) -- ++(0,-0.25) -| (s3.east);
+      \draw (p3.input 1) -- (na);
+      \draw (p3.input 2) -- ++(0,-0.25) -| (s4.east);
+
+      \draw[dashed,boxdgray,very thick] ($(r) + (2.9,0.5)$) -- ($(r) + (2.9,-5.1)$);
+
+      \begin{scope}[xshift=9cm]
+        \newNamedOrNode[draw=red,very thick,inputs=nn]{s1}{0,-1.5}{$\alpha$};
+        \newAndNode[inputs=nn]{r1}{-1,0};
+        \newAndNode[inputs=nn]{r2}{1,0};
+        \newAndNode[inputs=nn]{p1}{$(r1)+(0,-3)$};
+        \newAndNode[inputs=nn]{p2}{$(r2)+(0,-3)$};
+        \newOrNode[inputs=nn]{l11}{$(p1.input 1)+(0,-1.5)$};
+        \newOrNode[inputs=nn]{l12}{$(p1.input 2)+(1,-1.5)$};
+        \newOrNode[inputs=nn]{l21}{$(p2.input 1)+(0,-1.5)$};
+        \newOrNode[inputs=nn]{l22}{$(p2.input 2)+(1,-1.5)$};
+        \draw (r1.west) -- ++(0,-0.25) -| (s1.east);
+        \draw[draw=red,very thick] (r2.west) -- ++(0,-0.25) -| (s1.east);
+        \draw (s1.input 1) -- ++(0,-0.25) -| (p1.east);
+        \draw (s1.input 2) -- ++(0,-0.25) -| (p2.east);
+        \draw (p1.input 1) -- ++(0,-0.25) -| (l11.east);
+        \draw (p1.input 2) -- ++(0,-0.25) -| (l12.east);
+        \draw (p2.input 1) -- ++(0,-0.25) -| (l21.east);
+        \draw (p2.input 2) -- ++(0,-0.25) -| (l22.east);
+
+        \node[style={single arrow,draw=red,thick}] (arrow) at (2.5,-0.5)
+          {\small\textrm{\textsc{Clone}}};
+
+        \newAndNode[inputs=nn]{r1}{4.25,0};
+        \newAndNode[inputs=nn]{r2}{6.25,0};
+        \newAndNode[inputs=nn]{p1}{$(r1)+(-0.5,-3)$};
+        \newAndNode[inputs=nn]{p2}{$(r2)+(-0.5,-3)$};
+        \newOrNode[inputs=nn]{l11}{$(p1.input 1)+(0,-1.5)$};
+        \newOrNode[inputs=nn]{l12}{$(p1.input 2)+(1,-1.5)$};
+        \newOrNode[inputs=nn]{l21}{$(p2.input 1)+(0,-1.5)$};
+        \newOrNode[inputs=nn]{l22}{$(p2.input 2)+(1,-1.5)$};
+        \newNamedOrNode[draw=red,very thick,inputs=nn]{s1}{$(r1.west) + (0,-1)$}{$\alpha$};
+        \newNamedOrNode[draw=red,very thick,inputs=nn]{s2}{$(r2.west) + (0,-1)$}{$\alpha$};
+        \newAndNode[draw=red,very thick,inputs=nn]{p3}{$(p1)+(1,0)$};
+        \newAndNode[draw=red,very thick,inputs=nn]{p4}{$(p2)+(1,0)$};
+        \draw (r1.west) -- ++(0,-0.25) -| (s1.east);
+        \draw[draw=red,very thick] (r2.west) -- ++(0,-0.25) -| (s2.east);
+        \draw (s1.input 1) -- ++(0,-0.5) -| (p1.east);
+        \draw (s1.input 2) -- ++(0,-0.5) -| (p2.east);
+        \draw[draw=red,very thick] (s2.input 1) -- ++(0,-0.25) -| (p3.east);
+        \draw[draw=red,very thick] (s2.input 2) -- ++(0,-0.25) -| (p4.east);
+        \draw (p1.input 1) -- ++(0,-0.25) -| (l11.east);
+        \draw (p1.input 2) -- ++(0,-0.5) -| (l12.east);
+        \draw (p2.input 1) -- ++(0,-0.25) -| (l21.east);
+        \draw (p2.input 2) -- ++(0,-0.5) -| (l22.east);
+        \draw[draw=red,very thick] (p3.input 1) -- ++(0,-0.25) -| (l11.east);
+        \draw[draw=red,very thick] (p3.input 2) -- ++(0,-0.5) -| (l12.east);
+        \draw[draw=red,very thick] (p4.input 1) -- ++(0,-0.25) -| (l21.east);
+        \draw[draw=red,very thick] (p4.input 2) -- ++(0,-0.5) -| (l22.east);
+      \end{scope}
+    \end{tikzpicture}
+    }
+  \end{center}
+  \caption{\textproc{Split} (left) and \textproc{Clone} (right) operations for growing a circuit.
+    Nodes and edges highlighted in red show the modified structure. In both cases smoothness,
+    (structure) decomposability and determinism are evidently preserved.}
+  \label{fig:splitclone}
+\end{figure}
+
+\citeauthor{liang17} propose two local transformations for growing a circuit $\mathcal{C}$:
+\textproc{Split} and \textproc{Clone}. The first acts by multiplying a product node $\Prod$ into
+$\Prod_1,\ldots,\Prod_k$ products such that $\pi_1,\ldots,\pi_k$ (primes of $\Prod_1,\ldots,
+\Prod_k$ respectively) are mutually exclusive. This is done by attributing all possible values of a
+variable in $\Sc(\Prod)$, say $A$, to each prime, meaning that $\pi_i$ will contain the assignment
+$A=i$ for every $i\in\left[k\right]$. This attribution is done by partially copying
+$\mathcal{C}_{\Prod}$ into $k$ circuits $\mathcal{C}_{\Prod}^{(1)},\ldots,\mathcal{C}_{\Prod}^{(k)}$
+up to some depth and then conditioning $\mathcal{C}_{\Prod}^{(i)}$ with $\liv A=i\riv$. This is
+straightforward for the discrete case: at the appropriate vtree node (i.e.\ one that contains $A$
+as a leaf), replace the input node whose scope is $A$ into an indicator node, setting it to the
+appropriate assignment of $A$. Although \citet{liang17} only considers the binary case, the
+transformation can be extended to the continuous if we consider $k$ piecewise distributions whose
+support is over only a set interval. Naturally, input nodes must then have their support truncated
+to the appropriate $i$-th interval, which is no easy feat in the general case. The left side of
+\Cref{fig:splitclone} shows \textproc{Split} for the binary case.
+
+The other proposed transformation, \textproc{Clone}, does something similar for sum nodes. Pick a
+sum node $\Sum$ whose children are $\Child_1,\ldots,\Child_k$ and parents $\Prod_1$ and $\Prod_2$;
+double $\Sum$ and $\Child_1,\ldots,\Child_k$, producing clones $\Sum'$ and $\Child_1',\ldots,
+\Child_k'$. Disconnect the edge coming from $\Prod_2$ to $\Sum$ and instead connect it to $\Sum'$.
+Connect all $\Child_1',\ldots,\Child_k'$ to the same children as their original. This operation is
+visualized on the right side of \Cref{fig:splitclone}.
 
 \subsection{\textproc{Strudel}}
+
+\begin{remark}[breakable]{On the choice of an initial circuit}{initpc}
+  \citep{choi13,oztok15,choi17,shen17}
+\end{remark}
 
 \section{Random Learning}
 \label{sec:random}
