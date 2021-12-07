@@ -1159,9 +1159,9 @@ growth and how do we know they are good candidates.
     \end{tikzpicture}
     }
   \end{center}
-  \caption{\textproc{Split} (left) and \textproc{Clone} (right) operations for growing a circuit.
-    Nodes and edges highlighted in red show the modified structure. In both cases smoothness,
-    (structure) decomposability and determinism are evidently preserved.}
+  \caption{\textproc{Split} (left) and \textproc{Clone} (right) operations for growing a circuit
+    when $m=1$. Nodes and edges highlighted in red show the modified structure. In both cases
+  smoothness, (structure) decomposability and determinism are evidently preserved.}
   \label{fig:splitclone}
 \end{figure}
 
@@ -1172,7 +1172,7 @@ $\Prod_1,\ldots,\Prod_k$ products such that $\pi_1,\ldots,\pi_k$ (primes of $\Pr
 variable in $\Sc(\Prod)$, say $A$, to each prime, meaning that $\pi_i$ will contain the assignment
 $A=i$ for every $i\in\left[k\right]$. This attribution is done by partially copying
 $\mathcal{C}_{\Prod}$ into $k$ circuits $\mathcal{C}_{\Prod}^{(1)},\ldots,\mathcal{C}_{\Prod}^{(k)}$
-up to some depth and then conditioning $\mathcal{C}_{\Prod}^{(i)}$ with $\liv A=i\riv$. This is
+up to some depth $m$ and then conditioning $\mathcal{C}_{\Prod}^{(i)}$ with $\liv A=i\riv$. This is
 straightforward for the discrete case: at the appropriate vtree node (i.e.\ one that contains $A$
 as a leaf), replace the input node whose scope is $A$ into an indicator node, setting it to the
 appropriate assignment of $A$. Although \citet{liang17} only considers the binary case, the
@@ -1185,12 +1185,100 @@ The other proposed transformation, \textproc{Clone}, does something similar for 
 sum node $\Sum$ whose children are $\Child_1,\ldots,\Child_k$ and parents $\Prod_1$ and $\Prod_2$;
 double $\Sum$ and $\Child_1,\ldots,\Child_k$, producing clones $\Sum'$ and $\Child_1',\ldots,
 \Child_k'$. Disconnect the edge coming from $\Prod_2$ to $\Sum$ and instead connect it to $\Sum'$.
-Connect all $\Child_1',\ldots,\Child_k'$ to the same children as their original. This operation is
-visualized on the right side of \Cref{fig:splitclone}.
+Connect all $\Child_1',\ldots,\Child_k'$ to the same children as their original counterparts. This
+operation is visualized on the right side of \Cref{fig:splitclone}. One can further extend
+\textproc{Clone} to apply this operation cloning nodes up to some depth $m$ and then joining the
+last remaining deepest nodes similar to what was described for $\Child_1',\ldots,\Child_k'$.
+
+It is easy to see that, in both cases, smoothness, structure decomposability and determinism are
+preserved. In fact, if the original circuit encodes a particular support (i.e.\ a knowledge base),
+the PC resulting from applying any of the two transformations must also encode the same support,
+since we have only made the underlying logic circuit more redundant. Probabilistically though, this
+``redudancy'' only increases the parameterization space and as such increases the expressiveness of
+the PC. However, not all applications of \textproc{Split} or \textproc{Clone} are equal in terms of
+expressiveness. While it is true that the application of \textproc{Split} to any product node or
+\textproc{Clone} to any sum node strictly increases expressivity, it is more meaningful to choose
+candidates whose growth carries a bigger impact on the overall fit relative to the training data.
+\textproc{LearnPSDD} searches for reasonable candidates by computing
+\begin{equation*}
+  \score(\set{D}, \mathcal{C}, \mathcal{C}')=\frac{\log\mathcal{C}'(\set{D})-\log
+  \mathcal{C}(\set{D})}{|\mathcal{C}'|-|\mathcal{C}|},
+\end{equation*}
+where $\mathcal{C}$ and $\mathcal{C}'$ are, respectively, the PCs before and after the application
+of any of the two operations. In other words, the algorithm randomly evaluates applying
+\textproc{Split} and/or \textproc{Clone} and ultimately chooses the one candidate that maximizes
+the log-likelihood of training data penalized by the size of the resulting PC, iteratively growing
+the circuit until there is no more improvement or reaches an iteration step or time limit, as
+\Cref{alg:learnpsdd} shows.
+
+\begin{algorithm}[t]
+  \caption{\textproc{LearnPSDD}}\label{alg:learnpsdd}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, vtree $\vtree$, initial PC $\mathcal{C}$, max depth $m$ and max number
+      of candidates $k$
+    \Ensure A smooth, structure decomposable and deterministic PC learned from $\set{D}$
+    \While{there is score improvement or has not reached the iteration/time limit}
+      \State Let $\mathcal{C}^\ast$ the best circuit so far, initially empty
+      \State $s\gets -\infty$
+      \For{each of the $k$ candidates}
+        \State Let $\Sum$ the candidate for \textproc{Split} and $\Child$ the candidate for \textproc{Clone}
+        \State $\mathcal{C}_i\gets\textproc{Split}(\mathcal{C},\Sum,\vtree,m)$
+        \State $\mathcal{C}'\gets\textproc{Clone}(\mathcal{C}',\Child,\vtree,m)$
+        \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
+        \IIf{$s'>s$}{$s\gets s'$ and $\mathcal{C}^\ast\gets\mathcal{C}'$}
+      \EndFor
+      \State $\mathcal{C}\gets\mathcal{C}^\ast$
+    \EndWhile
+    \State \textbf{return} $\mathcal{C}$
+  \end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Complexity}
+
+\textproc{Split} runs, for a given variable $X$, in $\bigo(v\cdot|\mathcal{C}|)$ if unbounded
+by $m$, where $v$ is $|\Val(X)|$, the number of possible assignments to $X$ if $X$ is discrete; or
+the number of intervals to fragment $\Val(X)$ if $X$ is continuous. \textproc{Clone}'s runtime is
+$\bigo(|\mathcal{C}|)$ when $m$ is unbounded, as it needs to produce an almost exact copy of
+the circuit. We say that a local transformation, such as \textproc{Split} or \textproc{Clone}, is
+\emph{minimal} when the copy depth is $m=0$. When \textproc{Split} and \textproc{Clone} are minimal
+and $X$ is binary, then the transformation is done in constant time. In fact, any non-minimal
+transformation can be composed out of minimal transformations \citep{liang17}.
+
+Perhaps the most costly routine of \textproc{LearnPSDD} is its score function. Although
+log-likelihood is linear time computable on the number of edges of the circuit, $\mathcal{C}$ can
+grow substantially as transformations pile up. Each score evaluation requires four passes on the
+circuit: log-likelihoods and circuit sizes for both $\mathcal{C}$ and its updated circuit
+$\mathcal{C}'$. However, since transformations are local, log-likelihood and circuit sizes only
+change for the nodes affected in the transformation, allowing \textproc{LearnPSDD} to cache values.
+
+\subsubsection{Pros and Cons}
+
+\paragraph{Pros.} The fact that \textproc{LearnPSDD} preserves smoothness, structural
+decomposability, determinism \emph{and} any logical semantic coming from its underlying LC is
+remarkable. On top of that, in theory and under minor modifications to \textproc{Split} and
+\textproc{Clone}, any PC is eligible as an initial circuit, even the ones which do not respect any
+vtrees. Besides, computing variable splits beforehand through a separate process of learning the
+vtree relieves the learning algorithm from having to compute costly statistical tests at each
+product node. Where \textproc{LearnPSDD} really shines (and perhaps more fittingly PSDDs in
+general) is when the support is explicitly defined through the initial circuit's LC; because the PC
+attributes non-zero probability only to events where the LC does not return false, the circuit
+wastes no mass on impossible events.
+
+\paragraph{Cons.} In practice, \textproc{LearnPSDD} is very slow even with caching. Even worse, it
+may take several hours for only minor (if any) improvement. \citep{liang17} suggests improving
+performance by producing ensembles of \textproc{LearnPSDD}s, although this negates determinism in
+the final circuit. Another issue is with the choice of an initial circuit. As previously mentioned,
+any circuit will do, however the performance (and efficiency) of \textproc{LearnPSDD} is highly
+dependent on the choice of initial circuit. In the context of PSDDs and encoding their support,
+\textproc{LearnPSDD} requires that a separate algorithm compiles an LC for a specific task.
+Although there are many ways of doing so, they are often not task agnostic (see \Cref{rem:initpc}).
+More importantly, because the process of learning the circuit is decoupled from the task of
+encoding logical constraints imposed by a knowledge base, all variables that do not appear in
+the logic formula are compiled into a trivial form (e.g.\ fully factorized circuit).
 
 \subsection{\textproc{Strudel}}
 
-\begin{remark}[breakable]{On the choice of an initial circuit}{initpc}
+\begin{remark}[breakable]{On the choice of initial circuits}{initpc}
   \citep{choi13,oztok15,choi17,shen17}
 \end{remark}
 
