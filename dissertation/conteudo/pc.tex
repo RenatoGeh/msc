@@ -1031,10 +1031,10 @@ computational graph without adhering to the left-right convention in favor of re
       \newVtreeNode{r}{0,0}{1};
       \newVtreeNode{ab}{$(r) + (-1.0,-1.5)$}{2};
       \newVtreeNode{cd}{$(r) + (1.0,-1.5)$}{3};
-      \node (a) at ($(ab) + (-0.5,-1.5)$) {$A$};
-      \node (b) at ($(ab) + (0.5,-1.5)$) {$B$};
-      \node (c) at ($(cd) + (-0.5,-1.5)$) {$C$};
-      \node (d) at ($(cd) + (0.5,-1.5)$) {$D$};
+      \newVtreeNode[fill=boxteal]{a}{$(ab) + (-0.5,-1.5)$}{$A$};
+      \newVtreeNode[fill=boxorange!80]{b}{$(ab) + (0.5,-1.5)$}{$B$};
+      \newVtreeNode[fill=boxpink!50]{c}{$(cd) + (-0.5,-1.5)$}{$C$};
+      \newVtreeNode[fill=boxgoldenrod!70]{d}{$(cd) + (0.5,-1.5)$}{$D$};
       \draw (r) -- (ab); \draw (r) -- (cd);
       \draw (ab) -- (a); \draw (ab) -- (b);
       \draw (cd) -- (c); \draw (cd) -- (d);
@@ -1188,14 +1188,14 @@ its product nodes have exactly two children.
       \newSumNode[fill=boxgreen]{r}{0,0};
       \newProdNode[fill=boxred!70]{p1}{$(r) + (-0.5,-1)$};
       \newProdNode[fill=boxred!70]{p2}{$(r) + (0.5,-1)$};
-      \newGaussNode[label=right:{$p(Y_1|X_3=0)$},fill=boxorange!80]{x11}{$(p2) + (1,0.75)$};
-      \newGaussNode[label=right:{$p(Y_1|X_3=1)$},fill=boxorange!80]{x12}{$(p2) + (1,0.0)$};
+      \newGaussNode[label=right:{$p(Y_1|X_1=0)$},fill=boxorange!80]{x11}{$(p2) + (1,0.75)$};
+      \newGaussNode[label=right:{$p(Y_1|X_1=1)$},fill=boxorange!80]{x12}{$(p2) + (1,0.0)$};
       \newSumNode[fill=boxpurple!60]{s1}{$(p1) + (0,-1)$};
       \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (0,-1)$};
       \newProdNode[fill=boxbrown!60]{q1}{$(s1) + (0,-0.8)$};
       \newProdNode[fill=boxbrown!60]{q2}{$(s2) + (0,-0.8)$};
-      \newGaussNode[label=right:{$p(Y_2|X_3=0)$},fill=boxpink!50]{x21}{$(q2) + (1,0.75)$};
-      \newGaussNode[label=right:{$p(Y_2|X_3=1)$},fill=boxpink!50]{x22}{$(q2) + (1,0.0)$};
+      \newGaussNode[label=right:{$p(Y_2|X_2=0)$},fill=boxpink!50]{x21}{$(q2) + (1,0.75)$};
+      \newGaussNode[label=right:{$p(Y_2|X_2=1)$},fill=boxpink!50]{x22}{$(q2) + (1,0.0)$};
       \newSumNode[fill=boxblue!80]{z1}{$(q1) + (0,-1)$};
       \newSumNode[fill=boxblue!80]{z2}{$(q2) + (0,-1)$};
       \newProdNode[fill=boxgray!80]{t1}{$(z1) + (0,-0.8)$};
@@ -1220,9 +1220,9 @@ its product nodes have exactly two children.
     \begin{tikzpicture}
       \newVtreeNode{r}{0,0}{1};
       \newVtreeNode{l}{$(r) + (-0.75,-1)$}{2};
-      \node (x1) at ($(r) + (0.75,-1)$) {$X_1$};
-      \node (x2) at ($(l) + (-0.75,-1)$) {$X_2$};
-      \node (x3) at ($(l) + (0.75,-1)$) {$X_3$};
+      \newVtreeNode[fill=boxorange!80]{x1}{$(r) + (0.75,-1)$}{$Y_1$};
+      \newVtreeNode[fill=boxpink!50]{x2}{$(l) + (-0.75,-1)$}{$Y_2$};
+      \newVtreeNode[fill=boxgoldenrod!70]{x3}{$(l) + (0.75,-1)$}{$Y_3$};
       \draw (r) -- (l); \draw (r) -- (x1);
       \draw (l) -- (x2); \draw (l) -- (x3);
     \end{tikzpicture}
@@ -1578,9 +1578,9 @@ on logic circuits.
     \begin{tikzpicture}
       \newVtreeNode{r}{0,0}{1};
       \newVtreeNode{l}{$(r) + (0.75,-1)$}{2};
-      \node (x1) at ($(r) + (-0.75,-1)$) {$A$};
-      \node (x2) at ($(l) + (-0.75,-1)$) {$B$};
-      \node (x3) at ($(l) + (0.75,-1)$) {$C$};
+      \newVtreeNode{x1}{$(r) + (-0.75,-1)$}{$A$};
+      \newVtreeNode{x2}{$(l) + (-0.75,-1)$}{$B$};
+      \newVtreeNode{x3}{$(l) + (0.75,-1)$}{$C$};
       \draw (r) -- (l); \draw (r) -- (x1);
       \draw (l) -- (x2); \draw (l) -- (x3);
     \end{tikzpicture}

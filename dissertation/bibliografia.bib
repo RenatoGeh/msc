@@ -863,16 +863,6 @@ school = {Graz University of Technology}
   pages = {754–757},
 }
 
-@ARTICLE{chow68,
-  author={C. {Chow} and C. {Liu}},
-  journal={IEEE Transactions on Information Theory},
-  title={Approximating discrete probability distributions with dependence trees},
-  year={1968},
-  volume={14},
-  number={3},
-  pages={462--467},
-}
-
 @article{mattei20,
   title = "Tractable inference in credal sentential decision diagrams",
   journal = "International Journal of Approximate Reasoning",
@@ -1502,7 +1492,7 @@ isbn="978-3-319-70169-1"
   editor = 	 {de Campos, Cassio and Maathuis, Marloes H.},
   volume = 	 {161},
   series = 	 {Proceedings of Machine Learning Research},
-  month = 	 {27--30 Jul},
+  month = 	 jul,
   publisher =    {PMLR},
   pdf = 	 {https://proceedings.mlr.press/v161/geh21a/geh21a.pdf},
   url = 	 {https://proceedings.mlr.press/v161/geh21a.html},
@@ -2311,4 +2301,31 @@ address = {USA}
   author={Edmonds, Jack},
   year={1965},
   pages={449–467}
+}
+
+
+@ARTICLE{chow68,
+  author={Chow, C. and Liu, C.},
+  journal={IEEE Transactions on Information Theory},
+  title={Approximating discrete probability distributions with dependence trees},
+  year={1968},
+  volume={14},
+  number={3},
+  pages={462-467},
+  doi={10.1109/TIT.1968.1054142}
+}
+
+@inproceedings{boutilier96,
+author = {Boutilier, Craig and Friedman, Nir and Goldszmidt, Moises and Koller, Daphne},
+title = {Context-Specific Independence in Bayesian Networks},
+year = {1996},
+isbn = {155860412X},
+publisher = {Morgan Kaufmann Publishers Inc.},
+address = {San Francisco, CA, USA},
+abstract = {Bayesian networks provide a language for qualitatively representing the conditional independence properties of a distribution, This allows a natural and compact representation of the distribution, eases knowledge acquisition, and supports effective inference algorithms. It is well-known, however, that there are certain independencies that we cannot capture qualitatively within the Bayesian network structure: independencies that hold only in certain contexts, i.e., given a specific assignment of values to certain variables, In this paper, we propose a formal notion of context-specific independence (CSI), based on regularities in the conditional probability tables (CPTs) at a node. We present a technique, analogous to (and based on) d-separation, for determining when such independence holds in a given network. We then focus on a particular qualitative representation scheme--tree-structured CPTs-- for capturing CSI. We suggest ways in which this representation can be used to support effective inference algorithms, in particular, we present a structural decomposition of the resulting network which can improve the performance of clustering algorithms, and an alternative algorithm based on outset conditioning.},
+booktitle = {Proceedings of the Twelfth International Conference on Uncertainty in Artificial Intelligence},
+pages = {115–123},
+numpages = {9},
+location = {Portland, OR},
+series = {UAI'96}
 }

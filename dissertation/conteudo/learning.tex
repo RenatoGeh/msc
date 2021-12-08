@@ -1196,7 +1196,7 @@ the PC resulting from applying any of the two transformations must also encode t
 since we have only made the underlying logic circuit more redundant. Probabilistically though, this
 ``redudancy'' only increases the parameterization space and as such increases the expressiveness of
 the PC. However, not all applications of \textproc{Split} or \textproc{Clone} are equal in terms of
-expressiveness. While it is true that the application of \textproc{Split} to any product node or
+performance. While it is true that the application of \textproc{Split} to any product node or
 \textproc{Clone} to any sum node strictly increases expressivity, it is more meaningful to choose
 candidates whose growth carries a bigger impact on the overall fit relative to the training data.
 \textproc{LearnPSDD} searches for reasonable candidates by computing
@@ -1214,20 +1214,25 @@ the circuit until there is no more improvement or reaches an iteration step or t
 \begin{algorithm}[t]
   \caption{\textproc{LearnPSDD}}\label{alg:learnpsdd}
   \begin{algorithmic}[1]
-    \Require Data $\set{D}$, vtree $\vtree$, initial PC $\mathcal{C}$, max depth $m$ and max number
-      of candidates $k$
+    \Require Data $\set{D}$, vtree $\vtree$, initial PC $\mathcal{C}$, max depth $m$, scope $\set{X}$
     \Ensure A smooth, structure decomposable and deterministic PC learned from $\set{D}$
     \While{there is score improvement or has not reached the iteration/time limit}
-      \State Let $\mathcal{C}^\ast$ the best circuit so far, initially empty
-      \State $s\gets -\infty$
-      \For{each of the $k$ candidates}
-        \State Let $\Sum$ the candidate for \textproc{Split} and $\Child$ the candidate for \textproc{Clone}
-        \State $\mathcal{C}_i\gets\textproc{Split}(\mathcal{C},\Sum,\vtree,m)$
-        \State $\mathcal{C}'\gets\textproc{Clone}(\mathcal{C}',\Child,\vtree,m)$
+      \State $s_{\Sum}\gets -\infty$
+      \State Let $\Sum^\ast$ the best \textproc{Split} candidate seen so far, initially empty
+      \For{each candidate $\Sum$ of all possible \textproc{Split} candidates}
+        \State $\mathcal{C}'\gets\textproc{Split}(\mathcal{C},\Sum,\vtree,m)$
         \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
-        \IIf{$s'>s$}{$s\gets s'$ and $\mathcal{C}^\ast\gets\mathcal{C}'$}
+        \IIf{$s'>s_{\Sum}$}{$s_{\Sum}\gets s'$ and $\Sum^\ast\gets\Sum$}
       \EndFor
-      \State $\mathcal{C}\gets\mathcal{C}^\ast$
+      \State $s_{\Child}\gets -\infty$
+      \State Let $\Child^\ast$ the best \textproc{Clone} candidate seen so far, initially empty
+      \For{each candidate $\Child$ of all possible \textproc{Clone} candidates}
+        \State $\mathcal{C}'\gets\textproc{Clone}(\mathcal{C},\Child,\vtree,m)$
+        \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
+        \IIf{$s'>s_{\Child}$}{$s_{\Child}\gets s'$ and $\Child^\ast\gets\Child$}
+      \EndFor
+      \IIf{$s_{\Sum}>s_{\Child}$}{$\mathcal{C}\gets\textproc{Split}(\mathcal{C},\Sum^\ast,\vtree,m)$}
+      \IElse{$\mathcal{C}\gets\textproc{Clone}(\mathcal{C},\Child^\ast,\vtree,m)$}
     \EndWhile
     \State \textbf{return} $\mathcal{C}$
   \end{algorithmic}
@@ -1249,7 +1254,11 @@ log-likelihood is linear time computable on the number of edges of the circuit, 
 grow substantially as transformations pile up. Each score evaluation requires four passes on the
 circuit: log-likelihoods and circuit sizes for both $\mathcal{C}$ and its updated circuit
 $\mathcal{C}'$. However, since transformations are local, log-likelihood and circuit sizes only
-change for the nodes affected in the transformation, allowing \textproc{LearnPSDD} to cache values.
+change for the nodes affected in the transformation and their ancestors, allowing
+\textproc{LearnPSDD} to cache values. The overall complexity of \textproc{LearnPSDD} at each
+iteration is therefore $\bigo(|\mathcal{C}|^2)$ if we assume $m=0$, with the first $|\mathcal{C}|$
+coming from the search of all candidates in $\mathcal{C}$, and the second from the computation of
+$\score$. Each iteration further increases $|\mathcal{C}|$, slowing down the algorithm's runtime.
 
 \subsubsection{Pros and Cons}
 
@@ -1264,20 +1273,215 @@ general) is when the support is explicitly defined through the initial circuit's
 attributes non-zero probability only to events where the LC does not return false, the circuit
 wastes no mass on impossible events.
 
-\paragraph{Cons.} In practice, \textproc{LearnPSDD} is very slow even with caching. Even worse, it
-may take several hours for only minor (if any) improvement. \citep{liang17} suggests improving
+\paragraph{Cons.} In practice, \textproc{LearnPSDD} is very slow even with caching; even worse, it
+may take several hours for only a minor (if any) improvement. \citep{liang17} suggests improving
 performance by producing ensembles of \textproc{LearnPSDD}s, although this negates determinism in
-the final circuit. Another issue is with the choice of an initial circuit. As previously mentioned,
+the final model, denying the access to tractably computing queries like divergences, $\mutualinf{}$
+and entropies. Another issue is with the choice of the initial circuit. As previously mentioned,
 any circuit will do, however the performance (and efficiency) of \textproc{LearnPSDD} is highly
-dependent on the choice of initial circuit. In the context of PSDDs and encoding their support,
-\textproc{LearnPSDD} requires that a separate algorithm compiles an LC for a specific task.
+dependent on it. Within the context of PSDDs and encoding their support, \textproc{LearnPSDD}
+requires that a separate algorithm compiles an LC for a specific task without looking at data.
 Although there are many ways of doing so, they are often not task agnostic (see \Cref{rem:initpc}).
-More importantly, because the process of learning the circuit is decoupled from the task of
-encoding logical constraints imposed by a knowledge base, all variables that do not appear in
-the logic formula are compiled into a trivial form (e.g.\ fully factorized circuit).
+More importantly, because the process of learning the circuit (from data) is decoupled from the
+task of encoding logical constraints imposed by a knowledge base, all variables that do not appear
+in the logic formula are compiled into a trivial form (e.g.\ fully factorized circuit).
 
 \subsection{\textproc{Strudel}}
 
+\citep{dang20} build upon the work of \textproc{LearnPSDD} and propose \textproc{Strudel}, which
+mainly improves \textproc{LearnPSDD} on three fronts: (1) by providing a simple algorithm for
+generating an initial circuit and vtree from data, (2) proposing a heuristic for efficiently
+searching for good transformation candidates and (3) a fast approach to learning mixtures by
+ensuring that components share the same structure.
+
+We first address how to construct the initial circuit from data. \citeauthor{dang20} suggests doing
+so by compiling both a vtree and linear sized PC (in the number of variables) from a Chow-Liu Tree
+(CLT, \cite{chow68}). Let $\mathcal{T}$ a CLT over variables $\set{X}=\{X_1,\ldots,X_m\}$. A vtree
+$\vtree$ is extracted from $\mathcal{T}$ by traversing $\mathcal{T}$ top-down. For each node
+$X_i\in\mathcal{T}$, if $X_i$ is a leaf node in $\mathcal{T}$, then create a vtree leaf node of
+$X_i$; otherwise create an inner vtree node $v$, attach a vtree leaf node of $X_i$ as $v^\gets$ and
+assign $v^\to$ as a vtree built over all the vtrees coming from the children of $X_i$. The
+construction of $v^\gets$ depends on how balanced one wishes the vtree to be: if we want a more
+right-leaning vtree, it suffices to construct a right-linear vtree connecting all vtrees from each
+child $X_j\in\Ch(X_i)$. Likewise, a balanced vtree is built by balancing the vtree connecting the
+recursive vtree calls from each $X_j$. Note that this does not necessarily mean that $v^\to$ is
+completely right-linear or balanced, only that it is somewhat close to it, as the rest of the
+structure depends on the recursive calls of each CLT node.
+
+\begin{figure}[t]
+  \begin{center}
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \node[fill=boxgreen!80,draw,circle,inner sep=2pt,minimum size=13pt] (d) at (0,0) {$D$};
+      \node[fill=boxgray!70,draw,circle,inner sep=2pt,minimum size=13pt] (c) at ($(d) + (0,-1.5)$) {$C$};
+      \node[fill=boxred!70,draw,circle,inner sep=2pt,minimum size=13pt] (b) at ($(c) + (0.5,-1.5)$) {$B$};
+      \node[fill=boxgoldenrod!70,draw,circle,inner sep=2pt,minimum size=13pt] (a) at ($(c) + (-0.5,-1.5)$) {$A$};
+      \draw[edge] (d) -- (c); \draw[edge] (c) -- (b); \draw[edge] (c) -- (a);
+
+      \node at ($(d) + (0, 1.0)$) {\scalebox{0.8}{\begin{tabular}{c}
+            \hline
+            $p(D=0)$\\
+            \hline
+            0.6\\
+            \hline
+        \end{tabular}}};
+      \node at ($(c) + (-2, 0.0)$) {\scalebox{0.8}{\begin{tabular}{c|c}
+            \hline
+            $D$ & $p(C=0|D)$\\
+            \hline
+            0 & 0.2\\
+            1 & 0.7\\
+            \hline
+        \end{tabular}}};
+      \node at ($(b) + (1.0,-1.25)$) {\scalebox{0.8}{\begin{tabular}{c|c}
+            \hline
+            $C$ & $p(B=0|C)$\\
+            \hline
+            0 & 0.5\\
+            1 & 0.1\\
+            \hline
+        \end{tabular}}};
+      \node at ($(a) + (-1.0,-1.25)$) {\scalebox{0.8}{\begin{tabular}{c|c}
+            \hline
+            $C$ & $p(A=0|C)$\\
+            \hline
+            0 & 0.3\\
+            1 & 0.6\\
+            \hline
+        \end{tabular}}};
+
+      \newVtreeNode[fill=boxorange!80]{v}{$(d) + (3.5,0)$}{1};
+      \newVtreeNode[fill=boxblue!50]{vr}{$(v) + (0.5,-1.25)$}{2};
+      \newVtreeNode[fill=boxgreen!80]{vd}{$(v) + (-0.5,-1.25)$}{$D$};
+      \newVtreeNode[fill=boxpink!50]{vrl}{$(vr) + (0.5,-1.25)$}{3};
+      \newVtreeNode[fill=boxgray!70]{vc}{$(vr) + (-0.5,-1.25)$}{$C$};
+      \newVtreeNode[fill=boxgoldenrod!70]{va}{$(vrl) + (-0.5,-1.25)$}{$A$};
+      \newVtreeNode[fill=boxred!70]{vb}{$(vrl) + (0.5,-1.25)$}{$B$};
+      \draw (v) -- (vr); \draw (v) -- (vd); \draw (vr) -- (vrl); \draw (vr) -- (vc);
+      \draw (vrl) -- (va); \draw (vrl) -- (vb);
+
+      \newSumNode{r}{$(d) + (9,2)$};
+      \newProdNode[fill=boxorange!80]{p1}{$(r) + (-0.75,-1)$};
+      \newProdNode[fill=boxorange!80]{p2}{$(r) + (0.75,-1)$};
+      \node[fill=boxgreen!80,minimum size=17pt,label=center:{$D$}] (pd) at ($(p1) + (-1.25,-1)$) {};
+      \node[fill=boxgreen!80,minimum size=17pt,label=center:{$\neg D$}] (pnd) at ($(p2) + (1.25,-1)$) {};
+      \newSumNode{s1}{$(p1) + (0,-1)$};
+      \newSumNode{s2}{$(p2) + (0,-1)$};
+      \newProdNode[fill=boxblue!50]{q1}{$(s1) + (0,-1)$};
+      \newProdNode[fill=boxblue!50]{q2}{$(s2) + (0,-1)$};
+      \node[fill=boxgray!70,minimum size=17pt,label=center:{$C$}] (pc) at ($(q1) + (-1.25,-1)$) {};
+      \node[fill=boxgray!70,minimum size=17pt,label=center:{$\neg C$}] (pnc) at ($(q2) + (1.25,-1)$) {};
+      \newSumNode{z1}{$(q1) + (0,-1)$};
+      \newSumNode{z2}{$(q2) + (0,-1)$};
+      \newProdNode[fill=boxpink!50]{t1}{$(z1) + (0,-1)$};
+      \newProdNode[fill=boxpink!50]{t2}{$(z2) + (0,-1)$};
+      \newSumNode{w2}{$(t1) + (0,-1)$};
+      \newSumNode{w3}{$(t2) + (0,-1)$};
+      \newSumNode{w1}{$(w2) + (-1.5,0)$};
+      \newSumNode{w4}{$(w3) + (1.5,0)$};
+      \node[fill=boxgoldenrod!70,minimum size=17pt,label=center:{$A$}] (pa) at ($(w1) + (0,-1)$) {};
+      \node[fill=boxgoldenrod!70,minimum size=17pt,label=center:{$\neg A$}] (pna) at ($(w2) + (0,-1)$) {};
+      \node[fill=boxred!70,minimum size=17pt,label=center:{$B$}] (pb) at ($(w3) + (0,-1)$) {};
+      \node[fill=boxred!70,minimum size=17pt,label=center:{$\neg B$}] (pnb) at ($(w4) + (0,-1)$) {};
+      \draw[edge] (r) -- node[midway,left] {.4} (p1);
+      \draw[edge,very thick,red] (r) -- node[midway,right] {.6} (p2);
+      \draw[edge] (p1) -- (pd);
+      \draw[edge] (p1) -- (s1);
+      \draw[edge,very thick,red] (p2) -- (pnd);
+      \draw[edge,very thick,red] (p2) -- (s2);
+      \draw[edge] (s1) -- node[midway,left] {.3} (q1);
+      \draw[edge] (s1) -- node[very near start,above,xshift=0.125cm,yshift=-0.1cm] {.7} (q2);
+      \draw[edge,very thick,red] (s2) -- node[very near start,above,xshift=-0.25cm,yshift=-0.1cm] {.8} (q1);
+      \draw[edge] (s2) -- node[midway,right] {.2} (q2);
+      \draw[edge,very thick,red] (q1) -- (pc);
+      \draw[edge,very thick,red] (q1) -- (z1);
+      \draw[edge] (q2) -- (z2);
+      \draw[edge] (q2) -- (pnc);
+      \draw[edge,very thick,red] (z1) -- (t1);
+      \draw[edge] (z2) -- (t2);
+      \draw[edge,very thick,red] (t1) -- (w1);
+      \draw[edge,very thick,red] (t1) -- (w3);
+      \draw[edge] (t2) -- (w2);
+      \draw[edge] (t2) -- (w4);
+      \draw[edge,very thick,red] (w1) -- node[midway,left] {.4} (pa);
+      \draw[edge] (w1) -- node[very near start,above,xshift=0.125cm,yshift=-0.1cm] {.6} (pna);
+      \draw[edge] (w2) -- node[very near start,above,xshift=-0.125cm,yshift=-0.1cm] {.7} (pa);
+      \draw[edge] (w2) -- node[midway,right] {.3} (pna);
+      \draw[edge] (w3) -- node[midway,left] {.9} (pb);
+      \draw[edge,very thick,red] (w3) -- node[very near start,above,xshift=0.125cm,yshift=-0.1cm] {.1} (pnb);
+      \draw[edge] (w4) -- node[very near start,above,xshift=-0.125cm,yshift=-0.1cm] {.5} (pb);
+      \draw[edge] (w4) -- node[midway,right] {.5} (pnb);
+    \end{tikzpicture}
+    }
+  \end{center}
+  \caption{A vtree (middle) and probabilistic circuit (right) compiled from a Chow-Liu Tree (left).
+    Each conditional probability $p(Y|X)$ is encoded as a (deterministic) sum node where each of
+    the two children sets $Y$ to 0 or 1. Colors in the CLT indicate the variables in the PC, while
+    vtree inner node colors match with product nodes that respect them. Edges in red indicate the
+    induced subcircuit activated on assignment $\{A=1,B=0,C=1,D=0\}$.}
+  \label{fig:strudel}
+\end{figure}
+
+\textproc{Strudel} compiles an initial circuit by looking at the vtree bottom-up and caching
+subcircuits. Let $v$ a vtree
+node and $Y\in\mathcal{T}$ a CLT node with conditional probability $p(Y|X)$, where $X$ is the
+parent of $Y$. If $v$ is a leaf node in $\vtree$ and $v$'s variable is also a leaf node in
+$\mathcal{T}$, two sum nodes $\Sum_0$ and $\Sum_1$ over literal nodes $\neg Y$ and $Y$ are created,
+each with weights $w_{\Sum_0,\neg Y}=p(Y=0|X=0)$, $w_{\Sum_0,Y}=p(Y=1|X=0)$ and $w_{\Sum_1,\neg
+Y}=p(Y=0|X=1)$, $w_{\Sum_1,Y}=p(Y=0|X=1)$. The two sum nodes connecting $B$ and $\neg B$ in the PC
+shown on the right of \Cref{fig:strudel} show this exact case. The left sum node encodes $p(B|C=1)$
+and the right one $p(B|C=0)$. These circuits are then cached by associating them with $v$. When $Y$
+is not a leaf node in $\mathcal{T}$ but $v$ is, we simply return literal nodes. If $v$ is an inner
+node, we must define a scope partition, splitting $\set{X}=\Sc(v^\gets)$ and
+$\set{Y}=\Sc(v^\to)$ into product nodes $\Prod_1,\ldots,\Prod_k$, one for each value cached value
+in $v$. Each prime is set to the cached circuits from $v^\gets$ and each sub the cached circuits
+from $v^\to$. Finally, if two variables $X\in\set{X}$ and $Y\in\set{Y}$ are such that their parents
+are the same variable, say $Z$, then $X$ and $Y$ are independent when $Z$ is given (because of a
+divergent connection in $\mathcal{T}$) and thus cannot be merged together into a single sum because
+of the context-specific independence set by $Z$ \citep{boutilier96}. This is visualized in the
+\inode[fill=boxpink!50]{\newProdNode} nodes; in this situation, $A$ and $B$ are siblings coming
+from $C$, and so $A\indep B|C$ (redundant sum nodes are added for standardization).
+When the prior situation is not true, then not only $X$ is the only variable in $\set{X}$, but $X$
+must also be the parent of $Y$ and so we must model $p(\set{Y}|X)$. This is the case for
+\inode[fill=boxblue!50]{\newProdNode}, where $C$ is the parent of $B$ and so we have to be join the
+two by sum nodes attributing the conditional probabilities $p(A,B|C=0)$ for the right-most
+\inode[fill=boxblue!50]{\newProdNode} and $p(A,B|C=1)$ for the left-most sibling. This procedure is
+shown more formally in \Cref{alg:strudelinit}.
+
+\begin{algorithm}[t]
+  \caption{\textproc{InitialStrudel}}\label{alg:strudelinit}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
+    \Ensure A smooth, structure decomposable and deterministic initial PC and vtree
+    \State $\mathcal{T}\gets\textproc{LearnCLT}(\set{D},\set{X})$
+    \State $\vtree\gets\textproc{CompileVtree}(\mathcal{T})$
+    \State Let $\mathcal{M}$ a hash table for caching circuits, initially empty
+    \For{each vtree node $v\in\vtree$ in reverse topological order}
+      \If{$v$ is a leaf node}
+        \State Let $X\in\mathcal{T}$ the variable represented by $v$, and $Y$ its parent
+        \If{$X$ is a leaf node in $\mathcal{T}$}
+          \State $\Sum_j\gets\sum_{i\in\Val(X)}p(X=i|Y=j)\cdot\liv X=i\riv$ for each $j\in\Val(Y)$
+          \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\Sum_j|\forall j\in\Val(Y)\}$
+        \Else
+          \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\liv X=i\riv|i\in\Val(X)\}$
+        \EndIf
+      \Else
+        \State Attribute $\set{X}\gets\Sc(v^\gets)$ and $\set{Y}\gets\Sc(v^\to)$
+        \State Let $X\in\set{X}$ and $Y\in\set{Y}$
+        \State Attribute $\Nodes^\gets\gets\mathcal{M}(v^\gets)$ and $\Nodes^\to\gets\mathcal{M}(v^\to)$
+        \State Construct product nodes $\Prods=\{\Nodes_i^\gets\times\Nodes_i^\to|\forall i\in\left[k\right]\}$
+        \If{$\Pa(X)=\Pa(Y)$}
+          \State Create sum nodes $\Sum_i$ each with only a single child $\Prod_i\in\Prods$, for each $i\in\left[k\right]$
+          \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\Sum_1,\ldots,\Sum_k\}$
+        \Else
+          \State $\Sum_j\gets\sum_{i\in\Val(X)}p(\set{Y}|X=j)\cdot\liv X=i\riv$, for each $j\in\Val(Y)$
+          \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\Sum_j|\forall j\in\Val(Y)\}$
+        \EndIf
+      \EndIf
+    \EndFor
+    \State \textbf{return} $\mathcal{M}(v_r)$, where $v_r$ is $\vtree$'s root node
+  \end{algorithmic}
+\end{algorithm}
 \begin{remark}[breakable]{On the choice of initial circuits}{initpc}
   \citep{choi13,oztok15,choi17,shen17}
 \end{remark}

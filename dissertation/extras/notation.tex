@@ -97,7 +97,7 @@ mathx7 <8-9> mathx8 <9-10> mathx9 <10-12> mathx10 <12-> mathx12 }{}
 \newcommand{\newPartNode}[3][]{\node[#1,circle split,rotate=90,draw,inner sep=2pt,minimum size=12pt,thick,fill=blue!50!red!30] (#2) at (#3) {};}
 \newcommand{\inode}[2][]{\tikz[baseline=-0.75ex]{#2[scale=0.8,#1]{r}{0,0};}}
 
-\newcommand{\newVtreeNode}[3]{\node[inner sep=2pt,minimum size=13pt] (#1) at (#2) {#3}}
+\newcommand{\newVtreeNode}[4][]{\node[#1,draw,inner sep=2pt,minimum size=13pt] (#2) at (#3) {#4}}
 
 \usepgfplotslibrary{fillbetween}
 \pgfmathdeclarefunction{gauss}{2}{%
