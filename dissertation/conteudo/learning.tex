@@ -1281,22 +1281,24 @@ wastes no mass on impossible events.
 \paragraph{Cons.} In practice, \textproc{LearnPSDD} is very slow even with caching; even worse, it
 may take several hours for only a minor (if any) improvement. \citep{liang17} suggests improving
 performance by producing ensembles of \textproc{LearnPSDD}s, although this negates determinism in
-the final model, denying the access to tractably computing queries like divergences, $\mutualinf{}$
-and entropies. Another issue is with the choice of the initial circuit. As previously mentioned,
-any circuit will do, however the performance (and efficiency) of \textproc{LearnPSDD} is highly
-dependent on it. Within the context of PSDDs and encoding their support, \textproc{LearnPSDD}
-requires that a separate algorithm compiles an LC for a specific task without looking at data.
-Although there are many ways of doing so, they are often not task agnostic (see \Cref{rem:initpc}).
-More importantly, because the process of learning the circuit (from data) is decoupled from the
-task of encoding logical constraints imposed by a knowledge base, all variables that do not appear
-in the logic formula are compiled into a trivial form (e.g.\ fully factorized circuit). Lastly,
-although decoupling the process of learning the vtree from learning the PC helps with scalability,
-the ability of identifying the proper vtree for the most expressive PC given data is certainly
-desirable, and one which might be hindered by this separated process.
+the final model (as well as structure decomposability if different vtrees are used at each
+component), denying the access to tractably computing queries like divergences, $\mutualinf{}$ and
+entropies, not to mention the time cost to learn all components. Another issue is with the choice
+of the initial circuit. As previously mentioned, any circuit will do, however the performance (and
+efficiency) of \textproc{LearnPSDD} is highly dependent on it. Within the context of PSDDs and
+encoding their support, \textproc{LearnPSDD} requires that a separate algorithm compiles an LC for
+a specific task without looking at data. Although there are many ways of doing so, they are often
+not task agnostic (see \Cref{rem:initpc}). More importantly, because the process of learning the
+circuit (from data) is decoupled from the task of encoding logical constraints imposed by a
+knowledge base, all variables that do not appear in the logic formula are compiled into a trivial
+form (e.g.\ fully factorized circuit). Lastly, although decoupling the process of learning the
+vtree from learning the PC helps with scalability, the ability of identifying the proper vtree for
+the most expressive PC given data is certainly desirable, and one which might be hindered by this
+separated process.
 
 \subsection{\textproc{Strudel}}
 
-\citep{dang20} build upon the work of \textproc{LearnPSDD} and propose \textproc{Strudel}, which
+\citet{dang20} build upon the work of \textproc{LearnPSDD} and propose \textproc{Strudel}, which
 mainly improves \textproc{LearnPSDD} on two fronts: (1) by providing a simple algorithm for
 generating an initial circuit and vtree from data, and (2) proposing a heuristic for efficiently
 searching for good transformation candidates.
@@ -1491,7 +1493,7 @@ shown more formally in \Cref{alg:strudelinit}.
   \end{algorithmic}
 \end{algorithm}
 
-Once we have an initial PC constructed from \textproc{InitialStrudel}, we are ready to discuss
+Now that we have an initial PC constructed from \textproc{InitialStrudel}, we are ready to discuss
 \textproc{Strudel}'s second contribution. To do so, we must first understand the notion of
 \emph{circuit flows} introduced in \citet{dang20}. In short, the circuit flow of a deterministic
 probabilistic circuit $\mathcal{C}$ with respect to a variable assignment $\set{x}$ is the induced
@@ -1499,11 +1501,12 @@ tree (see \Cref{def:inducedsub}) whose edges are all non-zero when $\mathcal{C}$
 $\set{x}$. Such an induced tree is unique in deterministic PCs because every sum node admits only
 one non-zero valued child for $\set{x}$ (or any assignment for that matter). Note how circuit flows
 are more specific in the sense they are intrinsically linked to an assignment, while induced
-subcircuits specify a deterministic subcircuit within its supercircuit. The circuit flow of
-deterministic PCs helps us understand how to efficiently compute inference in circuits of that
-nature. As we briefly mentioned before, for any assignment $\set{x}$ in a smooth, decomposable and
-deterministic PC $\mathcal{C}$, there exists a unique circuit flow $\mathcal{F}$ that encodes the
-log-likelihood computation
+subcircuits specify a deterministic subcircuit within its supercircuit.
+
+The circuit flow of deterministic PCs helps us understand how to efficiently compute inference in
+circuits of that nature. As we briefly mentioned before, for any assignment $\set{x}$ in a smooth,
+decomposable and deterministic PC $\mathcal{C}$, there exists a unique circuit flow $\mathcal{F}$
+that encodes the log-likelihood computation
 \begin{equation*}
   \mathcal{C}(\set{x})=\mathcal{F}_\mathcal{C}(\set{x})=\prod_{(\Sum,\Child)\in
   \FEdges(\mathcal{F}_\mathcal{C})}w_{\Sum,\Child}\prod_{\Leaf\in\FInputs(\mathcal{F}_\mathcal{C})}
@@ -1518,14 +1521,12 @@ log-space is reduced to a vector multiplication
 \begin{equation*}
   \log\mathcal{C}(\set{x})=f_\mathcal{C}(\set{x})^\intercal\cdot\log\left(\mathcal{W}_\mathcal{C}\right).
 \end{equation*}
+
 Importantly, by aggregating circuit flows through counting the number of activations of each
 parameter $w_{\Sum,\Child}$ in the entire training dataset $\set{D}$, we get a sense of the number
 of samples $w_{\Sum,\Child}$ impacts over $\set{D}$, and thus a sense of how meaningful is that
 edge on the fitness of data. As we shall see briefly, this aggregated circuit flow shall then be
 used as a score for a greedy search over the space of candidates for local transformations.
-%and then normalizing over the number of all activations of edges coming out of
-%$\Sum$, we get the maximum likelihood estimator (MLE) of edge $\edge{\Sum}{\Child}$ in the whole
-%training dataset $\set{D}$.
 
 To overcome the scalability limitations of \textproc{LearnPSDD}, \textproc{Strudel} proposes using
 only \textproc{Split} to reduce the search space, looking at performing the search greedily instead
@@ -1575,12 +1576,28 @@ informations of $\set{X}$, and $i$ the number of iterations of $\textproc{Strude
 
 \subsubsection{Pros and Cons}
 
-\paragraph{Pros.} Arguably, the most valuable contribution in \textproc{Strudel} is its
-scalability. Compared to \textproc{LearnPSDD}, \textproc{Strudel} can take orders of magnitude less
-time per iterationCompared to \textproc{LearnPSDD}, \textproc{Strudel} can take orders of magnitude
-less time per iteration, meaning that it can produce more \textproc{Split}s 
+\paragraph{Pros.} Arguably, the most valuable contribution of \textproc{Strudel} is its improvement
+on \textproc{LearnPSDD}'s scalability. Compared to \textproc{LearnPSDD}, \textproc{Strudel} can
+take orders of magnitude less time per iteration, which in practice means a higher number of
+transformations accomplished in the same range of time. In addition, the nature of circuit flows
+allows for easy vectorization and thus CPU or GPU parallelization. In terms of data fitness,
+\citet{dang20} empirically shows that initial circuits constructed from \textproc{StrudelInitial}
+greatly improve performance compared to fully factorized initial PCs from \textproc{LearnPSDD}.
+Similar to \textproc{LearnPSDD}, one can learn an ensemble of \textproc{Strudel}s to further boost
+performance at the cost of losing determinism. Opposite to \textproc{LearnPSDD} however,
+\citeauthor{dang20} employ structure-sharing components so that the act of learning the circuit's
+structure is done once, greatly reducing learning time. Parameters are then learned through closed
+form EM (see \Cref{rem:paramlearn} and bagging.
 
-\paragraph{Cons.}
+\paragraph{Cons.} Although \textproc{Strudel}'s greedy heuristic search strategy translates into
+possibly more accurate PCs, it also produces more sizable circuits when compared to the exhaustive
+search of \textproc{LearnPSDD}. Indeed, empirical evaluations in \citet{dang20} show
+\textproc{Strudel} PCs up to 12 times bigger than \textproc{LearnPSDD}'s with the two somewhat tied
+in terms of fitness. This is especially worrying given that \textproc{Strudel}'s complexity grows
+with its circuit size. In fact, empirical evaluations show a sharp increase in seconds per
+iterations for the two \incrclass{} algorithms, with both reaching multiple digits for each
+iteration even in smaller sized datasets; though \textproc{LearnPSDD} much sharper and sooner
+comparatively \citep{dang20}.
 
 \begin{remark}[breakable]{On the choice of initial circuits}{initpc}
   \citep{choi13,oztok15,choi17,shen17}
@@ -1588,3 +1605,6 @@ less time per iteration, meaning that it can produce more \textproc{Split}s
 
 \section{Random Learning}
 \label{sec:random}
+
+\begin{remark}[breakable]{On parameter learning of probabilistic circuits}{paramlearn}
+\end{remark}
