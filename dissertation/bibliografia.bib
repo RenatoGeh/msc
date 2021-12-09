@@ -900,7 +900,6 @@ school = {Graz University of Technology}
   year      = {2017},
 }
 
-
 @inproceedings{choi17,
  author = {Choi, Arthur and Shen, Yujia and Darwiche, Adnan},
  booktitle = {Advances in Neural Information Processing Systems},
@@ -2328,4 +2327,53 @@ pages = {115–123},
 numpages = {9},
 location = {Portland, OR},
 series = {UAI'96}
+}
+
+@article{vlasselaer15,
+	author = {Jonas Vlasselaer and Guy Van den Broeck and Angelika Kimmig and Wannes Meert and Luc De Raedt},
+	title = {Anytime Inference in Probabilistic Logic Programs with Tp-Compilation},
+	conference = {International Joint Conference on Artificial Intelligence},
+	year = {2015},
+	keywords = {},
+	abstract = {Existing techniques for inference in probabilistic logic programs are sequential: they first compute the relevant propositional formula for the query of interest, then compile it into a tractable target representation and finally, perform weighted model counting on the resulting representation. We propose Tp-compilation, a new inference technique based on forward reasoning. Tp-compilation proceeds incrementally in that it interleaves the knowledge compilation step for weighted model counting with forward reasoning on the logic program. This leads to a novel anytime algorithm that provides hard bounds on the inferred probabilities. Furthermore, an empirical evaluation shows that Tp-compilation effectively handles larger instances of complex real-world problems than current sequential approaches, both for exact and for anytime approximate inference.},
+	url = {https://www.aaai.org/ocs/index.php/IJCAI/IJCAI15/paper/view/11005}
+}
+
+@inproceedings{vlasselaer14,
+  abstract = {Knowledge compilation algorithms transform a probabilistic logic program into a circuit representation that permits efficient proba- bility computation. Knowledge compilation underlies algorithms for ex- act probabilistic inference and parameter learning in several languages, including ProbLog, PRISM, and LPADs. Developing such algorithms involves a choice, of which circuit language to target, and which compi- lation algorithm to use. Historically, Binary Decision Diagrams (BDDs) have been a popular target language, whereas recently, deterministic- Decomposable Negation Normal Form (d-DNNF) circuits were shown to outperform BDDs on these tasks. We investigate the use of a new language, called Sentential Decision Diagrams (SDDs), for inference in probabilistic logic programs. SDDs combine desirable properties of BDDs and d-DNNFs. Like BDDs, they support bottom-up compilation and cir- cuit minimization, yet they are a more general and flexible representa- tion. Our preliminary experiments show that compilation to SDD yields smaller circuits and more scalable inference, outperforming the state of the art in ProbLog inference.},
+  journal = {Proceedings Workshop on Probabilistic Logic Programming (PLP)},
+  pages = {1--10},
+  year = {2014},
+  title = {Compiling probabilistic logic programs into sentential decision diagrams},
+  language = {eng},
+  author = {Vlasselaer, Jonas and Renkens, Joris and Van den Broeck, Guy and De Raedt, Luc},
+  keywords = {knowledge compilation},
+  url = {$$Uhttps://lirias.kuleuven.be/retrieve/275254$$Dplp_sdd_paper.pdf [freely available]},
+}
+
+@inproceedings{lomuscio15,
+  author = {Lomuscio, Alessio and Paquet, Hugo},
+  title = {Verification of Multi-Agent Systems via SDD-Based Model Checking},
+  year = {2015},
+  isbn = {9781450334136},
+  publisher = {International Foundation for Autonomous Agents and Multiagent Systems},
+  address = {Richland, SC},
+  abstract = {Considerable progress has been achieved in the past ten years in the symbolic verification of Multi-Agent Systems (MAS). One of the most efficient techniques put forward is based on the use of ordered binary decision diagrams (OBDDs) for representing the state space and computing the states at which specifications hold. Sentential Decision Diagrams (SDDs) have recently been put forward as an alternative symbolic representation for Boolean formulas in knowledge representation. In this abstract we report some preliminary results on the applicability of SDDs for the verification of MAS.},
+  booktitle = {Proceedings of the 2015 International Conference on Autonomous Agents and Multiagent Systems},
+  pages = {1713–1714},
+  numpages = {2},
+  keywords = {model-checking, epistemic logic, sentential decision diagrams},
+  location = {Istanbul, Turkey},
+  series = {AAMAS '15}
+}
+
+@INPROCEEDINGS{herrmann13,
+  author={Herrmann, Ricardo G. and Barros, Leliane N. de},
+  booktitle={2013 Brazilian Conference on Intelligent Systems},
+  title={Algebraic Sentential Decision Diagrams in Symbolic Probabilistic Planning},
+  year={2013},
+  volume={},
+  number={},
+  pages={175-181},
+  doi={10.1109/BRACIS.2013.37}
 }

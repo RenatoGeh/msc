@@ -696,6 +696,7 @@ section, we look at two examples of \incrclass{} class learning algorithms: \tex
 and \textproc{Strudel}.
 
 \subsection{\textproc{LearnPSDD}}
+\label{subsection:learnpsdd}
 
 As the name suggests, \textproc{LearnPSDD} \citep{liang17} learns a smooth, structure decomposable
 and deterministic probabilistic circuit (see \Cref{subsection:touncertainty}), meaning its
@@ -1600,6 +1601,35 @@ iteration even in smaller sized datasets; though \textproc{LearnPSDD} much sharp
 comparatively \citep{dang20}.
 
 \begin{remark}[breakable]{On the choice of initial circuits}{initpc}
+  We only briefly mentioned in \Cref{subsection:learnpsdd} how we might want to start out with an
+  initial PC conveying a specific support and then run an \incrclass{} class algorithm to further
+  boost its probabilistic expressiveness without changing the underlying knowledge base. We devote
+  this remark segment to discussing several works in literature that construct a so-called
+  \emph{canonical} (i.e.\ minimal with respect to their size without sacrificing its logical
+  semantics) logic circuit, becoming perfect candidates to be used as an initial circuit in
+  \incrclass{} learners.
+
+  Just like in probabilistic reasoning, the field of knowledge compilation and symbolic reasoning
+  is often interested in finding succinct representations capable of tractably computing queries, a
+  subject which we briefly touched in \Cref{subsection:fromcertainty}. For this reason, smooth,
+  structure decomposable and deterministic logic circuits, who usually go by the name of Sentential
+  Decision Diagrams (SDDs, \cite{darwiche11}) have proven to be a useful tool in several
+  applications \citep{vlasselaer14,vlasselaer15,lomuscio15,herrmann13}. We therefore highlight
+  compilation of SDDs in this short remark.
+
+  For most cases, SDDs can be compiled directly from CNFs and DNFs. \citep{choi13} constructs SDDs
+  bottom-up by first compiling C/DNF clauses and then combining smaller SDDs by either conjoining
+  or disjoining them.
+
+  We now cover some of the existing literature on producing task specific (P)SDDs. \citet{choi16}
+  analyzes the feasibility of compiling LCs (and subsequently producing a PC by parameterizing
+  disjunction edges) from tic-tac-toe game traces, and route planning within a city. The first is
+  done by
+
+  studies the compilation of routes 
+
+  Indeed, we already know the impact of a well initialized circuit as \textproc{Strudel} shows in
+  \citet{dang20}
   \citep{choi13,oztok15,choi17,shen17}
 \end{remark}
 
