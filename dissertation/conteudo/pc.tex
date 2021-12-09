@@ -477,7 +477,7 @@ root is $\Node$, all nodes and edges in $\mathcal{S}_{\Node}$ are also in $\math
 $\mathcal{S}$ is also a probabilistic circuit. We now introduce the concept of induced subcircuits
 \citep{chan06,dennis15,peharz14}.
 
-\begin{definition}[Induced subcircuit]
+\begin{definition}[Induced subcircuit]\label{def:inducedsub}
   Let $\mathcal{C}$ a probabilistic circuit. An induced subcircuit $\mathcal{S}$ of $\mathcal{C}$
   is a subcircuit of $\mathcal{C}$ rooted at $\mathcal{C}$'s root such that all edges coming out of
   product nodes in $\mathcal{C}$ are also in $\mathcal{S}$, and of all edges coming out of sum
@@ -658,6 +658,7 @@ evidence} (\evi), \emph{marginal probability} (\mar), \emph{conditional probabil
 such as mutual information, entropies and \emph{expectation} (\expc).
 
 \subsection{Basic Queries}
+\label{subsection:basicqueries}
 
 The most basic inference task we are interested in computing is the probability of evidence. To
 unlock this, we must introduce two structural constraints known as \emph{smoothness} and

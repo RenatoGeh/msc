@@ -1166,20 +1166,20 @@ growth and how do we know they are good candidates.
 \end{figure}
 
 \citeauthor{liang17} propose two local transformations for growing a circuit $\mathcal{C}$:
-\textproc{Split} and \textproc{Clone}. The first acts by multiplying a product node $\Prod$ into
-$\Prod_1,\ldots,\Prod_k$ products such that $\pi_1,\ldots,\pi_k$ (primes of $\Prod_1,\ldots,
-\Prod_k$ respectively) are mutually exclusive. This is done by attributing all possible values of a
-variable in $\Sc(\Prod)$, say $A$, to each prime, meaning that $\pi_i$ will contain the assignment
-$A=i$ for every $i\in\left[k\right]$. This attribution is done by partially copying
-$\mathcal{C}_{\Prod}$ into $k$ circuits $\mathcal{C}_{\Prod}^{(1)},\ldots,\mathcal{C}_{\Prod}^{(k)}$
-up to some depth $m$ and then conditioning $\mathcal{C}_{\Prod}^{(i)}$ with $\liv A=i\riv$. This is
-straightforward for the discrete case: at the appropriate vtree node (i.e.\ one that contains $A$
-as a leaf), replace the input node whose scope is $A$ into an indicator node, setting it to the
-appropriate assignment of $A$. Although \citet{liang17} only considers the binary case, the
-transformation can be extended to the continuous if we consider $k$ piecewise distributions whose
-support is over only a set interval. Naturally, input nodes must then have their support truncated
-to the appropriate $i$-th interval, which is no easy feat in the general case. The left side of
-\Cref{fig:splitclone} shows \textproc{Split} for the binary case.
+\textproc{Split} and \textproc{Clone}. The first acts by multiplying a sum node's product child
+$\Prod$ into $\Prod_1,\ldots,\Prod_k$ products such that $\pi_1,\ldots,\pi_k$ (primes of
+$\Prod_1,\ldots,\Prod_k$ respectively) are mutually exclusive. This is done by attributing all
+possible values of a variable in $\Sc(\Prod)$, say $A$, to each prime, meaning that $\pi_i$ will
+contain the assignment $A=i$ for every $i\in\left[k\right]$. This attribution is done by partially
+copying $\mathcal{C}_{\Prod}$ into $k$ circuits $\mathcal{C}_{\Prod}^{(1)},\ldots,
+\mathcal{C}_{\Prod}^{(k)}$ up to some depth $m$ and then conditioning $\mathcal{C}_{\Prod}^{(i)}$
+on $\liv A=i\riv$. This is straightforward for the discrete case: at the appropriate vtree node
+(i.e.\ one that contains $A$ as a leaf), replace the input node whose scope is $A$ into an
+indicator node, setting it to the appropriate assignment of $A$. Although \citet{liang17} only
+considers the binary case, the transformation can be extended to the continuous if we consider $k$
+piecewise distributions whose support is over only a set interval. Naturally, input nodes must then
+have their support truncated to the appropriate $i$-th interval, which is no easy feat in the
+general case. The left side of \Cref{fig:splitclone} shows \textproc{Split} for the binary case.
 
 The other proposed transformation, \textproc{Clone}, does something similar for sum nodes. Pick a
 sum node $\Sum$ whose children are $\Child_1,\ldots,\Child_k$ and parents $\Prod_1$ and $\Prod_2$;
@@ -1218,11 +1218,11 @@ the circuit until there is no more improvement or reaches an iteration step or t
     \Ensure A smooth, structure decomposable and deterministic PC learned from $\set{D}$
     \While{there is score improvement or has not reached the iteration/time limit}
       \State $s_{\Sum}\gets -\infty$
-      \State Let $\Sum^\ast$ the best \textproc{Split} candidate seen so far, initially empty
-      \For{each candidate $\Sum$ of all possible \textproc{Split} candidates}
-        \State $\mathcal{C}'\gets\textproc{Split}(\mathcal{C},\Sum,\vtree,m)$
+      \State Let $(\Sum^\ast,\Prod^\ast)$ the best \textproc{Split} candidate seen so far, initially empty
+      \For{each candidate $(\Sum,\Prod)$ of all possible \textproc{Split} candidates}
+        \State $\mathcal{C}'\gets\textproc{Split}(\mathcal{C},\Sum,\Prod,\vtree,m)$
         \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
-        \IIf{$s'>s_{\Sum}$}{$s_{\Sum}\gets s'$ and $\Sum^\ast\gets\Sum$}
+        \IIf{$s'>s_{\Sum}$}{$s_{\Sum}\gets s'$ and $\Sum^\ast,\Prod^\ast\gets\Sum,\Prod$}
       \EndFor
       \State $s_{\Child}\gets -\infty$
       \State Let $\Child^\ast$ the best \textproc{Clone} candidate seen so far, initially empty
@@ -1231,7 +1231,7 @@ the circuit until there is no more improvement or reaches an iteration step or t
         \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
         \IIf{$s'>s_{\Child}$}{$s_{\Child}\gets s'$ and $\Child^\ast\gets\Child$}
       \EndFor
-      \IIf{$s_{\Sum}>s_{\Child}$}{$\mathcal{C}\gets\textproc{Split}(\mathcal{C},\Sum^\ast,\vtree,m)$}
+      \IIf{$s_{\Sum}>s_{\Child}$}{$\mathcal{C}\gets\textproc{Split}(\mathcal{C},\Sum^\ast,\Prod^\ast,\vtree,m)$}
       \IElse{$\mathcal{C}\gets\textproc{Clone}(\mathcal{C},\Child^\ast,\vtree,m)$}
     \EndWhile
     \State \textbf{return} $\mathcal{C}$
@@ -1239,6 +1239,11 @@ the circuit until there is no more improvement or reaches an iteration step or t
 \end{algorithm}
 
 \subsubsection{Complexity}
+
+Although learning the vtree top-down reduces to an NP-complete min-cut graph partitioning problem,
+there are approximate algorithms that provide high quality partitionings in $\bigo(|\set{X}|^2)$
+\citep{karypsis98}. Learning bottom-up is reduced to min-cost perfect matching, which can be done
+in $\bigo(|\set{X}|^4)$ via the Edmonds Blossom algorithm \citep{edmonds65,kolmogorov09}.
 
 \textproc{Split} runs, for a given variable $X$, in $\bigo(v\cdot|\mathcal{C}|)$ if unbounded
 by $m$, where $v$ is $|\Val(X)|$, the number of possible assignments to $X$ if $X$ is discrete; or
@@ -1265,8 +1270,8 @@ $\score$. Each iteration further increases $|\mathcal{C}|$, slowing down the alg
 \paragraph{Pros.} The fact that \textproc{LearnPSDD} preserves smoothness, structural
 decomposability, determinism \emph{and} any logical semantic coming from its underlying LC is
 remarkable. On top of that, in theory and under minor modifications to \textproc{Split} and
-\textproc{Clone}, any PC is eligible as an initial circuit, even the ones which do not respect any
-vtrees. Besides, computing variable splits beforehand through a separate process of learning the
+\textproc{Clone}, any PC is eligible as an initial circuit, even ones which do not respect any
+vtree. Besides, computing variable splits beforehand through a separate process of learning the
 vtree relieves the learning algorithm from having to compute costly statistical tests at each
 product node. Where \textproc{LearnPSDD} really shines (and perhaps more fittingly PSDDs in
 general) is when the support is explicitly defined through the initial circuit's LC; because the PC
@@ -1284,15 +1289,17 @@ requires that a separate algorithm compiles an LC for a specific task without lo
 Although there are many ways of doing so, they are often not task agnostic (see \Cref{rem:initpc}).
 More importantly, because the process of learning the circuit (from data) is decoupled from the
 task of encoding logical constraints imposed by a knowledge base, all variables that do not appear
-in the logic formula are compiled into a trivial form (e.g.\ fully factorized circuit).
+in the logic formula are compiled into a trivial form (e.g.\ fully factorized circuit). Lastly,
+although decoupling the process of learning the vtree from learning the PC helps with scalability,
+the ability of identifying the proper vtree for the most expressive PC given data is certainly
+desirable, and one which might be hindered by this separated process.
 
 \subsection{\textproc{Strudel}}
 
 \citep{dang20} build upon the work of \textproc{LearnPSDD} and propose \textproc{Strudel}, which
-mainly improves \textproc{LearnPSDD} on three fronts: (1) by providing a simple algorithm for
-generating an initial circuit and vtree from data, (2) proposing a heuristic for efficiently
-searching for good transformation candidates and (3) a fast approach to learning mixtures by
-ensuring that components share the same structure.
+mainly improves \textproc{LearnPSDD} on two fronts: (1) by providing a simple algorithm for
+generating an initial circuit and vtree from data, and (2) proposing a heuristic for efficiently
+searching for good transformation candidates.
 
 We first address how to construct the initial circuit from data. \citeauthor{dang20} suggests doing
 so by compiling both a vtree and linear sized PC (in the number of variables) from a Chow-Liu Tree
@@ -1469,6 +1476,7 @@ shown more formally in \Cref{alg:strudelinit}.
         \State Attribute $\set{X}\gets\Sc(v^\gets)$ and $\set{Y}\gets\Sc(v^\to)$
         \State Let $X\in\set{X}$ and $Y\in\set{Y}$
         \State Attribute $\Nodes^\gets\gets\mathcal{M}(v^\gets)$ and $\Nodes^\to\gets\mathcal{M}(v^\to)$
+        \State $k\gets|\Val(X)|$
         \State Construct product nodes $\Prods=\{\Nodes_i^\gets\times\Nodes_i^\to|\forall i\in\left[k\right]\}$
         \If{$\Pa(X)=\Pa(Y)$}
           \State Create sum nodes $\Sum_i$ each with only a single child $\Prod_i\in\Prods$, for each $i\in\left[k\right]$
@@ -1482,6 +1490,98 @@ shown more formally in \Cref{alg:strudelinit}.
     \State \textbf{return} $\mathcal{M}(v_r)$, where $v_r$ is $\vtree$'s root node
   \end{algorithmic}
 \end{algorithm}
+
+Once we have an initial PC constructed from \textproc{InitialStrudel}, we are ready to discuss
+\textproc{Strudel}'s second contribution. To do so, we must first understand the notion of
+\emph{circuit flows} introduced in \citet{dang20}. In short, the circuit flow of a deterministic
+probabilistic circuit $\mathcal{C}$ with respect to a variable assignment $\set{x}$ is the induced
+tree (see \Cref{def:inducedsub}) whose edges are all non-zero when $\mathcal{C}$ is evaluated under
+$\set{x}$. Such an induced tree is unique in deterministic PCs because every sum node admits only
+one non-zero valued child for $\set{x}$ (or any assignment for that matter). Note how circuit flows
+are more specific in the sense they are intrinsically linked to an assignment, while induced
+subcircuits specify a deterministic subcircuit within its supercircuit. The circuit flow of
+deterministic PCs helps us understand how to efficiently compute inference in circuits of that
+nature. As we briefly mentioned before, for any assignment $\set{x}$ in a smooth, decomposable and
+deterministic PC $\mathcal{C}$, there exists a unique circuit flow $\mathcal{F}$ that encodes the
+log-likelihood computation
+\begin{equation*}
+  \mathcal{C}(\set{x})=\mathcal{F}_\mathcal{C}(\set{x})=\prod_{(\Sum,\Child)\in
+  \FEdges(\mathcal{F}_\mathcal{C})}w_{\Sum,\Child}\prod_{\Leaf\in\FInputs(\mathcal{F}_\mathcal{C})}
+  p_{\Leaf}(\set{x}),
+\end{equation*}
+where $\FInputs(\cdot)$ returns the set of input nodes of a circuit. When inputs are all binary,
+then one might encode $\mathcal{F}_\mathcal{C}$ as a mapping $f_\mathcal{C}:\mathcal{X}\to
+\{0,1\}^{|\mathcal{W}_\mathcal{C}|}$, here $\mathcal{W}_\mathcal{C}$ denoting the set of all
+parameters (i.e.\ sum node weights) of $\mathcal{C}$, which ``activates'' edge
+$w\in\mathcal{W}_\mathcal{C}$ under assignment $\set{x}$. With this, the above operation under
+log-space is reduced to a vector multiplication
+\begin{equation*}
+  \log\mathcal{C}(\set{x})=f_\mathcal{C}(\set{x})^\intercal\cdot\log\left(\mathcal{W}_\mathcal{C}\right).
+\end{equation*}
+Importantly, by aggregating circuit flows through counting the number of activations of each
+parameter $w_{\Sum,\Child}$ in the entire training dataset $\set{D}$, we get a sense of the number
+of samples $w_{\Sum,\Child}$ impacts over $\set{D}$, and thus a sense of how meaningful is that
+edge on the fitness of data. As we shall see briefly, this aggregated circuit flow shall then be
+used as a score for a greedy search over the space of candidates for local transformations.
+%and then normalizing over the number of all activations of edges coming out of
+%$\Sum$, we get the maximum likelihood estimator (MLE) of edge $\edge{\Sum}{\Child}$ in the whole
+%training dataset $\set{D}$.
+
+To overcome the scalability limitations of \textproc{LearnPSDD}, \textproc{Strudel} proposes using
+only \textproc{Split} to reduce the search space, looking at performing the search greedily instead
+of exhaustively and exploiting the efficiency of aggregate circuit flows as a fast heuristic in
+place of computing the whole likelihood. Searching is done by finding the edge to \textproc{Split}
+whose aggregate circuit flow is maximal
+\begin{equation*}
+  \score_{\textsf{eFlow}}(w_{\Sum,\Child}|\mathcal{C},\set{D})=\sum_{\set{x}\in\set{D}}f_{\mathcal{C}}(\set{x})\left[w_{\Sum,\Child}\right],
+\end{equation*}
+while the choice of which variable to condition \textproc{Split} on is done by selecting the
+variable $X$ that shares the most dependencies (and thus the higher pairwise mutual information)
+with other variables within the scope of that edge, estimated from the aggregate flows
+\begin{equation*}
+  \score_{\textsf{vMI}}(X,w_{\Sum,\Child}|\mathcal{C},\set{D})=\sum_{\substack{Y\in\Sc(\Sum)\\Y\neq
+    X}}\mutualinf(X,Y).
+\end{equation*}
+The entire algorithm for \textproc{Strudel} is showcased in \Cref{alg:strudel}.
+
+\begin{algorithm}[t]
+  \caption{\textproc{Strudel}}\label{alg:strudel}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, max depth $m$, scope $\set{X}$
+    \Ensure A smooth, structure decomposable and deterministic PC learned from $\set{D}$
+    \State $\mathcal{C},\vtree\gets\textproc{InitialStrudel}(\set{D},\set{X})$
+    \While{there is score improvement of has not reached the iteration/time limit}
+      \State Compute the aggregate flow over all edges
+      \State $w_{\Sum,\Child}^\ast\gets\argmax_{w\in\mathcal{W}_\mathcal{C}}\score_{\textsf{eFlow}}(w|\mathcal{C},\set{D})$
+      \State $X^\ast\gets\argmax_{X\in\Sc(\Sum)}\score_{\textsf{vMI}}(X,w_{\Sum,\Child}^\ast|\mathcal{C},\set{D})$
+      \State $\mathcal{C}\gets\textproc{Split}(\mathcal{C},\Sum,\Child,\vtree,m)$
+    \EndWhile
+    \State \textbf{return} $\mathcal{C}$
+  \end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Complexity}
+
+Learning the Chow-Liu Tree is done in $\bigo(|\set{X}|^2\cdot|\set{D}|)$ through Chow-Liu's
+algorithm \citep{chow68}, while the vtree is compiled in time linear to the size of the CLT, i.e.\
+$\bigo(|\set{X}|)$ since the Bayesian network is a tree. Consequentially, \textproc{InitialStrudel}
+runs in $\bigo(|\set{X}|\cdot|\Val(X)|)$, or linear on $|\set{X}|$ if we assume binary variables as
+originally intended. The bulk of the computation falls under \textproc{Strudel}, which runs in
+$\bigo\left(|\set{X}|^2\cdot|\set{D}|+i(|\mathcal{C}|\cdot|\set{D}|+|\set{X}|^2)\right)$ assuming a
+bounded max depth $m$ and binary variables. Term $|\set{X}|^2\cdot|\set{D}|$ corresponds to learning
+the CLT, $|\mathcal{C}|\cdot|\set{D}|$ to the computation of the aggregate circuit flows,
+$|\set{X}|^2$ to the computation of $\score_{\textsf{vMI}}$ which involves the pairwise mutual
+informations of $\set{X}$, and $i$ the number of iterations of $\textproc{Strudel}$.
+
+\subsubsection{Pros and Cons}
+
+\paragraph{Pros.} Arguably, the most valuable contribution in \textproc{Strudel} is its
+scalability. Compared to \textproc{LearnPSDD}, \textproc{Strudel} can take orders of magnitude less
+time per iterationCompared to \textproc{LearnPSDD}, \textproc{Strudel} can take orders of magnitude
+less time per iteration, meaning that it can produce more \textproc{Split}s 
+
+\paragraph{Cons.}
+
 \begin{remark}[breakable]{On the choice of initial circuits}{initpc}
   \citep{choi13,oztok15,choi17,shen17}
 \end{remark}

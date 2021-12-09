@@ -5,6 +5,12 @@
 % Formatação personalizada do sumário, lista de tabelas/figuras etc.
 %\usepackage{titletoc}
 
+\makeatletter
+\renewcommand\listoffigures{%
+        \@starttoc{lof}%
+}
+\makeatother
+
 % titlesec permite definir formatação personalizada de títulos, seções etc.
 % Observe que titlesec é incompatível com os comandos refsection
 % e refsegment do pacote biblatex!
@@ -116,47 +122,53 @@
 
 % O formato padrão do pacote epigraph é bem feinho...
 % Outra opção para epígrafes é o pacote quotchap
-\usepackage{epigraph}
+%\usepackage{epigraph}
+\usepackage{quotchap}
 
-\setlength\epigraphwidth{.85\textwidth}
+\makeatletter
+\let\size@chapter\Huge
+\makeatother
+\renewcommand*{\sectfont}{\bfseries\selectfont}
+
+%\setlength\epigraphwidth{.85\textwidth}
 
 % Sem linha entre o texto e o autor
-\setlength{\epigraphrule}{0pt}
+%\setlength{\epigraphrule}{0pt}
 
 % Ambiente auxiliar para colocar margem à direita da epígrafe
 % (como sempre, o modo mais simples de mudar as margens de um
 % pagrágrafo é fazer de conta que é uma lista)
-\newenvironment{epShiftLeft}
-  {
-    \par\begin{list}{}
-      {
-        \leftmargin 0pt
-        \labelwidth 0pt
-        \labelsep 0pt
-        \itemsep 0pt
-        \topsep 0pt
-	\partopsep 0pt
-        \rightmargin 2em
-      }
-    \item\FlushRight
-  }
-  {
-    \end{list}
-    % O espaço padrão que epigraph coloca entre a citação
-    % e o autor é muito pequeno; vamos aumentar um pouco
-    \vspace*{.3\baselineskip}
-  }
+%\newenvironment{epShiftLeft}
+  %{
+    %\par\begin{list}{}
+      %{
+        %\leftmargin 0pt
+        %\labelwidth 0pt
+        %\labelsep 0pt
+        %\itemsep 0pt
+        %\topsep 0pt
+	%\partopsep 0pt
+        %\rightmargin 2em
+      %}
+    %\item\FlushRight
+  %}
+  %{
+    %\end{list}
+    %% O espaço padrão que epigraph coloca entre a citação
+    %% e o autor é muito pequeno; vamos aumentar um pouco
+    %\vspace*{.3\baselineskip}
+  %}
 
-\renewcommand\textflush{epShiftLeft}
-\renewcommand\sourceflush{epShiftLeft}
+%\renewcommand\textflush{epShiftLeft}
+%\renewcommand\sourceflush{epShiftLeft}
 
-\newcommand{\epigrafe}[2] {%
-  \ifthenelse{\equal{}{#2}}{
-    \epigraph{\itshape #1}{}
-  }{
-    \epigraph{\itshape #1}{--- #2}
-  }
-}
+%\newcommand{\epigrafe}[2] {%
+  %\ifthenelse{\equal{}{#2}}{
+    %\epigraph{\itshape #1}{}
+  %}{
+    %\epigraph{\itshape #1}{--- #2}
+  %}
+%}
 
 % Formato personalizado para as notas de rodapé. Copiado quase
 % literalmente do exemplo na documentação das classes-padrão de

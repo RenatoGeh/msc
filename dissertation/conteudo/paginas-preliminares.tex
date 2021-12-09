@@ -51,10 +51,10 @@
 
 %%%%% Listas criadas manualmente
 
-\chapter*{Nomenclature}
+\chapter*{\raggedright{}Nomenclature}
 
 %\chapter*{Lista de Símbolos}
-\disablenewpage{\chapter*{\Large List of Symbols}}
+\disablenewpage{\section*{\raggedright\Large\textbf{List of Symbols}}}
 
 \begin{tabular}{rl}
         $\sigma$      & Sigmoid function\\
@@ -67,13 +67,14 @@
 
 % Você pode escolher se quer ou não permitir a quebra de página
 %\listoffigures
-\renewcommand{\listfigurename}{\Large List of Figures}
+%\renewcommand{\listfigurename}{\Large\textbf{List of Figures}}
+\disablenewpage{\section*{\raggedright\Large\textbf{List of Figures}}}
 \disablenewpage{\listoffigures}
 
 % Você pode escolher se quer ou não permitir a quebra de página
 %\listoftables
-\renewcommand{\listtablename}{\Large List of Tables}
-\disablenewpage{\listoftables}
+%\renewcommand{\listtablename}{\Large List of Tables}
+%\disablenewpage{\listoftables}
 
 % Esta lista é criada "automaticamente" pela package float quando
 % definimos o novo tipo de float "program" (em utils.tex)
@@ -81,10 +82,13 @@
 %\listof{program}{\programlistname}
 %\disablenewpage{\listof{program}{\programlistname}}
 
-\renewcommand{\listalgorithmname}{\Large List of Algorithms}
+%\renewcommand{\listalgorithmname}{\Large\textbf{List of Algorithms}}
+\disablenewpage{\section*{\raggedright\Large\textbf{List of Algorithms}}}
 \disablenewpage{\listofalgorithms}
 
 \tcblistof[\section*]{eg}{\Large List of Examples}
+
+\tcblistof[\section*]{rem}{\Large List of Remarks}
 
 \section*{Notation}
 

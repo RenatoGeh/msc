@@ -11,7 +11,13 @@
 \algblockdefx[NIELSE]{NIElse}{EndNIElse}{\textbf{else}}
 
 \makeatletter
+% EndNIElse
 \ifthenelse{\equal{\ALG@noend}{t}}%
   {\algtext*{EndNIElse}}
   {}%
+
+% List of Algorithms
+\renewcommand\listofalgorithms{%
+  \@starttoc{loa}%
+}
 \makeatother
