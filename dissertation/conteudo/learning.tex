@@ -858,7 +858,7 @@ partitionings at higher levels are minimized (and so determine the ``true'' inde
 relationships between subsets of variables). To produce balanced vtrees, the algorithm attempts to
 join vtrees of same height whose $\pairmi$ is maximal; this is equivalent to min-cost perfect
 matching, which can be solved, in our case, in $\bigo(m^4)$, where $m$ is the number of variables
-\citep{edmonds65,kolmogorov09}.
+\citep{edmonds65,kolmogorov09}. \Cref{fig:bottomupvtree} exemplifies the algorithm.
 
 \begin{figure}[t]
   \resizebox{\textwidth}{!}{
@@ -1588,7 +1588,7 @@ Similar to \textproc{LearnPSDD}, one can learn an ensemble of \textproc{Strudel}
 performance at the cost of losing determinism. Opposite to \textproc{LearnPSDD} however,
 \citeauthor{dang20} employ structure-sharing components so that the act of learning the circuit's
 structure is done once, greatly reducing learning time. Parameters are then learned through closed
-form EM (see \Cref{rem:paramlearn} and bagging.
+form EM (see \Cref{rem:paramlearn}) and bagging.
 
 \paragraph{Cons.} Although \textproc{Strudel}'s greedy heuristic search strategy translates into
 possibly more accurate PCs, it also produces more sizable circuits when compared to the exhaustive
@@ -1650,7 +1650,7 @@ sized datasets; though \textproc{LearnPSDD} much sharper and sooner comparativel
 We now explore random approaches to constructing probabilistic circuits, which we classify as
 \randclass{} class learning algorithms. Essentially, \randclass{} class circuits are constructed
 either by a completely random procedure (\Cref{sec:ratspn}), or guided by data (\Cref{sec:xpcs}).
-We first look at \textproc{RAT-SPN} \citep{peharz19}, a connectionist PC structure learning
+We first look at \textproc{RAT-SPN} \citep{peharz20a}, a connectionist PC structure learning
 algorithm for randomly generating tensorized smooth and decomposable probabilistic circuits. We
 then address \textproc{XPCs} \citep{dimauro21}, a flexible algorithm capable of learning smooth and
 decomposable PCs as well as structure decomposable and/or deterministic circuits through simple
@@ -1659,7 +1659,7 @@ modifications to their method.
 \subsection{\textproc{RAT-SPN}}
 \label{sec:ratspn}
 
-A key ingredient to \textproc{RAT-SPN} \citep{peharz19} is the concept of \emph{region graphs}.
+A key ingredient to \textproc{RAT-SPN} \citep{peharz20a} is the concept of \emph{region graphs}.
 First introduced in PC literature in \citet{dennis12}, region graphs are tensorized templates for
 PC construction. Informally, a region graph is composed out of \emph{region nodes} and
 \emph{partition nodes}; the former a set of sum or input nodes, and the latter of products. Regions
@@ -1718,13 +1718,14 @@ blow-up, this number is often restricted to only two children per partition.
 \textproc{RAT-SPN} works by randomly generating a region graph in a top-down divide-and-conquer
 approach similar to \textproc{LearnSPN}, except that the learned structure eventually produces
 non-tree shaped circuits and the procedure is done \emph{completely} random (see
-\Cref{alg:ratspn}). In fact, \citep{peharz19} argue that the parameterization of the circuit by
-means of sum weights are as important as its structure. Indeed, they show that this connectionist
-approach heavily inspired by neural networks produces very competitive PCs. However, to do so
-requires extensive optimization of the circuit's weights, which unsurprisingly is where
-\textproc{RAT-SPN} shines: because of the tensorized nature of region graphs, the resulting PC is
-able to exploit the advantages of known deep learning frameworks, making the most of efficient
-stochastic gradient descent optimizers and GPU parallelization.
+\Cref{alg:ratspn}). In fact, \citet{peharz20a} argue that the parameterization of the circuit by
+means of sum weights is as important as its structure, looking at probabilistic circuits as a
+specific subclass of neural networks. Indeed, they show that this connectionist approach heavily
+inspired by traditional deep learning produces very competitive PCs. However, to do so requires
+extensive optimization of the circuit's weights, which unsurprisingly is where \textproc{RAT-SPN}
+shines: because of the tensorized nature of region graphs, the resulting PC is able to exploit the
+advantages of known deep learning frameworks, making the most of efficient stochastic gradient
+descent optimizers and GPU parallelization.
 
 \begin{algorithm}[t]
   \caption{\textproc{RAT-SPN}}\label{alg:ratspn}
@@ -1759,13 +1760,25 @@ stochastic gradient descent optimizers and GPU parallelization.
 To ensure that the compiled PC is smooth and decomposable, the region graph must also be so. We
 extend the definition of scope function to region graphs. As long as leaf region nodes are assigned
 the correct scope, the PC is by construction smooth (every region is fully connected to their
-children) and decomposable (every partition splits variables into two regions).
+children) and decomposable (every partition splits variables into two regions). Function
+\textproc{CreateLayer} in \Cref{alg:ratspn} does exactly that, making sure each partition
+decomposes into two distinct variable splits down to leaf region nodes. A PC is then constructed by
+following \textproc{CompileRegionGraph} and passing the random region graph and number of nodes per
+region and partition nodes as parameters. The function ultimately produces a dense probabilistic
+circuit from the region graph blueprint, as \Cref{fig:ratspn} exemplifies.
 
 \begin{figure}[t]
   \resizebox{\textwidth}{!}{
   \begin{tikzpicture}
+    \draw[very thick,dashed,boxgreen] (-7.5,-0.75) -- (7.5,-0.75);
+    \draw[very thick,dashed,boxred] (-7.5,-2.25) -- (7.5,-2.25);
+    \draw[very thick,dashed,boxpurple] (-7.5,-3.75) -- (7.5,-3.75);
+    \draw[very thick,dashed,boxblue] (-7.5,-5.25) -- (7.5,-5.25);
+    \draw[very thick,dashed,boxorange] (-7.5,-6.75) -- (7.5,-6.75);
+
     \draw[draw=boxteal,very thick,fill=boxteal!30] (-1.25,-0.5) rectangle (1.25,0.5);
     \newSumNode[fill=boxgreen]{r}{0,0};
+    \node at ($(r) + (0,1)$) {$\{A,B,C,D,E,F,G\}$};
 
     \node (p) at ($(r) + (-4,-1.5)$) {};
     \draw[very thick,fill=boxpink!30,draw=boxpink!70] ($(-1.25,-0.5) + (p)$) rectangle ($(1.25,0.5) + (p)$);
@@ -1802,6 +1815,9 @@ children) and decomposable (every partition splits variables into two regions).
     \draw[edge] (p3) -- (s12.north); \draw[edge] (p3) -- (s21.north);
     \draw[edge] (p4) -- (s12.north); \draw[edge] (p4) -- (s22.north);
 
+    \node at ($(s1) + (-0.5,1)$) {$\{A,D,F\}$};
+    \node at ($(s2) + (0.5,1)$) {$\{B,C,E,G\}$};
+
     \node (z1) at ($(q) + (-2,-1.5)$) {};
     \draw[draw=boxteal,very thick,fill=boxteal!30] ($(z1) + (-1.25,-0.5)$) rectangle ($(z1) + (1.25,0.5)$);
     \newSumNode[fill=boxpurple!60]{z11}{$(z1) + (-0.5,0)$};
@@ -1811,6 +1827,9 @@ children) and decomposable (every partition splits variables into two regions).
     \draw[draw=boxteal,very thick,fill=boxteal!30] ($(z2) + (-1.25,-0.5)$) rectangle ($(z2) + (1.25,0.5)$);
     \newSumNode[fill=boxpurple!60]{z21}{$(z2) + (-0.5,0)$};
     \newSumNode[fill=boxpurple!60]{z22}{$(z2) + (0.5,0)$};
+
+    \node at ($(z1) + (-0.5,1)$) {$\{B,D,F,G\}$};
+    \node at ($(z2) + (0.5,1)$) {$\{A,C,E\}$};
 
     \draw[edge] (q1) -- (z11.north); \draw[edge] (q1) -- (z21.north);
     \draw[edge] (q2) -- (z11.north); \draw[edge] (q2) -- (z22.north);
@@ -1899,6 +1918,11 @@ children) and decomposable (every partition splits variables into two regions).
     \draw[edge] (u23) -- (l32.north); \draw[edge] (u23) -- (l41.north);
     \draw[edge] (u24) -- (l32.north); \draw[edge] (u24) -- (l42.north);
 
+    \node at ($(l3) + (0,-1)$) {$\{A,C\}$};
+    \node at ($(l4) + (0,-1)$) {$\{E\}$};
+    \node at ($(l1) + (0,-1)$) {$\{B,D\}$};
+    \node at ($(l2) + (0,-1)$) {$\{F,G\}$};
+
     \node (l1) at ($(t1) + (-0.75,-1.5)$) {};
     \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l1) + (-0.65,-0.5)$) rectangle ($(l1) + (0.65,0.5)$);
     \newGaussNode[fill=boxorange!80]{l11}{$(l1) + (-0.25,0)$};
@@ -1928,11 +1952,60 @@ children) and decomposable (every partition splits variables into two regions).
     \draw[edge] (t22) -- (l31.north); \draw[edge] (t22) -- (l42.north);
     \draw[edge] (t23) -- (l32.north); \draw[edge] (t23) -- (l41.north);
     \draw[edge] (t24) -- (l32.north); \draw[edge] (t24) -- (l42.north);
+
+    \node at ($(l3) + (0,-1)$) {$\{B,E\}$};
+    \node at ($(l4) + (0,-1)$) {$\{C,G\}$};
+    \node at ($(l1) + (0,-1)$) {$\{A,F\}$};
+    \node at ($(l2) + (0,-1)$) {$\{D\}$};
   \end{tikzpicture}
   }
-  \caption{}
+  \caption{A \textproc{RAT-SPN} generated from parameters $d=3$, $r=2$, $s=2$ and $l=2$. Nodes
+    within a \protect\tikz\protect\draw[draw=boxteal,very thick,fill=boxteal!30] (0,0) rectangle
+    (0.5,-0.25); belong to inner region nodes, \protect\tikz\protect\draw[draw=boxpink!70,very
+    thick,fill=boxpink!30] (0,0) rectangle (0.5,-0.25); to partitions and
+    \protect\tikz\protect\draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] (0,0) rectangle
+    (0.5,-0.25); to leaf regions; dashed lines (and node colors) indicate different PC layers.
+    Scope of region nodes are shown in curly braces.}
   \label{fig:ratspn}
 \end{figure}
+
+Once the PC structure is successfully generated, \citet{peharz20a} suggest Expectation-Maximization
+(EM, \cite{dempster77,peharz16,zhao16a}) for optimizing the circuit parameters (i.e.\ sum weights
+and input node distributions). Although parameter learning of PCs is not the focus of this
+dissertation, we briefly touch the subject in \Cref{rem:paramlearn}.
+
+Worthy of note is a discriminative version of \textproc{RAT-SPN} where instead of a single root sum
+node, $k$ roots are learned, each connecting to every \textproc{CreateLayer} subcircuit. Each
+$i$-th root describes the conditional probability $p(\set{X}|Y=i)$, where $Y$ is the query variable
+and $\set{X}$ evidence. Classification follows directly from Bayes Rule $p(Y|\set{X})=
+\frac{p(\set{X}|Y)p(Y)}{\sum_{i=1}^k p(\set{X}|Y=i)p(Y=i)}$, where $p(Y)$ is either estimated from
+the training data or assumed to be fixed. Accordingly, a discriminative objective function is
+proposed involving cross-entropy and log-likelihood for hybrid generative-discriminative
+optimization \citep{bouchard04} instead of running EM.
+
+\subsubsection{Complexity}
+
+Although the procedure described in \Cref{alg:ratspn} is $\bigo\left(r\cdot d(s+l)\right)$ and
+therefore extremely fast, it does not paint the whole picture. The main bulk of the complexity when
+learning \textproc{RAT-SPN} comes from parameter learning. \citet{peharz20a} calculate the number
+of sum weights to be
+\begin{equation*}
+  |\mathcal{W}_\mathcal{C}|=\begin{cases}
+    r\cdot k\cdot l^2 & \quad\text{if $d=1$,}\\
+    r\cdot\left(k\cdot s^2+(2^{d-1}-2)s^3+2^{d-1}\cdot s\cdot l^2\right) & \quad\text{if $d>1$};
+  \end{cases}
+\end{equation*}
+meaning that learning only the non-input parameters of \textproc{RAT-SPN} takes time $\bigo\left(
+\left(r\cdot 2^d \cdot\left(s^3+s\cdot l^2\right)+r\cdot k\cdot s^2\right)\cdot|\set{D}|\right)$.
+However, given that all other structure learning algorithms covered in this dissertation also
+require learning circuit parameters, one might argue that the true cost of structure learning in
+\textproc{RAT-SPN} is indeed subquadratic on the parameters.
+
+\subsubsection{Pros and Cons}
+
+\paragraph{Pros.}
+
+\paragraph{Cons.}
 
 \begin{remark}[breakable]{On parameter learning of probabilistic circuits}{paramlearn}
 \end{remark}
