@@ -1592,13 +1592,12 @@ form EM (see \Cref{rem:paramlearn} and bagging.
 
 \paragraph{Cons.} Although \textproc{Strudel}'s greedy heuristic search strategy translates into
 possibly more accurate PCs, it also produces more sizable circuits when compared to the exhaustive
-search of \textproc{LearnPSDD}. Indeed, empirical evaluations in \citet{dang20} show
+search of \textproc{LearnPSDD}. Indeed, \citet{dang20}'s empirical evaluation shows
 \textproc{Strudel} PCs up to 12 times bigger than \textproc{LearnPSDD}'s with the two somewhat tied
 in terms of fitness. This is especially worrying given that \textproc{Strudel}'s complexity grows
-with its circuit size. In fact, empirical evaluations show a sharp increase in seconds per
-iterations for the two \incrclass{} algorithms, with both reaching multiple digits for each
-iteration even in smaller sized datasets; though \textproc{LearnPSDD} much sharper and sooner
-comparatively \citep{dang20}.
+with its circuit size. In fact, experiments show a sharp increase in seconds per iterations for the
+two \incrclass{} algorithms, with both reaching multiple digits for each iteration even in smaller
+sized datasets; though \textproc{LearnPSDD} much sharper and sooner comparatively \citep{dang20}.
 
 \begin{remark}[breakable]{On the choice of initial circuits}{initpc}
   We only briefly mentioned in \Cref{subsection:learnpsdd} how we might want to start out with an
@@ -1648,5 +1647,296 @@ comparatively \citep{dang20}.
 \section{Random Learning}
 \label{sec:random}
 
+We now explore random approaches to constructing probabilistic circuits, which we classify as
+\randclass{} class learning algorithms. Essentially, \randclass{} class circuits are constructed
+either by a completely random procedure (\Cref{sec:ratspn}), or guided by data (\Cref{sec:xpcs}).
+We first look at \textproc{RAT-SPN} \citep{peharz19}, a connectionist PC structure learning
+algorithm for randomly generating tensorized smooth and decomposable probabilistic circuits. We
+then address \textproc{XPCs} \citep{dimauro21}, a flexible algorithm capable of learning smooth and
+decomposable PCs as well as structure decomposable and/or deterministic circuits through simple
+modifications to their method.
+
+\subsection{\textproc{RAT-SPN}}
+\label{sec:ratspn}
+
+A key ingredient to \textproc{RAT-SPN} \citep{peharz19} is the concept of \emph{region graphs}.
+First introduced in PC literature in \citet{dennis12}, region graphs are tensorized templates for
+PC construction. Informally, a region graph is composed out of \emph{region nodes} and
+\emph{partition nodes}; the former a set of sum or input nodes, and the latter of products. Regions
+can be thought of sets of computational units explaining the same interactions among variables
+\citep{dennis12}, for instance semantically similar pixel regions in an image; while partitions
+define independencies between these regions. Edges coming out of region (resp.\ partition) nodes
+must necessarily connect to a partition (resp.\ region) node.
+
+\begin{definition}[Region graph]
+  A \emph{region graph} is a rooted connected DAG whose nodes are either \emph{regions} or
+  \emph{partitions}. Children of regions are partitions, and children of partitions are regions.
+  The root is always a region node.
+\end{definition}
+
+Region graphs simplify the process of constructing PCs by ensuring that they are \emph{at the
+least} smooth and decomposable. Call $\mathcal{G}$ a region graph; $\mathcal{G}$ is easily
+translated to a PC by applying the procedure described in \Cref{alg:region2pc}. Every region is
+compiled into a set of sums or inputs, fully connecting children; every partition into a set of
+products, producing a distinct permutation of children. Evidently, the resulting PC is exponential
+on $s$ and $l$, as products must ensure that they encode different permutations. To deal with this
+blow-up, this number is often restricted to only two children per partition.
+
+\begin{algorithm}[t]
+  \caption{\textproc{CompileRegionGraph}}\label{alg:region2pc}
+  \begin{algorithmic}[1]
+    \Require A region graph $\mathcal{G}$, parameters $s$ for sums and $l$ for inputs
+    \Ensure A smooth and decomposable probabilistic circuit
+    \State Let $\mathcal{M}$ a mapping of region nodes to PC nodes
+    \For{each node $\Node$ in $\mathcal{G}$ except the root in reverse topological order}
+      \If{$\Node$ is a region}
+        \If{$\Node$ is a leaf node in $\mathcal{G}$}
+          \State Construct $\Leaves=\{\Leaf_1,\ldots,\Leaf_l\}$ input nodes over variables $\Sc(\Node)$
+          \State Associate $\Node$ with $\Leaves$
+        \Else
+          \State Construct $\Sums=\{\Sum_1,\ldots,\Sum_s\}$ sum nodes
+          \For{each partition node $\Prod\in\Ch(\Node)$}
+            \State Every sum in $\Sums$ connects with every product in $\mathcal{M}(\Prod)$
+          \EndFor
+        \EndIf
+      \ElsIf{$\Node$ is a partition}
+        \State Let $\Ch(\Node)=\{\textsf{R}_1,\ldots,\textsf{R}_k\}$ regions and $q=\prod_{i=1}^k
+          |\mathcal{M}(\textsf{R}_i)|$
+        \State Construct $\Prods=\{\Prod_1,\ldots,\Prod_q\}$ product nodes
+        \For{every product $\Prod\in\Prods$}
+          \State Connect $\Prod$ with a distinct combination of sums in $\mathcal{M}(\textsf{R}_1),
+          \ldots,\mathcal{M}(\textsf{R}_j)$
+        \EndFor
+      \EndIf
+    \EndFor
+    \State Construct a root node $\textsf{R}$
+    \State Connect $\textsf{R}$ to all products in every child of $\mathcal{G}$'s root
+    \State \textbf{return} $\textsf{R}$
+  \end{algorithmic}
+\end{algorithm}
+
+\textproc{RAT-SPN} works by randomly generating a region graph in a top-down divide-and-conquer
+approach similar to \textproc{LearnSPN}, except that the learned structure eventually produces
+non-tree shaped circuits and the procedure is done \emph{completely} random (see
+\Cref{alg:ratspn}). In fact, \citep{peharz19} argue that the parameterization of the circuit by
+means of sum weights are as important as its structure. Indeed, they show that this connectionist
+approach heavily inspired by neural networks produces very competitive PCs. However, to do so
+requires extensive optimization of the circuit's weights, which unsurprisingly is where
+\textproc{RAT-SPN} shines: because of the tensorized nature of region graphs, the resulting PC is
+able to exploit the advantages of known deep learning frameworks, making the most of efficient
+stochastic gradient descent optimizers and GPU parallelization.
+
+\begin{algorithm}[t]
+  \caption{\textproc{RAT-SPN}}\label{alg:ratspn}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, variables $\set{X}$, max depth $d$, $r$ \# subcircuits, $s$ \# sums,
+      and $l$ \# inputs
+    \Ensure A smooth and decomposable probabilistic circuit
+    \Function{CreateLayer}{$\textsf{R}$, $d$, $\set{X}$}
+      \State Assign $\set{X}$ as $\Sc(\textsf{R})$
+      \State Sample a variable split $(\set{Y},\set{Z})$ from $\set{X}$
+      \State Create a partition $\Prod$ and add it as a child of $\textsf{R}$
+      \If{d>1}
+        \If{$|\set{Y}|>1$}
+          \State Create a region $\textsf{R}_1$
+          \State \Call{CreateLayer}{$\textsf{R}_1$, $d-1$, $\set{Y}$}
+        \EndIf
+        \If{$|\set{Z}|>1$}
+          \State Create a region $\textsf{R}_2$
+          \State \Call{CreateLayer}{$\textsf{R}_2$, $d-1$, $\set{Z}$}
+        \EndIf
+      \EndIf
+    \EndFunction
+    \State Start with a root region node $\textsf{R}$
+    \For{each $i\in\left[r\right]$}
+      \State \Call{CreateLayer}{$\textsf{R}$, $d$, $\set{X}$}
+    \EndFor
+    \State $\mathcal{C}\gets\textproc{CompileRegionGraph}(\textsf{R},s,l)$
+    \State \textbf{return} $\mathcal{C}$
+  \end{algorithmic}
+\end{algorithm}
+
+To ensure that the compiled PC is smooth and decomposable, the region graph must also be so. We
+extend the definition of scope function to region graphs. As long as leaf region nodes are assigned
+the correct scope, the PC is by construction smooth (every region is fully connected to their
+children) and decomposable (every partition splits variables into two regions).
+
+\begin{figure}[t]
+  \resizebox{\textwidth}{!}{
+  \begin{tikzpicture}
+    \draw[draw=boxteal,very thick,fill=boxteal!30] (-1.25,-0.5) rectangle (1.25,0.5);
+    \newSumNode[fill=boxgreen]{r}{0,0};
+
+    \node (p) at ($(r) + (-4,-1.5)$) {};
+    \draw[very thick,fill=boxpink!30,draw=boxpink!70] ($(-1.25,-0.5) + (p)$) rectangle ($(1.25,0.5) + (p)$);
+    \newProdNode[fill=boxred!70]{p1}{$(p) + (-0.75,0)$};
+    \newProdNode[fill=boxred!70]{p2}{$(p) + (-0.25,0)$};
+    \newProdNode[fill=boxred!70]{p3}{$(p) + (0.25,0)$};
+    \newProdNode[fill=boxred!70]{p4}{$(p) + (0.75,0)$};
+
+    \draw[edge] (r) -- (p1.north); \draw[edge] (r) -- (p2.north);
+    \draw[edge] (r) -- (p3.north); \draw[edge] (r) -- (p4.north);
+
+    \node (q) at ($(r) + (4,-1.5)$) {};
+    \draw[very thick,fill=boxpink!30,draw=boxpink!70] ($(q) + (-1.25,-0.5)$) rectangle ($(q) + (1.25,0.5)$);
+    \newProdNode[fill=boxred!70]{q1}{$(q) + (-0.75,0)$};
+    \newProdNode[fill=boxred!70]{q2}{$(q) + (-0.25,0)$};
+    \newProdNode[fill=boxred!70]{q3}{$(q) + (0.25,0)$};
+    \newProdNode[fill=boxred!70]{q4}{$(q) + (0.75,0)$};
+
+    \draw[edge] (r) -- (q1.north); \draw[edge] (r) -- (q2.north);
+    \draw[edge] (r) -- (q3.north); \draw[edge] (r) -- (q4.north);
+
+    \node (s1) at ($(p) + (-2,-1.5)$) {};
+    \draw[draw=boxteal,very thick,fill=boxteal!30] ($(s1) + (-1.25,-0.5)$) rectangle ($(s1) + (1.25,0.5)$);
+    \newSumNode[fill=boxpurple!60]{s11}{$(s1) + (-0.5,0)$};
+    \newSumNode[fill=boxpurple!60]{s12}{$(s1) + (0.5,0)$};
+
+    \node (s2) at ($(p) + (2,-1.5)$) {};
+    \draw[draw=boxteal,very thick,fill=boxteal!30] ($(s2) + (-1.25,-0.5)$) rectangle ($(s2) + (1.25,0.5)$);
+    \newSumNode[fill=boxpurple!60]{s21}{$(s2) + (-0.5,0)$};
+    \newSumNode[fill=boxpurple!60]{s22}{$(s2) + (0.5,0)$};
+
+    \draw[edge] (p1) -- (s11.north); \draw[edge] (p1) -- (s21.north);
+    \draw[edge] (p2) -- (s11.north); \draw[edge] (p2) -- (s22.north);
+    \draw[edge] (p3) -- (s12.north); \draw[edge] (p3) -- (s21.north);
+    \draw[edge] (p4) -- (s12.north); \draw[edge] (p4) -- (s22.north);
+
+    \node (z1) at ($(q) + (-2,-1.5)$) {};
+    \draw[draw=boxteal,very thick,fill=boxteal!30] ($(z1) + (-1.25,-0.5)$) rectangle ($(z1) + (1.25,0.5)$);
+    \newSumNode[fill=boxpurple!60]{z11}{$(z1) + (-0.5,0)$};
+    \newSumNode[fill=boxpurple!60]{z12}{$(z1) + (0.5,0)$};
+
+    \node (z2) at ($(q) + (2,-1.5)$) {};
+    \draw[draw=boxteal,very thick,fill=boxteal!30] ($(z2) + (-1.25,-0.5)$) rectangle ($(z2) + (1.25,0.5)$);
+    \newSumNode[fill=boxpurple!60]{z21}{$(z2) + (-0.5,0)$};
+    \newSumNode[fill=boxpurple!60]{z22}{$(z2) + (0.5,0)$};
+
+    \draw[edge] (q1) -- (z11.north); \draw[edge] (q1) -- (z21.north);
+    \draw[edge] (q2) -- (z11.north); \draw[edge] (q2) -- (z22.north);
+    \draw[edge] (q3) -- (z12.north); \draw[edge] (q3) -- (z21.north);
+    \draw[edge] (q4) -- (z12.north); \draw[edge] (q4) -- (z22.north);
+
+    \node (t1) at ($(s1) + (0,-1.5)$) {};
+    \draw[very thick,fill=boxpink!30,draw=boxpink!70] ($(t1) + (-1.25,-0.5)$) rectangle ($(t1) + (1.25,0.5)$);
+    \newProdNode[fill=boxblue!50]{t11}{$(t1) + (-0.75,0)$};
+    \newProdNode[fill=boxblue!50]{t12}{$(t1) + (-0.25,0)$};
+    \newProdNode[fill=boxblue!50]{t13}{$(t1) + (0.25,0)$};
+    \newProdNode[fill=boxblue!50]{t14}{$(t1) + (0.75,0)$};
+
+    \draw[edge] (s11) -- (t11.north); \draw[edge] (s11) -- (t12.north);
+    \draw[edge] (s11) -- (t13.north); \draw[edge] (s11) -- (t14.north);
+
+    \draw[edge] (s12) -- (t11.north); \draw[edge] (s12) -- (t12.north);
+    \draw[edge] (s12) -- (t13.north); \draw[edge] (s12) -- (t14.north);
+
+    \node (t2) at ($(s2) + (0,-1.5)$) {};
+    \draw[very thick,fill=boxpink!30,draw=boxpink!70] ($(t2) + (-1.25,-0.5)$) rectangle ($(t2) + (1.25,0.5)$);
+    \newProdNode[fill=boxblue!50]{t21}{$(t2) + (-0.75,0)$};
+    \newProdNode[fill=boxblue!50]{t22}{$(t2) + (-0.25,0)$};
+    \newProdNode[fill=boxblue!50]{t23}{$(t2) + (0.25,0)$};
+    \newProdNode[fill=boxblue!50]{t24}{$(t2) + (0.75,0)$};
+
+    \draw[edge] (s21) -- (t21.north); \draw[edge] (s21) -- (t22.north);
+    \draw[edge] (s21) -- (t23.north); \draw[edge] (s21) -- (t24.north);
+
+    \draw[edge] (s22) -- (t21.north); \draw[edge] (s22) -- (t22.north);
+    \draw[edge] (s22) -- (t23.north); \draw[edge] (s22) -- (t24.north);
+
+    \node (u1) at ($(z1) + (0,-1.5)$) {};
+    \draw[very thick,fill=boxpink!30,draw=boxpink!70] ($(u1) + (-1.25,-0.5)$) rectangle ($(u1) + (1.25,0.5)$);
+    \newProdNode[fill=boxblue!50]{u11}{$(u1) + (-0.75,0)$};
+    \newProdNode[fill=boxblue!50]{u12}{$(u1) + (-0.25,0)$};
+    \newProdNode[fill=boxblue!50]{u13}{$(u1) + (0.25,0)$};
+    \newProdNode[fill=boxblue!50]{u14}{$(u1) + (0.75,0)$};
+
+    \node (u2) at ($(z2) + (0,-1.5)$) {};
+    \draw[very thick,fill=boxpink!30,draw=boxpink!70] ($(u2) + (-1.25,-0.5)$) rectangle ($(u2) + (1.25,0.5)$);
+    \newProdNode[fill=boxblue!50]{u21}{$(u2) + (-0.75,0)$};
+    \newProdNode[fill=boxblue!50]{u22}{$(u2) + (-0.25,0)$};
+    \newProdNode[fill=boxblue!50]{u23}{$(u2) + (0.25,0)$};
+    \newProdNode[fill=boxblue!50]{u24}{$(u2) + (0.75,0)$};
+
+    \draw[edge] (z11) -- (u11.north); \draw[edge] (z11) -- (u12.north);
+    \draw[edge] (z11) -- (u13.north); \draw[edge] (z11) -- (u14.north);
+
+    \draw[edge] (z12) -- (u11.north); \draw[edge] (z12) -- (u12.north);
+    \draw[edge] (z12) -- (u13.north); \draw[edge] (z12) -- (u14.north);
+
+    \draw[edge] (z21) -- (u21.north); \draw[edge] (z21) -- (u22.north);
+    \draw[edge] (z21) -- (u23.north); \draw[edge] (z21) -- (u24.north);
+
+    \draw[edge] (z22) -- (u21.north); \draw[edge] (z22) -- (u22.north);
+    \draw[edge] (z22) -- (u23.north); \draw[edge] (z22) -- (u24.north);
+
+    \node (l1) at ($(u1) + (-0.75,-1.5)$) {};
+    \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l1) + (-0.65,-0.5)$) rectangle ($(l1) + (0.65,0.5)$);
+    \newGaussNode[fill=boxorange!80]{l11}{$(l1) + (-0.25,0)$};
+    \newGaussNode[fill=boxorange!80]{l12}{$(l1) + (0.25,0)$};
+
+    \node (l2) at ($(u1) + (0.75,-1.5)$) {};
+    \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l2) + (-0.65,-0.5)$) rectangle ($(l2) + (0.65,0.5)$);
+    \newGaussNode[fill=boxorange!80]{l21}{$(l2) + (-0.25,0)$};
+    \newGaussNode[fill=boxorange!80]{l22}{$(l2) + (0.25,0)$};
+
+    \draw[edge] (u11) -- (l11.north); \draw[edge] (u11) -- (l21.north);
+    \draw[edge] (u12) -- (l11.north); \draw[edge] (u12) -- (l22.north);
+    \draw[edge] (u13) -- (l12.north); \draw[edge] (u13) -- (l21.north);
+    \draw[edge] (u14) -- (l12.north); \draw[edge] (u14) -- (l22.north);
+
+    \node (l3) at ($(u2) + (-0.75,-1.5)$) {};
+    \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l3) + (-0.65,-0.5)$) rectangle ($(l3) + (0.65,0.5)$);
+    \newGaussNode[fill=boxorange!80]{l31}{$(l3) + (-0.25,0)$};
+    \newGaussNode[fill=boxorange!80]{l32}{$(l3) + (0.25,0)$};
+
+    \node (l4) at ($(u2) + (0.75,-1.5)$) {};
+    \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l4) + (-0.65,-0.5)$) rectangle ($(l4) + (0.65,0.5)$);
+    \newGaussNode[fill=boxorange!80]{l41}{$(l4) + (-0.25,0)$};
+    \newGaussNode[fill=boxorange!80]{l42}{$(l4) + (0.25,0)$};
+
+    \draw[edge] (u21) -- (l31.north); \draw[edge] (u21) -- (l41.north);
+    \draw[edge] (u22) -- (l31.north); \draw[edge] (u22) -- (l42.north);
+    \draw[edge] (u23) -- (l32.north); \draw[edge] (u23) -- (l41.north);
+    \draw[edge] (u24) -- (l32.north); \draw[edge] (u24) -- (l42.north);
+
+    \node (l1) at ($(t1) + (-0.75,-1.5)$) {};
+    \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l1) + (-0.65,-0.5)$) rectangle ($(l1) + (0.65,0.5)$);
+    \newGaussNode[fill=boxorange!80]{l11}{$(l1) + (-0.25,0)$};
+    \newGaussNode[fill=boxorange!80]{l12}{$(l1) + (0.25,0)$};
+
+    \node (l2) at ($(t1) + (0.75,-1.5)$) {};
+    \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l2) + (-0.65,-0.5)$) rectangle ($(l2) + (0.65,0.5)$);
+    \newGaussNode[fill=boxorange!80]{l21}{$(l2) + (-0.25,0)$};
+    \newGaussNode[fill=boxorange!80]{l22}{$(l2) + (0.25,0)$};
+
+    \draw[edge] (t11) -- (l11.north); \draw[edge] (t11) -- (l21.north);
+    \draw[edge] (t12) -- (l11.north); \draw[edge] (t12) -- (l22.north);
+    \draw[edge] (t13) -- (l12.north); \draw[edge] (t13) -- (l21.north);
+    \draw[edge] (t14) -- (l12.north); \draw[edge] (t14) -- (l22.north);
+
+    \node (l3) at ($(t2) + (-0.75,-1.5)$) {};
+    \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l3) + (-0.65,-0.5)$) rectangle ($(l3) + (0.65,0.5)$);
+    \newGaussNode[fill=boxorange!80]{l31}{$(l3) + (-0.25,0)$};
+    \newGaussNode[fill=boxorange!80]{l32}{$(l3) + (0.25,0)$};
+
+    \node (l4) at ($(t2) + (0.75,-1.5)$) {};
+    \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l4) + (-0.65,-0.5)$) rectangle ($(l4) + (0.65,0.5)$);
+    \newGaussNode[fill=boxorange!80]{l41}{$(l4) + (-0.25,0)$};
+    \newGaussNode[fill=boxorange!80]{l42}{$(l4) + (0.25,0)$};
+
+    \draw[edge] (t21) -- (l31.north); \draw[edge] (t21) -- (l41.north);
+    \draw[edge] (t22) -- (l31.north); \draw[edge] (t22) -- (l42.north);
+    \draw[edge] (t23) -- (l32.north); \draw[edge] (t23) -- (l41.north);
+    \draw[edge] (t24) -- (l32.north); \draw[edge] (t24) -- (l42.north);
+  \end{tikzpicture}
+  }
+  \caption{}
+  \label{fig:ratspn}
+\end{figure}
+
 \begin{remark}[breakable]{On parameter learning of probabilistic circuits}{paramlearn}
 \end{remark}
+
+\subsection{\textproc{XPCs}}
+\label{sec:xpcs}
+
