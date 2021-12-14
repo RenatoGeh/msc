@@ -2022,13 +2022,32 @@ encoded by data, meaning that certain factorizations may be assumed to be true w
 otherwise not be.
 
 \begin{remark}[breakable]{On parameter learning of probabilistic circuits}{paramlearn}
-  Literature in probabilistic circuits often divides learning into two tasks: structure learning
-  and parameter learning. Although in this dissertation we almost exclusively cover structure
-  learning algorithms, it is worth also going through (even if superficially) some of the works on
-  parameter optimization in PCs, as most structure learning algorithms assume this as a
-  post-processing procedure.
+  Literature in probabilistic circuits often divides learning into two (often distinct) tasks:
+  structure learning and parameter learning. Although in this dissertation we almost exclusively
+  cover \emph{structure} learning algorithms, it is worth also going through (even if
+  superficially) some of the works on parameter optimization in PCs, as most structure learning
+  algorithms assume this as a post-processing procedure.
 
-  
+  Expectation-Maximization (EM, \cite{dempster77}) is perhaps the most common maximum likelihood
+  estimation (MLE) optimization procedure for probabilistic circuits. \citet{poon11},
+  \citet{peharz15} and \citet{zhao16a} derived EM for generative learning in PCs, while
+  \citet{rashwan18a} formulated a discriminative EM version for PCs through Extended Baum-Welch
+  \citep{gopalakrishnan91}.
+
+  Notably, when a circuit is smooth, decomposable and deterministic, MLE can be easily computed
+  through closed-form by counting \citep{kisa14,peharz14}. Indeed, this is an attractive feature
+  that extends to discriminative PCs \citep{liang19}.
+
+  Following other more traditional deep learning models, PCs learned with stochastic gradient
+  descent (SGD) have also appeared in literature, especially under convolutional and tensorial
+  extensions \citep{sharir18,peharz20a,peharz20b,gens12}.
+
+  Bayesian approaches have also received some attention by the PC community. \citet{jaini16} and
+  \citet{rashwan16} developed online Bayesian moment matching algorithms to learn from streaming
+  data; \citet{zhao16b} showed a variational optimization procedure that leverages inference
+  tractability in PCs to efficiently compute the ELBO; \citet{trapp19} propose learning both
+  structure and parameters by Gibbs sampling from a generative model on a (restricted) space of
+  PCs; finally \citet{vergari19} propose PCs for automatic Bayesian density analysis.
 \end{remark}
 
 \subsection{\textproc{XPCs}}
