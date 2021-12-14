@@ -1762,10 +1762,13 @@ extend the definition of scope function to region graphs. As long as leaf region
 the correct scope, the PC is by construction smooth (every region is fully connected to their
 children) and decomposable (every partition splits variables into two regions). Function
 \textproc{CreateLayer} in \Cref{alg:ratspn} does exactly that, making sure each partition
-decomposes into two distinct variable splits down to leaf region nodes. A PC is then constructed by
-following \textproc{CompileRegionGraph} and passing the random region graph and number of nodes per
-region and partition nodes as parameters. The function ultimately produces a dense probabilistic
-circuit from the region graph blueprint, as \Cref{fig:ratspn} exemplifies.
+decomposes into two distinct variable splits down to leaf region nodes. How deep the region graph
+(and consequentially the resulting PC) goes depends on a parameter $d$, which corresponds to half
+the true depth, as each \textproc{CreateLayer} call produces a partition and their children. After
+the region graph is randomly buily, a PC is then constructed through \textproc{CompileRegionGraph},
+passing the random region graph and number of nodes per region as parameters. The function
+ultimately produces a dense probabilistic circuit from the region graph blueprint, as
+\Cref{fig:ratspn} exemplifies.
 
 \begin{figure}[t]
   \resizebox{\textwidth}{!}{
@@ -1985,29 +1988,47 @@ optimization \citep{bouchard04} instead of running EM.
 
 \subsubsection{Complexity}
 
-Although the procedure described in \Cref{alg:ratspn} is $\bigo\left(r\cdot d(s+l)\right)$ and
-therefore extremely fast, it does not paint the whole picture. The main bulk of the complexity when
-learning \textproc{RAT-SPN} comes from parameter learning. \citet{peharz20a} calculate the number
-of sum weights to be
+Although the procedure described in \Cref{alg:ratspn} is $\bigo\left(r\cdot d(s+l)\right)$ if
+$d<|\set{X}|$ and $\bigo\left(r\cdot\log_2 |\set{X}|(s+l)\right)$ otherwise, making the algorithm
+extremely fast, it does not paint the whole picture. The main bulk of the complexity when learning
+\textproc{RAT-SPN} comes from parameter learning. \citet{peharz20a} calculate the number of sum
+weights to be
 \begin{equation*}
   |\mathcal{W}_\mathcal{C}|=\begin{cases}
     r\cdot k\cdot l^2 & \quad\text{if $d=1$,}\\
     r\cdot\left(k\cdot s^2+(2^{d-1}-2)s^3+2^{d-1}\cdot s\cdot l^2\right) & \quad\text{if $d>1$};
   \end{cases}
 \end{equation*}
-meaning that learning only the non-input parameters of \textproc{RAT-SPN} takes time $\bigo\left(
-\left(r\cdot 2^d \cdot\left(s^3+s\cdot l^2\right)+r\cdot k\cdot s^2\right)\cdot|\set{D}|\right)$.
-However, given that all other structure learning algorithms covered in this dissertation also
-require learning circuit parameters, one might argue that the true cost of structure learning in
-\textproc{RAT-SPN} is indeed subquadratic on the parameters.
+if we assume that the number of children of partitions is at most two. This means that learning
+only the non-input parameters of \textproc{RAT-SPN} takes time $\bigo\left( \left(r\cdot 2^d
+\cdot\left(s^3+s\cdot l^2\right)+r\cdot k\cdot s^2\right)\cdot|\set{D}|\right)$. However, given
+that most structure learning algorithms covered in this dissertation also require parameter
+learning, one might argue that the true cost of structure learning in \textproc{RAT-SPN} is indeed
+subquadratic.
 
 \subsubsection{Pros and Cons}
 
-\paragraph{Pros.}
+\paragraph{Pros.} As expected from \randclass{} algorithms, the random, data-blind nature of
+\textproc{RAT-SPN} makes for a very fast structure learning algorithm. More importantly, because
+the structure is expected to have somewhat uniform layers with a fixed number of computational
+units in each, the computations from parameter optimization can easily be brought to the GPU. This
+not only helps with scalability in terms of speed, but also brings all the advantages of deep
+learning frameworks to the table via well-studied stochastic gradient descent optimizers and
+diagnostic tools.
 
-\paragraph{Cons.}
+\paragraph{Cons.} Clearly, \textproc{RAT-SPN} is \emph{completely} random with its structure
+generation. Particularly, variable splits are done randomly, disregarding the independencies
+encoded by data, meaning that certain factorizations may be assumed to be true when they would
+otherwise not be.
 
 \begin{remark}[breakable]{On parameter learning of probabilistic circuits}{paramlearn}
+  Literature in probabilistic circuits often divides learning into two tasks: structure learning
+  and parameter learning. Although in this dissertation we almost exclusively cover structure
+  learning algorithms, it is worth also going through (even if superficially) some of the works on
+  parameter optimization in PCs, as most structure learning algorithms assume this as a
+  post-processing procedure.
+
+  
 \end{remark}
 
 \subsection{\textproc{XPCs}}
