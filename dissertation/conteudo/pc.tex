@@ -435,8 +435,8 @@ form circuit. Any PC can be transformed into a \emph{standardized} circuit, a pr
   literature the sum node is defined as a convex combination. However, negative weights have
   appeared in Logistic Circuits \citep{liang19} for discriminative modeling; and in Probabilistic
   Generating Circuits \citep{zhang21}, a class of tractable probabilistic models that subsume PCs.
-  \citet{maua17a} extend (nonnegative) weights in sum nodes with probability intervals, effectively
-  inducing a credal set \citep{cozman00} for measuring imprecision.
+  \citet{maua17a} and \citet{mattei20b} extend (nonnegative) weights in sum nodes with probability
+  intervals, effectively inducing a credal set \citep{cozman00} for measuring imprecision.
 
   Other works include PCs with quotients \citep{sharir18a}, transformations \citep{pevny20a}, max
   \citep{melibari16a}, and einsum \citep{peharz20b} operations.
@@ -1618,6 +1618,8 @@ only attributes a weight (i.e.\ probability) to each positive element as usual
   \Sum_\mathcal{C}(\set{x})=\sum_{\Child\in\Ch(\Sum_\mathcal{C})}w_{\Sum_\mathcal{C},\Child}\cdot
   \Child_p(\set{x})\cdot\Child_s(\set{x}).
 \end{equation*}
+When a deterministic sum (resp. disjunction) node has the above form, then this composition of a
+weighted sum (resp. disjunction) is known in PC and LC literature as a \emph{partition}.
 
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Embedding certain knowledge in probabilistic circuits}{pcsupp}
 

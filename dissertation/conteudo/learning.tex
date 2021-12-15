@@ -1652,7 +1652,7 @@ We now explore random approaches to constructing probabilistic circuits, which w
 either by a completely random procedure (\Cref{sec:ratspn}), or guided by data (\Cref{sec:xpcs}).
 We first look at \textproc{RAT-SPN} \citep{peharz20a}, a connectionist PC structure learning
 algorithm for randomly generating tensorized smooth and decomposable probabilistic circuits. We
-then address \textproc{XPCs} \citep{dimauro21}, a flexible algorithm capable of learning smooth and
+then address \textproc{XPC} \citep{dimauro21}, a flexible algorithm capable of learning smooth and
 decomposable PCs as well as structure decomposable and/or deterministic circuits through simple
 modifications to their method.
 
@@ -2050,6 +2050,252 @@ otherwise not be.
   PCs; finally \citet{vergari19} propose PCs for automatic Bayesian density analysis.
 \end{remark}
 
-\subsection{\textproc{XPCs}}
+\subsection{\textproc{XPC}}
 \label{sec:xpcs}
 
+While \textproc{RAT-SPN} produces a data-blind PC architecture and then relies on parameter
+optimization to learn from data, the algorithm that we shall see next does the exact opposite:
+\textproc{XPC} \citep{dimauro21} randomly samples a structure from data and requires no parameter
+learning. To do this, it restricts the circuit sampling space to a particular class of PCs whose
+primes are logical restrictions and inputs are CLTs. By assigning a fixed number $k+1$ of (product)
+children per sum node and assuming that the $k$ first primes are (random) conjunctions of literals
+of a fixed length $t$, with the last $k+1$ prime their negation, the resulting PC is naturally
+deterministic, as CLTs are themselves deterministic. In more practical terms, both the conjunctions
+of literals as well as the $(k+1)$-th prime derived from the negation of the first $k$ conjunctions
+are translated into products of (degenerate) Bernoullis. Determinism can be relaxed by applying any
+form of regularization, for instance Laplace smoothing, both on CLTs and on the products of
+Bernoullis.
+
+Following the footsteps of \textproc{RAT-SPN}, they generate a tree-shaped random region graph and
+produce a PC from it. Despite both employing region graphs, the graph in \citet{dimauro21} is only
+used as an artifice for formalizing the structure construction: their process for reconstructing a
+PC from a region graph boils down to replacing an inner region with a single sum, a leaf region
+with a single input and a partition with a single product. Although one \emph{could} generate a
+non-tree shaped PC by setting $s>1$ and $l>1$ (i.e.\ number of sums and inputs per inner and leaf
+region respectively), the resulting circuit could be reduced to a tree, since both sums (and
+inputs) coming from the same region would be syntatically the same\footnote{Whether this
+``expanded'' circuit could have its performance improved if one were to run, say EM, to exploit
+this increase in capacity is an interesting question that unfortunately was left unexplored in
+\citet{dimauro21}.}.
+
+A critical step to efficiently ensuring consistency with the logical restrictions is to assign only
+consistent subsets of data to subcircuits. Just like in \divclass{} class algorithms, partition
+(i.e.\ product) nodes in the region graph define column splits over data and regions (i.e.\ sums
+and inputs) correspond to row splits. The algorithm then associates a node with a portion of data
+according to its scope and logical constraint. More specifically, when the $i$-th prime defines a
+conjunction of literals $\alpha_i$, only assignments $\set{x}$ whose application
+$\alpha_i(\set{x})$ are true are transferred down, effectively splitting data row-wise. To ensure
+that the resulting circuit is also decomposable, only $\Sc(\alpha_i)$ variables are passed to
+primes, with the remaining variables going to the subs. This way, sum weights can be estimated as
+the subdata size ratios just like in \textproc{LearnSPN}, as \Cref{fig:xpcs} shows. Each subdata
+$\set{D}_{\alpha_i}$ corresponds to joining all assignments consistent with $\alpha_i$, as shown
+through matching colors on the table on the right. Data is divided by rows according to the
+satisfiability of each prime $\alpha_i$ and by column according to the scope of each prime.
+
+\begin{figure}[t]
+  \newcolumntype{x}{>{\columncolor{boxolive}}c}
+  \newcolumntype{y}{>{\columncolor{boxmunsel}}c}
+  \begin{tikzpicture}
+    \newSumNode[fill=boxgreen]{r}{0,0};
+    \newProdNode[fill=boxred]{p1}{$(r) + (-2,-1.5)$};
+    \newProdNode[fill=boxwheat]{p2}{$(r) + (0,-1.5)$};
+    \newProdNode[fill=boxblue!50]{p3}{$(r) + (2,-1.5)$};
+    \draw[edge] (r) -- node[midway,above left] {$\frac{|\set{D}_{\alpha_1}|}{|\set{D}|}$} (p1.north);
+    \draw[edge] (r) -- node[midway,right] {$\frac{|\set{D}_{\alpha_2}|}{|\set{D}|}$} (p2.north);
+    \draw[edge] (r) -- node[midway,above right] {$\frac{|\set{D}_{\alpha_3}|}{|\set{D}|}$} (p3.north);
+    \begin{scope}[on background layer]
+      \draw[draw=boxteal,very thick,fill=boxteal!30] ($(r) + (-0.5,-0.4)$) rectangle ($(r) + (0.5,0.4)$);
+      \draw[draw=boxpink!70,very thick,fill=boxpink!30] ($(p1) + (-0.5,-0.4)$) rectangle ($(p1) + (0.5,0.4)$);
+      \draw[draw=boxpink!70,very thick,fill=boxpink!30] ($(p2) + (-0.5,-0.4)$) rectangle ($(p2) + (0.5,0.4)$);
+      \draw[draw=boxpink!70,very thick,fill=boxpink!30] ($(p3) + (-0.5,-0.4)$) rectangle ($(p3) + (0.5,0.4)$);
+    \end{scope}
+
+    \node[] (l1) at ($(p1) + (-1.3,-1.5)$) {\scriptsize$A\wedge B$};
+    \newGaussNode[fill=boxorange!80]{c1}{$(p1) + (0,-1.5)$};
+    \node (l2) at ($(p2) + (-0.67,-1.5)$) {\scriptsize$A\wedge\neg B$};
+    \newGaussNode[fill=boxorange!80]{c2}{$(p2) + (0.67,-1.5)$};
+    \node (l3) at ($(p3) + (0,-1.5)$) {\scriptsize$\neg\bigvee_i\alpha_i$};
+    \newGaussNode[fill=boxorange!80]{c3}{$(p3) + (1.3,-1.5)$};
+    \node[fill=boxolive] at ($(l1) + (0,-0.75)$) {$\alpha_1$};
+    \node[fill=boxolive] at ($(l2) + (0,-0.75)$) {$\alpha_2$};
+    \node[fill=boxolive] at ($(l3) + (0,-0.75)$) {$\alpha_3$};
+    \node[fill=boxmunsel] at ($(c1) + (0,-0.75)$) {CLT};
+    \node[fill=boxmunsel] at ($(c2) + (0,-0.75)$) {CLT};
+    \node[fill=boxmunsel] at ($(c3) + (0,-0.75)$) {CLT};
+    \draw[edge] (p1) -- (l1.north);
+    \draw[edge] (p1) -- (c1.north);
+    \draw[edge] (p2) -- (l2.north);
+    \draw[edge] (p2) -- (c2.north);
+    \draw[edge] (p3) -- (l3.north);
+    \draw[edge] (p3) -- (c3.north);
+    \node at ($(l1) + (-0.5,0.75)$) {$\mathcal{Q}$};
+    \node at ($(l2) + (-0.5,0.75)$) {$\mathcal{Q}$};
+    \node at ($(l3) + (0.5,0.75)$) {$\mathcal{R}$};
+    \node at ($(c1) + (-0.5,0.75)$) {$\mathcal{S}$};
+    \node at ($(c2) + (0.5,0.75)$) {$\mathcal{S}$};
+    \node at ($(c3) + (0.5,0.75)$) {$\mathcal{S}$};
+    \begin{scope}[on background layer]
+      \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l1) + (-0.5,-0.4)$) rectangle ($(l1) + (0.5,0.4)$);
+      \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l2) + (-0.5,-0.4)$) rectangle ($(l2) + (0.5,0.4)$);
+      \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(l3) + (-0.5,-0.4)$) rectangle ($(l3) + (0.5,0.4)$);
+      \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(c1) + (-0.5,-0.4)$) rectangle ($(c1) + (0.5,0.4)$);
+      \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(c2) + (-0.5,-0.4)$) rectangle ($(c2) + (0.5,0.4)$);
+      \draw[draw=boxgoldenrod,very thick,fill=boxgoldenrod!30] ($(c3) + (-0.5,-0.4)$) rectangle ($(c3) + (0.5,0.4)$);
+    \end{scope}
+
+    \node at ($(p1) + (-2.0,1.0)$) {\scalebox{0.8}{\begin{tabular}{xxyy}
+            \hline
+            \multicolumn{1}{c}{$A$} & \multicolumn{1}{c}{$B$} & \multicolumn{1}{c}{$C$} & \multicolumn{1}{c}{$D$}\\
+            \hline
+            0 & 0 & 1 & 0\\
+            1 & 1 & 0 & 1\\
+            1 & 0 & 1 & 0\\
+            0 & 1 & 0 & 1\\
+            1 & 1 & 1 & 1\\
+            1 & 0 & 0 & 0\\
+            \hline
+      \end{tabular}}};
+
+    \node at ($(p3) + (2,1.0)$) {\scalebox{0.8}{\begin{tabular}{cccc}
+            \hline
+            $A$ & $B$ & $C$ & $D$\\
+            \hline
+            \rowcolor{boxblue!50}
+            0 & 0 & 1 & 0\\
+            \rowcolor{boxred}
+            1 & 1 & 0 & 1\\
+            \rowcolor{boxwheat}
+            1 & 0 & 1 & 0\\
+            \rowcolor{boxblue!50}
+            0 & 1 & 0 & 1\\
+            \rowcolor{boxred}
+            1 & 1 & 1 & 1\\
+            \rowcolor{boxwheat}
+            1 & 0 & 0 & 0\\
+            \hline
+      \end{tabular}}};
+
+    \newProdNode[label=above:{$A\wedge\neg B$}]{pob}{$(r) + (7,-1.5)$};
+    \newSumNode{sa}{$(pob) + (-1,-1.0)$};
+    \node (a) at ($(sa) + (-0.5,-1)$) {$A$};
+    \node (na) at ($(sa) + (0.5,-1)$) {$\neg A$};
+    \newSumNode{sb}{$(pob) + (1,-1.0)$};
+    \node (b) at ($(sb) + (-0.5,-1)$) {$B$};
+    \node (nb) at ($(sb) + (0.5,-1)$) {$\neg B$};
+    \draw[edge] (pob) -- (sa);
+    \draw[edge] (pob) -- (sb);
+    \draw[edge] (sa) -- node[midway,left] {1} (a);
+    \draw[edge] (sa) -- node[midway,right] {0} (na);
+    \draw[edge] (sb) -- node[midway,left] {0} (b);
+    \draw[edge] (sb) -- node[midway,right] {1} (nb);
+  \end{tikzpicture}
+  \caption{The first iteration of \textproc{XPC}, where $t=2$ variables are selected, $A$ and $B$;
+    $k=2$ conjunctions of literals are sampled, $\alpha_1=A\wedge B$, $\alpha_2=A\wedge\neg B$ and
+    $\alpha_3=\neg(\alpha_1\vee\alpha_2)$; with primes set to a product of Bernoullis corresponding
+    to each $\alpha_i$ and subs to CLTs. Leaf region nodes $\mathcal{S}$ are candidates for
+    expansion. Sums, products and CLT input nodes are the resulting probabilistic circuit from the
+    sampled region graph. Conjunctions of literals are expanded into product of Bernoullis whose
+    weights are inferred from data, as the circuit on right shows; if no smoothing is applied, the
+    circuit is deterministic.}
+  \label{fig:xpcs}
+\end{figure}
+
+At each iteration of \Cref{alg:xpcs}, sub leaf region nodes, denoted here as $\mathcal{S}$ regions,
+are randomly selected for further expansion. \Cref{alg:xpcs-expand} takes a candidate region
+$\Region$ and samples $k$ conjunctions $\alpha_1,\ldots,\alpha_k$ of length $t$ that appear at
+least $\delta$ times in the subdata associated with $\Region$. If no such constraint has been
+found, $\Region$ is discarded as a candidate for expansion. Otherwise, another layer of partitions
+and regions similar to \Cref{fig:xpcs} is constructed, making sure that data splits obey both scope
+and constraints $\alpha_i$. Once no more candidates are available or a limit on the number of
+expansions has been reached, the region graph is translated into a probabilistic circuit by
+replacing leaf region nodes of type $\mathcal{Q}$ into products of Bernoullis, type $\mathcal{S}$'s
+into CLTs and inner regions as sums whose weights are the proportions of (row-wise) split data;
+partitions are replaced with product nodes.
+
+\begin{algorithm}[t]
+  \caption{\textproc{ExpandXPC}}\label{alg:xpcs-expand}
+  \begin{algorithmic}[1]
+    \Require Region $\Region$, data $\set{D}$, variables $\set{X}$, min. \# of assignments per
+      partition $\delta$, \# of conjunctions of literals $k$, length of conjunctions $t$
+    \State Let $\set{A}$ a set of logical constraints initially empty
+    \State Copy all data from $\set{D}$ to $\set{S}$
+    \State Sample a subset $\set{Y}$ of size $t$ from $\set{X}$
+    \While{$|\set{A}|<k$}
+      \State Sample a conjunction of literals $\alpha$ over $\set{Y}$ distinct from any in $\set{A}$
+      \State $\set{Q}\gets\{\set{x}\,|\,\forall\set{x}\in\set{S}\wedge\alpha(\set{x})=1\}$
+      \If{$|\set{Q}|\geq\delta$ \textbf{and} $|\set{S}\setminus\set{Q}|\geq\delta$}
+        \State Append $\alpha$ to $\set{A}$
+        \State $\set{S}\gets\set{D}\setminus\set{Q}$
+        \State Create a partition node $\Partition$ as a child of $\Region$
+        \State Create a region $\Region_p'$ of type $\mathcal{Q}$ and assign it as a prime of
+          $\Partition$
+        \State Assign scope $\set{Y}$ and data $\set{Q}$ to $\Region_p'$
+        \State Create a region $\Region_s'$ of type $\mathcal{S}$ and assign it as a sub of
+          $\Partition$
+        \State Assign scope $\set{X}\setminus\set{Y}$ and data $\set{S}\setminus\set{Q}$ to $\Region_s'$
+      \EndIf
+    \EndWhile
+    \IIf{no constraint is suitable}{unset $\Region$ as a candidate and \textbf{return}}
+    \NIElse
+      \State Create a partition node $\Partition$ as a child of $\Region$
+      \State Create a region $\Region_p'$ of type $\mathcal{R}$ and assign it as a prime of
+        $\Partition$
+      \State Assign scope $\set{Y}$ and data $\set{S}$ to $\Region_p'$
+      \State Create a region $\Region_s'$ of type $\mathcal{S}$ and assign it as a sub of
+        $\Partition$
+      \State Assign scope $\set{X}\setminus\set{Y}$ to $\Region_s'$
+    \EndNIElse
+  \end{algorithmic}
+\end{algorithm}
+
+Determinism is not the only constraint that can be 
+
+\subsubsection{Complexity}
+
+To simplify, we assume that all $k$ distinct logical constraints pass the condition of containing
+at least $\delta$ samples in the dataset. With this, the complexity of $\textproc{ExpandXPC}$ is
+$\bigo(t+k\cdot|\set{D}|)$, where the first term comes from sampling a subset of size $t$ from
+$\set{X}$ and the second from selecting all assignments in $\set{D}$ that agree with the constraint
+$\alpha$. Sampling conjunctions of literals can be done in constant time by representing $\alpha$
+as a bit vector where a 1 indicates a positive literal and 0 a negative literal; sampling a number
+in $\left[0,2^{|\set{Y}|-1}\right]$ (here assumed to be done in $\bigo(1)$) is equivalent to
+producing $\alpha$.
+
+The analysis for \textproc{XPC} relies on either the number of maximum iterations or available
+candidates. Assuming that we let the algorithm run a fixed number of iterations $i$, we get
+a total runtime of $\bigo\left(i\cdot\left(t+k\cdot|\set{D}|\right)\right)$.
+
+\begin{algorithm}[t]
+  \caption{\textproc{XPC}}\label{alg:xpcs}
+  \begin{algorithmic}[1]
+    \Require Dataset $\set{D}$, variables $\set{X}$, min. \# of assignments per partition, \# of
+      conjunctions of literals $k$, length of conjunctions $t$
+    \Ensure A smooth, decomposable and deterministic probabilistic circuit
+    \State Start with a region graph $\mathcal{G}$ with a single region node as root
+    \While{there are candidate region nodes of type $\mathcal{S}$}
+      \State Select a random region $\Region$ of type $\mathcal{S}$
+      \State Let $\set{Q}$ the subdata associated with $\Region$
+      \State \Call{ExpandXPC}{$\Region$, $\set{Q}$, $\Sc(\Region)$, $\delta$, $k$, $t$}
+    \EndWhile
+    \For{each node $\Node\in\mathcal{G}$ in reverse topological order}
+      \State Let $\set{D}_{\Node}$ the data associated with $\Node$
+      \If{$\Node$ is a leaf region node of type $\mathcal{Q}$}
+        \State Replace $\Node$ with a product of Bernoullis according to $\set{D}$
+      \ElsIf{$\Node$ is a leaf region node of type $\mathcal{S}$}
+        \State Replace $\Node$ with a CLT learned from $\set{D}$
+      \ElsIf{$\Node$ is a region node}
+        \State Replace $\Node$ with a sum node whose weights are
+          $w_{\Node,\Child}=\frac{\set{D}_{\Child}}{\set{D}_{\Node}}$ for each $\Child\in\Ch(\Node)$
+      \Else
+        \State Replace $\Node$ with a product node
+      \EndIf
+    \EndFor
+    \State \textbf{return} $\mathcal{G}$'s root sum node
+  \end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Pros and Cons}
+
+\paragraph{Pros.} 
+
+\paragraph{Cons.}
