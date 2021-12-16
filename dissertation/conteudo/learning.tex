@@ -2019,7 +2019,9 @@ diagnostic tools.
 \paragraph{Cons.} Clearly, \textproc{RAT-SPN} is \emph{completely} random with its structure
 generation. Particularly, variable splits are done randomly, disregarding the independencies
 encoded by data, meaning that certain factorizations may be assumed to be true when they would
-otherwise not be.
+otherwise not be. Although \textproc{RAT-SPN}s are certainly competitive against other learning
+algorithms for PCs, they only produce smooth and decomposable circuits, denying the access to more
+complex queries.
 
 \begin{remark}[breakable]{On parameter learning of probabilistic circuits}{paramlearn}
   Literature in probabilistic circuits often divides learning into two (often distinct) tasks:
@@ -2219,7 +2221,7 @@ partitions are replaced with product nodes.
       partition $\delta$, \# of conjunctions of literals $k$, length of conjunctions $t$
     \State Let $\set{A}$ a set of logical constraints initially empty
     \State Copy all data from $\set{D}$ to $\set{S}$
-    \State Sample a subset $\set{Y}$ of size $t$ from $\set{X}$
+    \State Sample a subset $\set{Y}$ of size $t$ from $\set{X}$\label{alg:xpcs-expand:line:sample}
     \While{$|\set{A}|<k$}
       \State Sample a conjunction of literals $\alpha$ over $\set{Y}$ distinct from any in $\set{A}$
       \State $\set{Q}\gets\{\set{x}\,|\,\forall\set{x}\in\set{S}\wedge\alpha(\set{x})=1\}$
@@ -2248,7 +2250,12 @@ partitions are replaced with product nodes.
   \end{algorithmic}
 \end{algorithm}
 
-Determinism is not the only constraint that can be 
+Determinism is not the only constraint that can be enforced. In fact, since every product is by
+construction 2-standardized, the circuit is structure decomposable if not only the scopes of
+$\mathcal{Q}$ regions follow a vtree, but the CLTs in $\mathcal{S}$ regions do as well. This forces
+the sampling done in line \ref{alg:xpcs-expand:line:sample} to instead deterministically assign
+$\set{Y}$ the scope of $\Sc(v^\gets)$, where $v$ is the vtree node associated with the product
+splitting $\set{X}$.
 
 \subsubsection{Complexity}
 
@@ -2262,14 +2269,21 @@ in $\left[0,2^{|\set{Y}|-1}\right]$ (here assumed to be done in $\bigo(1)$) is e
 producing $\alpha$.
 
 The analysis for \textproc{XPC} relies on either the number of maximum iterations or available
-candidates. Assuming that we let the algorithm run a fixed number of iterations $i$, we get
-a total runtime of $\bigo\left(i\cdot\left(t+k\cdot|\set{D}|\right)\right)$.
+candidates. At every call to \textproc{ExpandXPC}, we create at least $3(k+1)$ new PC nodes, of
+which $k+1$ of them are $\mathcal{S}$ regions. Assuming that we let the algorithm run a fixed number
+of iterations $i$, we get a total runtime of $\bigo\left(i\cdot\left(t+k\cdot|\set{D}|\right)\right)$.
+for the main loop in \textproc{XPC}. We then need to compile the PC and learn CLTs for every
+$\mathcal{S}$ leaf. Because we ran for $i$ iterations, we should have $i\cdot k$ CLTs to learn,
+which is done in $\bigo(|\set{X}|^2\cdot\set{D})$, bringing the total runtime to
+$\bigo\left(i\cdot\left(t+k\cdot|\set{D}|\right)+i\cdot k\cdot|\set{X}|^2\cdot|\set{D}|\right)$.
+Note, however, that this is a rough upper bound on the true complexity, as both scope and data
+shrink considerably at each depth.
 
 \begin{algorithm}[t]
   \caption{\textproc{XPC}}\label{alg:xpcs}
   \begin{algorithmic}[1]
-    \Require Dataset $\set{D}$, variables $\set{X}$, min. \# of assignments per partition, \# of
-      conjunctions of literals $k$, length of conjunctions $t$
+    \Require Dataset $\set{D}$, variables $\set{X}$, min. \# of assignments per partition $\delta$,
+    \# of conjunctions of literals $k$, length of conjunctions $t$
     \Ensure A smooth, decomposable and deterministic probabilistic circuit
     \State Start with a region graph $\mathcal{G}$ with a single region node as root
     \While{there are candidate region nodes of type $\mathcal{S}$}
@@ -2296,6 +2310,23 @@ a total runtime of $\bigo\left(i\cdot\left(t+k\cdot|\set{D}|\right)\right)$.
 
 \subsubsection{Pros and Cons}
 
-\paragraph{Pros.} 
+\paragraph{Pros.} \textproc{XPC} is flexible in the sense that it can produce both deterministic
+and structure decomposable circuits with little change to the algorithm. More importantly, because
+it essentially divides data in a \divclass{} approach, the most costly operation, i.e.\ learning
+CLTs at the leaves, is done extremely fast, since the optimization is done only on a fraction of
+the data and scope. As an example, learning \textproc{XPC}s from binary datasets of hundreds of
+variables and tens of thousands of instances takes a matter of seconds, while most competitors
+usually take hours for learning from the same data. In terms of performance, although single
+circuit \textproc{XPC}s rarely beat state-of-the-art competitors, \citet{dimauro21} showed that by
+merely aggregating sampled circuits into a simple mixture boosts performance considerably, reaching
+competitive results.
 
-\paragraph{Cons.}
+\paragraph{Cons.} When it comes to circuit size, although a single \textproc{XPC} generated circuit
+has comparable size to other state-of-the-art structure learning competitors, for these to be
+competitive requires ensembles of a few dozens of components, meaning that in its final form, these
+can be tens of times the size of other structure learners. Moreover, because of the number of
+parameters involved in sampling these PCs ($\delta$, $k$, $t$, number of components per ensemble,
+and whether to produce deterministic and/or structure decomposable PCs), a grid-search over
+parameters is necessary to produce optimal results. Although this is generally faster than other
+structure learning algorithms, the sheer size of all generated circuits from every hyperparameter
+combination can easily overwhelm memory space.
