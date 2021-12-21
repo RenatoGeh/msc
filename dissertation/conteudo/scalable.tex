@@ -1,11 +1,96 @@
 \chapter{Scalable Learning of Probabilistic Circuits}
 \label{ch:scalable}
 
+Considering the many benefits and drawbacks of the current state-of-the-art learning algorithms
+addressed in \Cref{ch:learning}, and emphasizing the need for scalability and accessibility, we now
+present the main contributions of this dissertation, proposing two novel structure learning
+algorithms for probabilistic circuits. We approach the problem of learning scalable PCs from two
+distinct points of view. In \Cref{sec:logical}, we are interested in PCs whose support encodes a
+given logical constraint as certain knowledge; we show how both the probabilistic issue of data
+fitness, as well as the logical question of whether the circuit successfully compiles a knowledge
+base can be accomplished by aggregating PC samples into ensembles of models. In \Cref{sec:data}, we
+look at PCs solely from the perspective of data fitness; we exploit the connection between PCs and
+generative random forests \citep{correia20,ho95} and revisit a well-known technique based on random
+projections for constructing random trees \citep{dasgupta08a,dasgupta08b}, presenting a simple and
+fast yet effective way of learning PCs.
+
+The contents of \Cref{sec:logical} come from our contributions in \citet{geh21a}, while
+\Cref{sec:data} come, in part, from \citet{geh21b}.
+
 \section{A Logical Perspective}
+\label{sec:logical}
+
+\Cref{rem:initpc} briefly mentioned the question of compiling logical constraints into smooth,
+structure decomposable and deterministic logic circuits (i.e.\ (P)SDDs \cite{darwiche11,kisa14}).
+Indeed, although there are many existing approaches to learning circuits from logical formulae,
+most are only useful for specific tasks \citep{choi16,choi15,shen17,choi17}. Although there are
+more generalistic ways of producing circuits, namely from CNFs and DNFs \citep{oztok15,choi13};
+logic formulae which incorporate more complex relationships such as cardinality constraints either
+have no tractable representation \citep{nishino16} or require the addition of latent variables
+\citep{sinz05}. More importantly, because variables which do not play a role in the logical
+formulae are completely discarded in the compilation process, translating these \emph{logic}
+circuits into \emph{probabilistic} circuits involves naïve assumptions on the discarded variables,
+such as fully factorizing them.
+
+Surprisingly, to our knowledge there have been next to no work on learning the structure of PCs
+from scratch by looking at both logical formulae \emph{and} data. Even worse, the couple that do
+are restricted to very preliminary work: \citet{mattei19} came up with a \divclass{} prototype for
+a top-down approach to sampling a special class of PSDDs whose primes are conjunctions of literals
+in a similar manner to \textproc{XPC}s, proposing a Bayesian information criterion to searching the
+sample space, yet no practical algorithm was fully formulated; \citet{geh19} expanded on
+\citeauthor{mattei19}'s work by formalizing an algorithm and introducing a BDD to guide sampling,
+however the generated circuits suffered from an exponential blow-up in size.
+
+In this section, we propose a solution inspired by \citet{geh19,mattei19}, yet without the
+previously mentioned problems that come with them. In summary, we propose a sampling procedure to
+efficiently generating PSDDs whose primes are always conjunctions of literals; to overcome the
+exponential blow-up, these PSDDs only partially encode their prior logical restrictions. To
+diversify sampling, local transformations similar in spirit to \incrclass{} algorithms are used.
+Of worth, we found that not only is this process incredibly fast even under intricate logical
+formulae, but by combining samples into an ensemble we achieve competitive results against the
+state-of-the-art.
+
+Before we address our contributions, we should first fix some notation on the issue of
+propositional logic. We treat propositional variables as 0/1-valued random variables and use them
+interchangeably. Given a Boolean formula, we write $\langle f\rangle$ to denote its semantics,
+i.e.\ the Boolean function represented by $f$. For Boolean formulas $f$ and $g$, we write $f\equiv
+g$ if they are logically equivalent, i.e.\ if $\langle f\rangle=\langle g\rangle$; we abuse
+notation and write $\phi\equiv f$ to indicate that $\phi=\langle f\rangle$ for a Boolean function
+$\phi$. We overload the scope function once again for logical formulae: $\Sc(f)$ denotes the set of
+variables that appear in $f$.
+
+Because we are only interested in smooth, structure decomposable and deterministic PCs whose
+support is defined by a logical formula, we shall adopt the usual notation of PSDDs, which we
+present next.
+
+\begin{definition}[Partition]
+  Let $\phi(\set{x},\set{y})$ be a Boolean function over disjoint sets of variables $\set{X}$ and
+  $\set{Y}$, and $\mathcal{D}=\{(p_i,s_i)\}_{i=1}^k$ be a set of tuples where $p_i$ (the prime) and
+  $s_i$ (the sub) are formulae over $\set{X}$ and $\set{Y}$ respectively, satisfying $p_i\wedge
+  p_j\equiv\bot$ for each $i\neq j$ and $\bigvee_{i=1}^k p_i\equiv\top$. We say that $\mathcal{D}$
+  is an ($\set{X}$, $\set{Y}$)-partition of $\phi$ if and only if
+  $\phi\equiv\bigvee_{i=1}^k(p_i\wedge s_i)$.
+\end{definition}
+
+An (exact) partition\footnote{The naming \emph{partition} is unfortunate. The nomenclature in
+probabilistic circuits is full of many other partitions, either using the term to conjure meaning
+from set theory when dealing with data splits (see \Cref{sec:divconq}), partition nodes in region
+graphs (see \Cref{sec:random}) or in PSDD literature in this section. Here (and only here),
+partitions will mean stricly the latter.} is no more than a smooth, structure decomposable and
+deterministic circuit rooted at a sum (or disjunction) node whose children are products (or
+conjunctions); the primes of these products must necessarily be mutual exclusive (formally,
+$p_i\wedge p_j\equiv\bot$) and exhaustive (formally, $\bigvee_{i=1}^k p_i\equiv\top$).
+Semantically, a partition states that a logical formula decomposes into $k$ exact conjunctions of
+pairs of prime and sub.
 
 \subsection{\textproc{SamplePSDD}}
 \label{subsection:samplepsdd}
 
+\subsection{Experiments}
+
 \section{A Data Perspective}
+\label{sec:data}
 
 \subsection{\textproc{LearnRP}}
+
+\subsection{Experiments}

@@ -1,19 +1,19 @@
 \chapter{Introduction}
 
 When reasoning about the world, rarely can we find a realistic model that perfectly subsumes all of
-the needed relationships for flawless prediction. As such, the presence of a reliable uncertainty
-quantifier in intelligent systems is essential in developing performant yet diagnostible agents.
-This is made explicitly clear in the case of high-risk settings, such as autonomous vehicles or
-automated power plant systems, where a wrong prediction could cause disastrous consequences. A well
-known example in the case of the former is obstacle avoidance: while the agent should be capable of
-accurately identifying obstructions in its way during normal conditions, so should it be able to
-identify its own lack of confidence in high uncertainty situations like ones brought by
-environmental factors, such as severe blizzard or heavy rain. In these situations where predictions
-are highly unreliable, the safest option might be for the agent to first identify its uncertainty,
-and second to reach out for human help. Other interesting applications of uncertainty
-quantification include out-of-distribution detection, which in our previous example could be
-visualized as the agent identifying a human's driving as abnormally irregular (due to inebriation,
-infirmity, etc.) and appropriately taking control of the vehicle before a potential accident takes
+the needed relationships for flawless prediction. As such, the presence of a reliable quantifier on
+the aleatoric uncertainty of intelligent systems is essential in developing performant yet
+diagnostible agents. This is made explicitly clear in the case of high-risk settings, such as
+autonomous vehicles or automated power plant systems, where a wrong prediction could cause
+disastrous consequences. A well known example in the case of the former is obstacle avoidance:
+while the agent should be capable of accurately identifying obstructions in its way during normal
+conditions, so should it be able to identify its own lack of confidence in high uncertainty
+situations like ones brought by environmental factors, such as severe blizzard or heavy rain. In
+these and other situations where a system faces unusual and perhaps never before seen evidence,
+predictions might prove unreliable, and the safest option might be for the agent to first identify
+its uncertainty, and second to reach out for human help. Conversely, in a case of anomaly
+detection, the agent might identify a human's driving as abnormally irregular (due to inebriation,
+infirmity, etc.) and appropriately take control of the vehicle before a potential accident takes
 place.
 
 One popular approach to quantifying uncertainty is through probability theory. By abstracting the
@@ -25,11 +25,11 @@ limited range in the tractability spectrum in terms of inference \citep{pclec} o
 simplistic for complex real-world problems. Besides, although the majority of recent advances in
 deep learning claim some probabilistic meaning from the model's output, they are often uncalibrated
 distributions, a result of focusing on maximizing predictive accuracy at the expense of predictive
-uncertainty \citep{guo17,yaniv19,chernikova19}, ultimately producing overconfident and peculiar
-results \citep{szegedy13,wei18,su19,chernikova19}. Crucially, mainstream deep models (i.e. standard
-neural networks) usually optimize a conditional distribution over the to-be-predicted random
-variables -- and are thus often called \emph{discriminative} models -- and do not model the actual
-joint distribution of the data, limiting inference capabilities and uncertainty estimation.
+(data) uncertainty \citep{guo17,yaniv19,chernikova19}, ultimately producing overconfident and
+peculiar results \citep{szegedy13,wei18,su19,chernikova19}. Crucially, mainstream deep models
+(i.e.\ standard neural networks) usually optimize a conditional distribution over the
+to-be-predicted random variables -- and are thus often called \emph{discriminative} models -- and
+do not model the actual joint distribution of the data, limiting inference capabilities.
 
 In contrast, \emph{generative} models seek to extract information from the joint (in varying
 capacities), and have lately seen a sharp rise in interest within deep learning. Despite this, most
@@ -104,13 +104,16 @@ but supports both discrete and continuous data.
 \section{Contributions and Dissertation Outline}
 
 We organize this dissertation as follows. We begin \Cref{ch:pc} by formally defining probabilistic
-circuits, conducting a review of some of the structural constraints that we might impose on PCs, as
-well as what we may gain from them in terms of tractability. We then list existing formalisms that
-may be viewed as instances of PCs, and what their structure entail in terms of inference power. In
-Chapter 3, we address existing PC structure learning algorithms, and which guarantees in terms of
-tractability each give. We cover the two new structure learners in Chapter 4, providing empirical
-results on their performance. The final chapter is dedicated to summarizing our research
-contributions and pointing to potential future work in learning PCs.
+circuits (\Cref{sec:pc}), conducting a review of some of the structural constraints that we might
+impose on PCs, as well as what we may gain from them in terms of tractability (\Cref{sec:const}).
+We then list existing formalisms that may be viewed as instances of PCs, and what their structure
+entail in terms of inference power. In \Cref{ch:learning}, we address existing PC structure
+learning algorithms dividing them into three classes: divide-and-conquer learning
+(\Cref{sec:divconq}), incremental learning (\Cref{sec:incremental}) and random learning
+(\Cref{sec:random}). For each, we give a brief analysis on their complexity and discuss their
+advantages and disadvantages. We cover the two new structure learners in \Cref{ch:scalable},
+providing empirical results on their performance. The final chapter (??) is dedicated to
+summarizing our research contributions and pointing to potential future work in learning PCs.
 
 Our contributions in this dissertation address the following research topics.
 

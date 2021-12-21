@@ -28,7 +28,7 @@ of its class.
 
 Before we start however, we must first address how we denote data. Data is commonly represented as
 a matrix where rows are assignments (of all variables), and columns are the values that each variable
-takes at each assignment. Let $\set{D}\in\mathbb{R}^{m \times n}$ a matrix with $m$ rows and $n$
+takes at each assignment. Let $\set{D}\in\mathbb{R}^{n \times m}$ a matrix with $n$ rows and $m$
 columns. We use $\set{D}_{i,j}$ to access an element of $\set{D}$ at the $i$-th row, $j$-th column
 of matrix $\set{D}$. We denote by $\set{D}_{\set{i},\set{j}}$, where $\set{i}\subseteq
 \left[1..n\right]$ and $\set{j}\subseteq\left[1..m\right]$ are sets of indices, a submatrix from
@@ -128,13 +128,13 @@ $j$-th column and $\set{D}_{i,:}$ is the $i$-th row.
 
 Recall the semantics of sum and product nodes in a smooth and decomposable probabilistic circuit.
 A sum is a mixture of distributions $p(\set{X})=\sum_{i=1}^m w_i\cdot p_i(\set{X})$ whose children
-scopes are all the same. A product is a factorization $p(\set{X}_1,\ldots,\set{X}_n)=\prod_{i=1}^n
-p(\set{X}_i)$, implying that $\set{X}_i\indep\set{X}_j$ for $i,j\in [n]$ and $i\neq j$.
+scopes are all the same. A product is a factorization $p(\set{X}_1,\ldots,\set{X}_m)=\prod_{i=1}^m
+p(\set{X}_i)$, implying that $\set{X}_i\indep\set{X}_j$ for $i,j\in [m]$ and $i\neq j$.
 \textproc{LearnSPN} \citep{gens13} exploits these semantics in an intuitive and uncomplicated
 manner: sum children are defined by sub-PCs learned from similar (by some arbitrary metric)
 assignments, and product children are sub-PCs learned from data conditioned on the variables
-defined by their scope. In practice, this means that, for a dataset $\set{D}\in\mathbb{R}^{m\times
-n}$, sums assign rows to their children, while product children are assigned columns. This
+defined by their scope. In practice, this means that, for a dataset $\set{D}\in\mathbb{R}^{n\times
+m}$, sums assign rows to their children, while product children are assigned columns. This
 procedures continues recursively until data are reduced to a $k\times 1$ matrix, in which case a
 univariate distribution acting as input node is learned from it. This recursive procedure is shown
 more formally in \Cref{alg:learnspn}.
