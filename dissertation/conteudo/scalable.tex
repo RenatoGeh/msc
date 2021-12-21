@@ -15,7 +15,7 @@ projections for constructing random trees \citep{dasgupta08a,dasgupta08b}, prese
 fast yet effective way of learning PCs.
 
 The contents of \Cref{sec:logical} come from our contributions in \citet{geh21a}, while
-\Cref{sec:data} come, in part, from \citet{geh21b}.
+\Cref{sec:data} comes, in part, from \citet{geh21b}.
 
 \section{A Logical Perspective}
 \label{sec:logical}
@@ -37,11 +37,11 @@ from scratch by looking at both logical formulae \emph{and} data. Even worse, th
 are restricted to very preliminary work: \citet{mattei19} came up with a \divclass{} prototype for
 a top-down approach to sampling a special class of PSDDs whose primes are conjunctions of literals
 in a similar manner to \textproc{XPC}s, proposing a Bayesian information criterion to searching the
-sample space, yet no practical algorithm was fully formulated; \citet{geh19} expanded on
+sample space, yet no practical algorithm was fully formulated; \citet{geh20} expanded on
 \citeauthor{mattei19}'s work by formalizing an algorithm and introducing a BDD to guide sampling,
 however the generated circuits suffered from an exponential blow-up in size.
 
-In this section, we propose a solution inspired by \citet{geh19,mattei19}, yet without the
+In this section, we propose a solution inspired by \citet{geh20,mattei19}, yet without the
 previously mentioned problems that come with them. In summary, we propose a sampling procedure to
 efficiently generating PSDDs whose primes are always conjunctions of literals; to overcome the
 exponential blow-up, these PSDDs only partially encode their prior logical restrictions. To
@@ -63,7 +63,7 @@ Because we are only interested in smooth, structure decomposable and determinist
 support is defined by a logical formula, we shall adopt the usual notation of PSDDs, which we
 present next.
 
-\begin{definition}[Partition]
+\begin{definition}[Partition]\label{def:partition}
   Let $\phi(\set{x},\set{y})$ be a Boolean function over disjoint sets of variables $\set{X}$ and
   $\set{Y}$, and $\mathcal{D}=\{(p_i,s_i)\}_{i=1}^k$ be a set of tuples where $p_i$ (the prime) and
   $s_i$ (the sub) are formulae over $\set{X}$ and $\set{Y}$ respectively, satisfying $p_i\wedge
@@ -81,10 +81,328 @@ deterministic circuit rooted at a sum (or disjunction) node whose children are p
 conjunctions); the primes of these products must necessarily be mutual exclusive (formally,
 $p_i\wedge p_j\equiv\bot$) and exhaustive (formally, $\bigvee_{i=1}^k p_i\equiv\top$).
 Semantically, a partition states that a logical formula decomposes into $k$ exact conjunctions of
-pairs of prime and sub.
+pairs of prime and sub. The \protect\tikz\protect\draw[very thick,dashed,pbrickred] (0,0) rectangle
+(0.5,-0.25); box in \Cref{fig:psdd} shows a partition whose primes are $\textcolor{pviolet}{p_1}=A$
+and $\textcolor{pviolet}{p_2}=\neg A$, and subs are $\textcolor{psandy}{s_1}=\neg B$ (represented
+as a PC rooted at \protect\tikz\protect\newNamedOrNode[scale=0.8,baseline=-0.75ex,fill=boxolive]{r}{0,0}{2};)
+and $\textcolor{psandy}{s_2}=\neg C$ (represented as the PC rooted at
+\protect\tikz\protect\newNamedOrNode[scale=0.8,baseline=-0.75ex,fill=boxmunsel]{r}{0,0}{2};).
+Recall that the conjunction between a prime and sub is called an \emph{element}, here shown as
+\inode[fill=boxpink!80]{\newAndNode} and \inode[fill=boxred]{\newAndNode}.
+
+\begin{figure}[t]
+  \begin{tikzpicture}
+    \node (tab) at (-7,-0.5) {
+      \begin{tabular}{|ccc|c|} \hline
+        $A$ & $B$ & $C$ & $p(\set{x})$\\
+        \hline
+        0 & 0 & 0 & 0.1\\
+        0 & 1 & 0 & 0.1\\
+        1 & 0 & 0 & 0.2\\
+        1 & 0 & 1 & 0.6\\
+        \hline
+      \end{tabular}
+    };
+
+    \node at ($(tab) + (0,-2)$) {\small$\phi(A,B,C)=(A\to\neg B)\wedge(C\to A)$};
+
+    \newVtreeNode{v_root}{$(tab) + (0,-3)$}{1};
+    \newVtreeNode[fill=boxorange!80]{v_lr}{$(v_root)+(-0.55, -1.5)$}{$A$};
+    \newVtreeNode{v_rr}{$(v_root)+(0.55,-1.5)$}{2};
+    \newVtreeNode[fill=boxblue!50]{v_lrr}{$(v_root)+(0,-3.0)$}{$B$};
+    \newVtreeNode[fill=boxgoldenrod!70]{v_rrr}{$(v_root)+(1.1, -3.0)$}{$C$};
+    \draw (v_root) -- (v_lr);
+    \draw (v_root) -- (v_rr);
+    \draw (v_rr) -- (v_lrr);
+    \draw (v_rr) -- (v_rrr);
+
+    \newNamedOrNode[fill=boxgreen,inputs=nn]{r}{0,0}{1};
+    \newAndNode[fill=boxpink!80,inputs=nn]{p1}{$(r) + (-0.75,-1.5)$};
+    \newAndNode[fill=boxred,inputs=nn]{p2}{$(r) + (0.75,-1.5)$};
+    \newNamedOrNode[fill=boxolive,inputs=nn]{s1}{$(p1.input 2) + (0,-1.0)$}{2};
+    \newNamedOrNode[fill=boxmunsel,inputs=nn]{s2}{$(p2.input 2) + (2.2,-1.0)$}{2};
+    \newAndNode[inputs=nn]{s1p1}{$(r) + (-1.5,-4.25)$};
+    \newAndNode[inputs=nn]{s2p1}{$(r) + (2.1,-4.5)$};
+    \newAndNode[inputs=nn]{s2p2}{$(r) + (3.9,-4.5)$};
+    \newOrNode[inputs=nn]{s3}{$(r) + (-0.25,-5.5)$};
+
+    \node[fill=boxorange!80,minimum size=17pt,label=center:{$A$}] (p1l) at ($(p1.input 1) + (-0.75,-1.0)$) {};
+    \node[fill=boxorange!80,minimum size=17pt,label=center:{$\neg A$}] (p2l) at ($(p2.input 1) + (0.0,-1.0)$) {};
+    \node[fill=boxblue!50,minimum size=17pt,label=center:{$\neg B$}] (s1p1l) at ($(s1p1.input 1) + (-0.75,-0.75)$) {};
+    \node[fill=boxblue!50,minimum size=17pt,label=center:{$\neg B$}] (s2p1l1) at ($(s2p1.input 1) + (-0.5,-1.0)$) {};
+    \node[fill=boxgoldenrod!70,minimum size=17pt,label=center:{$\neg C$}] (s2p1l2) at ($(s2p1.input 2) + (0.5,-1.0)$) {};
+    \node[fill=boxblue!50,minimum size=17pt,label=center:{$B$}] (s2p2l1) at ($(s2p2.input 1) + (-0.5,-1.0)$) {};
+    \node[fill=boxgoldenrod!70,minimum size=17pt,label=center:{$\neg C$}] (s2p2l2) at ($(s2p2.input 2) + (0.5,-1.0)$) {};
+    \node[fill=boxgoldenrod!70,minimum size=17pt,label=center:{$C$}] (s3l1) at ($(s3.input 1) + (-0.5,-1.0)$) {};
+    \node[fill=boxgoldenrod!70,minimum size=17pt,label=center:{$\neg C$}] (s3l2) at ($(s3.input 2) + (0.5,-1.0)$) {};
+
+    \draw[edge] (r.input 1) -- ++(0,-0.4) -| node[above left]{\color{pdgreen}$.8$} (p1.east);
+    \draw[edge] (r.input 2) -- ++(0,-0.4) -| node[above right]{\color{pdgreen}$.2$} (p2.east);
+    \draw[edge] (p1.input 1) -- ++(0,-0.4) -| (p1l.north);
+    \draw[edge] (p2.input 1) -- ++(0,-0.4) -| (p2l.north);
+    \draw[edge] (s1p1.input 1) -- ++(0,-0.2) -| (s1p1l.north);
+    \draw[edge] (s2p1.input 1) -- ++(0,-0.4) -| (s2p1l1.north);
+    \draw[edge] (s2p1.input 2) -- ++(0,-0.4) -| (s2p1l2.north);
+    \draw[edge] (s2p2.input 1) -- ++(0,-0.4) -| (s2p2l1.north);
+    \draw[edge] (s2p2.input 2) -- ++(0,-0.4) -| (s2p2l2.north);
+    \draw[edge] (s3.input 1) -- ++(0,-0.4) -| node[above left]{\color{pdgreen}$.75$} (s3l1.north);
+    \draw[edge] (s3.input 2) -- ++(0,-0.4) -| node[above right]{\color{pdgreen}$.25$} (s3l2.north);
+    \draw[edge] (p1.input 2) -- ++(0,-0.4) -| (s1.east);
+    \draw[edge] (p2.input 2) -- ++(0,-0.4) -| (s2.east);
+    \draw[edge] (s1.west) -- ++(0,-0.3) node[below right]{\color{pdgreen}$1.0$} -| (s1p1.east);
+    \draw[edge] (s2.input 1) -- ++(0,-0.4) -| node[above left]{\color{pdgreen}$.5$} (s2p1.east);
+    \draw[edge] (s2.input 2) -- ++(0,-0.4) -| node[above right]{\color{pdgreen}$.5$} (s2p2.east);
+    \draw[edge] (s1p1.input 2) -- ++ (0,-0.2) -| (s3.east);
+
+    \draw[very thick,dashed,pbrickred] ($(p1l) + (-1.0,3.5)$) rectangle ($(s2) + (1.5,-1)$);
+    \node at ($(p1l) + (-0.75,0)$) {\color{pviolet}$p_1$};
+    \node at ($(s1) + (0.5,0.5)$) {\color{psandy}$s_1$};
+    \node at ($(p2l) + (0.75,0)$) {\color{pviolet}$p_2$};
+    \node at ($(s2) + (0.5,0.5)$) {\color{psandy}$s_2$};
+  \end{tikzpicture}
+  \caption{A PSDD encoding the logical constraint $\phi(A,B,C)=(A\to\neg B)\wedge(C\to A)$,
+  following the distribution set by the probability table on the top left corner and whose
+  structure is defined by the vtree pictured on the bottom left corner.}
+  \label{fig:psdd}
+\end{figure}
 
 \subsection{\textproc{SamplePSDD}}
 \label{subsection:samplepsdd}
+
+We now describe how to efficiently learn PSDDs by sampling and averaging. The procedure takes
+inspiration from \divclass{} algorithms in the sense that we construct a PSDD structure top-down by
+recursively decomposing a logical formula (instead of data). At the same time, we employ local
+transformations similar to \incrclass{} approaches on a partially constructed circuit to diversify
+samples. All this procedure is done randomly in a similar fashion to \textproc{XPC}s, where we
+restrict primes to be random conjunctions of literals and sample variables according to a
+previously learned or randomly sampled vtree. To better understand how this is done, we must first
+consider a naïve approach.
+
+\begin{figure}[t]
+  \begin{tikzpicture}
+    \node at (0,1.0) {\normalsize$\phi(A,B,C,D)=(A\wedge\neg B\wedge\neg D)\vee(B\wedge\neg C\wedge D)$};
+
+    \newNamedOrNode[fill=boxgreen,inputs=nnnn]{r}{0,0}{1};
+    \newNamedAndNode[fill=boxblue,inputs=nn]{a1}{$(r) + (-3.0,-1.5)$}{$e_1$};
+    \newNamedAndNode[fill=boxorange,inputs=nn]{a2}{$(r) + (-1.0,-1.5)$}{$e_2$};
+    \newNamedAndNode[fill=boxred,inputs=nn]{a3}{$(r) + (1.0,-1.5)$}{$e_3$};
+    \newNamedAndNode[fill=boxgoldenrod,inputs=nn]{a4}{$(r) + (3.0,-1.5)$}{$e_4$};
+
+    \node (p1) at ($(a1.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge B$};
+    \node (p2) at ($(a2.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge\neg B$};
+    \node (p3) at ($(a3.input 1) + (-0.6,-0.75)$) {\color{pviolet}$\neg A\wedge B$};
+    \node (p4) at ($(a4.input 1) + (-0.7,-0.75)$) {\color{pviolet}$\neg A\wedge\neg B$};
+    \node (s1) at ($(a1.input 2) + (0,-1.25)$) {\color{psandy}$\neg C\wedge D$};
+    \node (s2) at ($(a2.input 2) + (0,-1.25)$) {\color{psandy}$\neg D$};
+    \node (s3) at ($(a3.input 2) + (0,-1.25)$) {\color{psandy}$\neg C\wedge D$};
+    \node (s4) at ($(a4.input 2) + (0,-1.25)$) {\color{psandy}$\bot$};
+    \node at ($(r) + (3,0.25)$) {\large$\textcolor{psandy}{s_i}=\phi|_{\textcolor{pviolet}{p_i}}$};
+
+    \draw[edge] (r.input 1) -- ++(0,-0.2) -| (a1);
+    \draw[edge] (r.input 2) -- ++(0,-0.4) -| (a2);
+    \draw[edge] (r.input 3) -- ++(0,-0.4) -| (a3);
+    \draw[edge] (r.input 4) -- ++(0,-0.2) -| (a4);
+    \draw[edge] (a1.input 1) -- ++(0,-0.3) -| (p1);
+    \draw[edge] (a2.input 1) -- ++(0,-0.3) -| (p2);
+    \draw[edge] (a3.input 1) -- ++(0,-0.3) -| (p3);
+    \draw[edge] (a4.input 1) -- ++(0,-0.3) -| (p4);
+    \draw[edge] (a1.input 2) -- ++(0,-0.4) -| (s1);
+    \draw[edge] (a2.input 2) -- ++(0,-0.4) -| (s2);
+    \draw[edge] (a3.input 2) -- ++(0,-0.4) -| (s3);
+    \draw[edge] (a4.input 2) -- ++(0,-0.4) -| (s4);
+
+    \newVtreeNode{root}{6.5,1.0}{1};
+    \newVtreeNode{nr}{$(root) + (-1.0,-1.25)$}{2};
+    \newVtreeNode{n1}{$(root) + (1.0,-1.25)$}{3};
+    \newVtreeNode{n2}{$(nr) + (-0.5,-1.25)$}{$A$};
+    \newVtreeNode{ne}{$(nr) + (0.5,-1.25)$}{$B$};
+    \newVtreeNode{n3}{$(n1) + (-0.5,-1.25)$}{4};
+    \newVtreeNode{n4}{$(n1) + (0.5,-1.25)$}{$C$};
+    \newVtreeNode{n5}{$(n3) + (-0.5,-1.25)$}{$D$};
+    \newVtreeNode{n6}{$(n3) + (0.5,-1.25)$}{$E$};
+    \draw (root) -- (n1);
+    \draw (n1) -- (n3);
+    \draw (root) -- (nr);
+    \draw (nr) -- (n2);
+    \draw (nr) -- (ne);
+    \draw (n1) -- (n3);
+    \draw (n1) -- (n4);
+    \draw (n3) -- (n6);
+    \draw (n3) -- (n5);
+  \end{tikzpicture}
+  \caption{A(n exact) partition of $\phi$ where we assume that primes are conjunctions of literals.
+  Primes must be exhaustive, mutually exclusive, and have to follow the vtree's scope, here
+  $\Sc(1^\gets)=\{A,B\}$. The subs are then the restriction of $\phi$ under the assignment induced
+  by the primes.}
+  \label{fig:partition}
+\end{figure}
+
+Let $\phi$ a logical formula acting as our knowledge base, and assume that a vtree $\vtree$ is
+given beforehand. To compile a PSDD from $\phi$, we must decompose it down to a disjunction of
+prime and sub conjunctions. This is a non-trivial problem, as primes must not only be mutual
+exclusive (to ensure determinism) but exhaustive (to make sure the circuit is coherent with $\phi$
+in all possible assignments). If we assume primes to be conjunctions of literals, then to adhere to
+\Cref{def:partition} there must be an exponential number of elements $2^{|\Sc(v^\gets)|}$, where
+$v$ is the vtree node that corresponds to the partition. Subs, however, are easy to retrieve as
+they correspond to the restriction of $\phi$ under the assignment induced by the prime.
+\Cref{fig:partition} shows a partition whose primes are conjunctions over $A$ and $B$. This problem
+is the same as the one faced by \citet{geh20}: under the assumption of conjunctions of literals as
+primes, $\phi$ can only be faithfully represented as a PSDD if the circuit is exponential.
+
+To overcome this exponential blow-up, we might restrict the number of primes at each partition.
+Unfortunately, if we bound this number to a constant, say $k$, and randomly sample primes from the
+space of all possible conjunctions of literals, then we face yet another problem: the scope of subs
+might contain variables not in their corresponding vtree node. Take the top circuit in
+\Cref{fig:partial} as an example. Note that the scope for primes is defined by
+$\Sc(1^\gets)=\{A,B,C\}$, with $\Sc(1^\to)=\{D,E\}$ for subs; so sampled primes $p_1=A\wedge B$,
+$p_2=A\wedge\neg B$ and $p_3=\neg A$ must come from $\Sc(1^\gets)$. However, because
+$s_1=\phi|p_1=\neg C\wedge D$ and $s_3=\phi|p_3=B\wedge\neg C \wedge D$, meaning that
+$\Sc(s_1)\not\subseteq\Sc(1^\to)$ and $\Sc(s_3)\not\subseteq\Sc(1^\to)$, subs violate the
+factorization imposed by the vtree $\mathcal{V}$, making the circuit non-structure decomposable
+(albeit decomposable). Here, we point out that the scope of the formula needs to be a subset of the
+scope of its corresponding vtree for the PC to be structure decomposable, and not necessarily
+the set itself, as variables that do not appear in the formula yet are part of the vtree's scope
+play a \emph{probabilistic} role in the PSDD.
+
+For these circuits to both preserve structure decomposability \emph{and} have tractable
+representation, we need to resort to a weaker definition of a partition that relaxes the logical
+constraints.
+
+\begin{definition}[Partial partition]\label{def:partialpart}
+  Let $\phi(\set{x},\set{y})$ be a Boolean function over disjoint sets of variables $\set{X}$ and
+  $\set{Y}$, and $\mathcal{D}=\{(p_i,s_i)\}_{i=1}^k$ be a set of tuples where $p_i$ (the prime) and
+  and $s_i$ (the sub) are formulae over $\set{X}$ and $\set{Y}$ respectively, satisfying $p_i\wedge
+  p_j\equiv\bot$ for each $i\neq j$ and $\bigvee_{i=1}^k p_i\equiv\top$. We say that $\mathcal{D}$
+  is a partial partition of $\phi$ if
+  \begin{equation*}
+    \left\langle\bigvee_{i=1}^k (p_i\wedge s_i)\right\rangle\geq\phi,
+  \end{equation*}
+  where the inequality is taken coordinate-wise.
+\end{definition}
+
+\begin{figure}[t]
+  \begin{subfigure}[t]{\textwidth}
+    \centering
+    \begin{tikzpicture}[tips=proper]
+      \node at (-2,1.0) {\normalsize$\phi(A,B,C,D)=(A\wedge\neg B\wedge\neg D)\vee(B\wedge\neg C\wedge D)$};
+
+      \newNamedOrNode[fill=boxgreen,inputs=nnn]{r}{-2.35,0}{1};
+      \newNamedAndNode[fill=boxblue,inputs=nn]{a1}{$(r) + (-2.0,-1.5)$}{$e_1$};
+      \newNamedAndNode[fill=boxorange,inputs=nn]{a2}{$(r) + (0.0,-1.5)$}{$e_2$};
+      \newNamedAndNode[fill=boxpink!80,inputs=nn]{a3}{$(r) + (2.0,-1.5)$}{$e_3$};
+
+      \node (p1) at ($(a1.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge B$};
+      \node (p2) at ($(a2.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge\neg B$};
+      \node (p3) at ($(a3.input 1) + (-0.7,-0.75)$) {\color{pviolet}$\neg A$};
+      \node (s1) at ($(a1.input 2) + (0,-1.25)$) {\colorbox{pyellow}{\color{psandy}$\neg C\wedge D$}};
+      \node (s2) at ($(a2.input 2) + (0,-1.25)$) {\color{psandy}$\neg D$};
+      \node (s3) at ($(a3.input 2) + (0,-1.25)$) {\colorbox{pyellow}{\color{psandy}$B\wedge\neg C\wedge D$}};
+      \node (subl) at ($(r) + (4.5,0.25)$) {\Large$\textcolor{psandy}{s_i}=\phi|_{\textcolor{pviolet}{p_i}}$};
+
+      \node (lab) at ($(subl) + (0,-1.5)$) {$\Sc(s_3)\not\subseteq\set{S}$};
+      \draw[very thick,boxred,->] (s3.east) edge[bend right=50] (lab);
+
+      \draw[edge] (r.input 1) -- ++(0,-0.3) -| (a1);
+      \draw[edge] (r.input 2) -- ++(0,-0.3) -| (a2);
+      \draw[edge] (r.input 3) -- ++(0,-0.3) -| (a3);
+      \draw[edge] (a1.input 1) -- ++(0,-0.3) -| (p1);
+      \draw[edge] (a2.input 1) -- ++(0,-0.3) -| (p2);
+      \draw[edge] (a3.input 1) -- ++(0,-0.3) -| (p3);
+      \draw[edge] (a1.input 2) -- ++(0,-0.4) -| (s1);
+      \draw[edge] (a2.input 2) -- ++(0,-0.4) -| (s2);
+      \draw[edge] (a3.input 2) -- ++(0,-0.4) -| (s3);
+
+      \newVtreeNode{root}{6.5,1.0}{1};
+      \newVtreeNode{n1}{$(root) + (-1.0,-1.25)$}{2};
+      \newVtreeNode{nr}{$(root) + (1.0,-1.25)$}{3};
+      \newVtreeNode{n2}{$(nr) + (-0.5,-1.25)$}{$D$};
+      \newVtreeNode{ne}{$(nr) + (0.5,-1.25)$}{$E$};
+      \newVtreeNode{n3}{$(n1) + (-0.5,-1.25)$}{4};
+      \newVtreeNode{n4}{$(n1) + (0.5,-1.25)$}{$C$};
+      \newVtreeNode{n5}{$(n3) + (-0.5,-1.25)$}{$A$};
+      \newVtreeNode{n6}{$(n3) + (0.5,-1.25)$}{$B$};
+      \draw (root) -- (n1);
+      \draw (n1) -- (n3);
+      \draw (root) -- (nr);
+      \draw (nr) -- (n2);
+      \draw (nr) -- (ne);
+      \draw (n1) -- (n3);
+      \draw (n1) -- (n4);
+      \draw (n3) -- (n6);
+      \draw (n3) -- (n5);
+      \draw[very thick,dashed,pbrickred] ($(n2) + (-0.5,1.7)$) rectangle ($(ne) + (0.5,-0.4)$);
+      \node at ($(nr) + (0.75,0.75)$) {$\set{S}$};
+      \node at ($(nr) + (0,-2.5)$) {$\set{S}=\{D,E\}$};
+    \end{tikzpicture}
+    \caption{Partially constructed PSDD with vtree infracting subs}
+  \end{subfigure}
+  \vskip 0.5cm
+  \begin{subfigure}[t]{\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \newNamedOrNode[fill=boxgreen,inputs=nnn]{r}{0,0}{1};
+      \newNamedAndNode[fill=boxblue,inputs=nn]{a1}{$(r) + (-2.0,-1.5)$}{$e_1$};
+      \newNamedAndNode[fill=boxorange,inputs=nn]{a2}{$(r) + (0.0,-1.5)$}{$e_2$};
+      \newNamedAndNode[fill=boxpink!80,inputs=nn]{a3}{$(r) + (2.0,-1.5)$}{$e_3$};
+
+      \node (p1) at ($(a1.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge B$};
+      \node (p2) at ($(a2.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge\neg B$};
+      \node (p3) at ($(a3.input 1) + (-0.7,-0.75)$) {\color{pviolet}$\neg A$};
+      \node (s1) at ($(a1.input 2) + (0,-1.25)$) {\color{psandy}$D$};
+      \node (s2) at ($(a2.input 2) + (0,-1.25)$) {\color{psandy}$\neg D$};
+      \node (s3) at ($(a3.input 2) + (0,-1.25)$) {\color{psandy}$D$};
+
+      \draw[edge] (r.input 1) -- ++(0,-0.3) -| (a1);
+      \draw[edge] (r.input 2) -- ++(0,-0.3) -| (a2);
+      \draw[edge] (r.input 3) -- ++(0,-0.3) -| (a3);
+      \draw[edge] (a1.input 1) -- ++(0,-0.3) -| (p1);
+      \draw[edge] (a2.input 1) -- ++(0,-0.3) -| (p2);
+      \draw[edge] (a3.input 1) -- ++(0,-0.3) -| (p3);
+      \draw[edge] (a1.input 2) -- ++(0,-0.4) -| (s1);
+      \draw[edge] (a2.input 2) -- ++(0,-0.4) -| (s2);
+      \draw[edge] (a3.input 2) -- ++(0,-0.4) -| (s3);
+
+      \tikzstyle{dec} = [draw,circle,inner sep=1pt,fill=pyellow!70];
+      \node[dec,label={[label distance=5pt] right:\small$\phi\!=\!(A\wedge \neg B \wedge \neg D) \vee (B \wedge \neg C \wedge D)$}] (root) at (5,0) {A};
+      \node[dec] (n1) at ($(root) + (+0.75,-1.15)$) {B};
+      \node[dec,label={[label distance=5pt] right:\small$\phi|_{A}$}] (n2) at ($(root) + (-0.75,-1.25)$) {B};
+      \node[dec] (n3) at ($(n2) + (+0.75,-1.15)$) {C};
+      \node[dec] (n4) at ($(n2) + (-0.75,-1.25)$) {C};
+      \draw (root) edge node[label={right:$-$}] {} (n1);
+      \draw (root) edge node[label={left:$+$}] {} (n2);
+      \draw (n2) edge node[label={right:$-$}] {} (n3);
+      \draw (n2) edge node[label={left:$+$}] {} (n4);
+
+      \node[anchor=west]  at ($(n1) + (0.4,0)$) {\small $\Forget(\phi|_{\neg A}, \{B,C\})=D$};
+      \node[anchor=west]  at ($(n3) + (+0.4,0)$) {\small $\Forget(\phi|_{A \wedge \neg B}, C)=\neg D$};
+      \node[anchor=west]  at ($(n4) + (-0.1,-0.5)$) {\small $\Forget(\phi|_{A \wedge B}, C)=D$};
+    \end{tikzpicture}
+    \caption{Partial partition where subs are relaxed}
+  \end{subfigure}
+  \caption{An example of an invalid partition \textbf{(a)} due to subs disrespecting the vtree's
+  right branch, here shown as the \protect\tikz\protect\draw[very thick,dashed,pbrickred] (0,0)
+  rectangle (0.5,-0.25); box with scope $\set{S}$. To fix this infraction, variables who do not
+  belong to $\set{S}$ are \emph{forgotten}, as \textbf{(b)} shows.}
+  \label{fig:partial}
+\end{figure}
+
+\Cref{def:partialpart} essentially states that the disjunction over elements has to only encode a
+relaxation of the original formula $\phi$. This is somewhat similar to what \citet{gatterbauer14}
+propose in probabilistic databases, where they relax a formula in such a way that the approximate
+probabilities provide an upper bound independent of the actual probabilities.
+
+Looking back to the issue of bounding the number of elements per partition, a solution to the
+problem of tractability and structure decomposability comes by employing \emph{partial} partitions
+instead of \emph{exact} partitions. Let $\Sum$ a sum node, and call $s_i$ one of its sub and $v$
+the vtree node for $\Sum$; denote by $\set{F}=\Sc(s_i)\setminus\Sc(v^\to)$, that is, the variables
+in $s_i$ which should \emph{not} have been in the sub. We already know that $\Sum$ cannot be turned
+into an exact partition unless it has an exponential number of elements, and so we look to
+\emph{partial} partitions. The \emph{forget} operation takes a formula $\psi$ and marginalizes
+variable $X$: $\Forget(\psi, X)=\psi|_X\vee\psi|_{\neg X}$; by construction $\Forget(\psi,X)\geq
+\psi$. By forgetting all variables in $\set{F}$, we secure structure decomposability and produce a
+relaxation of the original formula.
+
+In practice, to efficiently produce 
 
 \subsection{Experiments}
 
