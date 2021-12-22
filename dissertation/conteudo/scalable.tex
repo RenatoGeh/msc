@@ -407,40 +407,47 @@ formulae, as reduced BDDs are canonical and permit polynomial time restricting a
 In more practical terms, the overall process of sampling a PSDD starts with a logical formula
 $\phi$, a vtree $\mathcal{V}$ and scope $\set{X}$. We recursively construct partial partitions by
 first sampling a fixed number of $k$ primes and evaluating subs with restrictions and $\Forget$s.
-Elements whose subs are removed, as their probability is always zero. For each prime and sub, we
-recursively call the same procedure on their formulae. \Cref{alg:samplepsdd} shows this recursive
-procedure formally. The sampling process of generating primes and their subs is shown in
-\Cref{alg:samplepartial}, and goes as follows. To produce primes (and subs), we must look at the
-space of all possible variable assignments coming from $\Sc(v^\gets)$, where $v$ is the
-relevant vtree node. If we fix a variable ordering to $\Sc(v^\gets)$, say an $m$-uple $\set{O}=\{
-X_1,\ldots,X_m\}$, then we might structure this space as a binary decision tree whose nodes are
-labeled as a variable and every edge denotes positive or negative literals over that variable. The
-path coming from a node to a leaf in this decision tree represents all chosen literals in a prime.
-An example of such a tree is shown as the right tree in \Cref{fig:partial-b}. We efficiently
-generate $k$ primes by starting from the root node labeled as variable $X_1$ and repeatedly
-expanding a leaf labeled $X_i$ with two children $X_{i+1}$ until the number of leaves is between
-$k-1$ and $k$ (expanding further would mean violating the bound on the number of primes). Every
-time we expand a leaf, we must generate the restrictions $\psi|_{X_i}$ and $\psi|_{\neg X_i}$,
-where $\psi$ is the formula up to that path, and associate them with the left and right children
-respectively. If $\psi|_{X_i}\equiv\psi|_{\neg X_i}$, or in other words the assignment of $X_i$
-does not change $\psi$'s semantics, then we relabel the node as $X_{i+1}$ and re-expand it with
-children $X_{i+2}$, effectively ignoring $X_{i+1}$. When this process terminates, we have at most
-$k$ conjunctive primes represented by all the paths coming from the root down to the leaves, each
-of these with an associated formula equivalent to restricting $\phi$ to all assignments
-$\phi|_\set{x}$. Now, to obtain valid subs as previously mentioned, we apply the $\Forget$
-operation to each sub over the scope of $\Sc(v^\gets)$, removing any variables from the wrong side
-of the vtree.
+Elements whose subs are $\bot$ are removed, as their probability is always zero. For each prime and sub, we
+recursively call the same procedure on their formulae. Just like in most \divclass{} class
+algorithms, if $|\set{X}|=1$, then we either return a literal node consistent with $\phi$, or a
+Bernoulli distribution input node over $\set{X}$'s only variable. Another special case arises when
+$\phi\equiv\top$, in which case any smooth, structure decomposable and deterministic PC will do.
+This PC can either be learned purely from data or generated from a template. Alternatively, we
+might even choose to continue sampling partitions as before, except in this case all partial
+partitions are also exact partitions. \Cref{alg:samplepsdd} shows the entire recursive procedure
+of \textproc{SamplePSDD}.
+
+The sampling process of generating primes and their subs is shown in \Cref{alg:samplepartial} and
+goes as follows. To produce primes (and subs), we must look at the space of all possible variable
+assignments coming from $\Sc(v^\gets)$, where $v$ is the relevant vtree node. If we fix a variable
+ordering to $\Sc(v^\gets)$, say an $m$-uple $\set{O}=\{ X_1,\ldots,X_m\}$, then we might structure
+this space as a binary decision tree whose nodes are labeled as a variable and every edge denotes
+positive or negative literals over that variable. The path coming from a node to a leaf in this
+decision tree represents all chosen literals in a prime. An example of such a tree is shown as the
+right tree in \Cref{fig:partial-b}. We efficiently generate $k$ primes by starting from the root
+node labeled as variable $X_1$ and repeatedly expanding a leaf labeled $X_i$ with two children
+$X_{i+1}$ until the number of leaves is between $k-1$ and $k$ (expanding further would mean
+violating the bound on the number of primes). Every time we expand a leaf, we must generate the
+restrictions $\psi|_{X_i}$ and $\psi|_{\neg X_i}$, where $\psi$ is the formula up to that path, and
+associate them with the left and right children respectively. If $\psi|_{X_i}\equiv\psi|_{\neg
+X_i}$, or in other words the assignment of $X_i$ does not change $\psi$'s semantics, then we
+relabel the node as $X_{i+1}$ and re-expand it with children $X_{i+2}$, effectively ignoring
+$X_{i+1}$. When this process terminates, we have at most $k$ conjunctive primes represented by all
+the paths coming from the root down to the leaves, each of these with an associated formula
+equivalent to restricting $\phi$ to all assignments $\phi|_\set{x}$. Now, to obtain valid subs as
+previously mentioned, we apply the $\Forget$ operation to each sub over the scope of
+$\Sc(v^\gets)$, removing any variables from the wrong side of the vtree.
 
 \begin{algorithm}[t]
   \caption{\textproc{SamplePartialPartition}}\label{alg:samplepartial}
   \begin{algorithmic}[1]
     \Require BDD $\phi$, vtree node $v$, number of primes $k$
-    \Ensure A set of sampled elemens
-    \State Define $\set{E}$ as an empty collection of sampled elements
+    \Ensure A set of pairs of primes and subs
+    \State Define $\set{E}$ as an empty collection of pairs
     \State Sample an ordering $X_1,\ldots,X_m$ of $\Sc(v^\gets)\cap\Sc(\phi)$
     \State Let $\set{Q}$ be a queue initially containing $(\phi,1,\{\})$
     \State $j\gets 1$\Comment{Counter of sampled elements}
-    \While{$|\set{E}<k$}
+    \While{$|\set{E}<k|$}
       \State Pop top item $(\psi,i,p)$ from $\set{Q}$
       \If{$j\geq k$ \textbf{or} $i>m$ \textbf{or} $\psi\equiv\top$}
         \State Add $(p,\Forget(\phi|_p,\Sc(v^\gets)))$ to $\set{E}$
@@ -449,8 +456,8 @@ of the vtree.
       \State $\alpha\gets\psi|_{X_i}$, $\beta\gets\psi|_{\neg X_i}$
       \IIf{$\alpha\equiv\beta$}{enqueue $(\psi,i+1,p)$ into $\set{Q}$}
       \NIElse
-        \IIf{$\alpha\not\equiv\bot$}{push $(\alpha,i+1,p\wedge X_i)$ to $\set{Q}$}
-        \IIf{$\beta\not\equiv\bot$}{push $(\beta,i+1,p\wedge\neg X_i)$ to $\set{Q}$}
+        \IIf{$\alpha\not\equiv\bot$}{enqueue $(\alpha,i+1,p\wedge X_i)$ into $\set{Q}$}
+        \IIf{$\beta\not\equiv\bot$}{enqueue $(\beta,i+1,p\wedge\neg X_i)$ into $\set{Q}$}
         \State $j\gets j+1$
       \EndNIElse
     \EndWhile
@@ -465,9 +472,9 @@ of the vtree.
     \Ensure A sampled PSDD structure
     \If{$|\Sc(v)|=1$}
       \IIf{$\phi$ is a literal}{\textbf{return} $\phi$ as a literal node}
-      \IElse{\textbf{return} a Bernoulli distribution input node from $\Sc(v)$}
+      \IElse{\textbf{return} a Bernoulli distribution input node over variable $\Sc(v)$}
     \ElsIf{$\phi\equiv\top$}
-      \State \textbf{return} a fully factorized circuit over $\Sc(v)$
+      \State \textbf{return} any smooth, structure decomposable and deterministic PC over $\Sc(v)$
     \EndIf
     \State $\set{E}\gets\Call{SamplePartialPartition}{\phi,\Sc(v^\gets),k}$
     \State Create a sum node $\Sum$
@@ -482,7 +489,171 @@ of the vtree.
   \end{algorithmic}
 \end{algorithm}
 
+Once primes and subs are generated, \textproc{SamplePSDD} randomly applies local transformations to
+add variety to sampled circuits and reduce their size. Here we introduce two \emph{shrinking} local
+transformations, directly opposed to \incrclass{}'s \emph{growing} local transformations. We borrow
+the concept of \emph{compression}, used to minimize a logic circuit down to a canonical
+representation \citep{darwiche11}, and use it to join multiple elements into a single one during
+learning. Let $e_1,\ldots,e_q$ elements whose subs $s_1,\ldots,s_q$ are all equivalent to $s$, or
+more formally $s\equiv s_i\equiv s_j$, $i\neq j$; in this case, the disjunction over these elements
+factorizes over $s$
+\begin{equation*}
+  \bigvee_{i=1}^q (p_i\wedge s_i)=\bigvee_{i=1}^q (p_i\wedge s)=s\wedge\left(\bigvee_{i=1}^q p_i\right).
+\end{equation*}
+\Cref{fig:comp} shows a compression of elements $e_1$ and $e_3$ whose subs are both $D$. The
+resulting compressed element $e'$ is equivalent to the disjunction of the primes with no change to
+the sub. Compression is the exact inverse of \textproc{Split}, seen in \Cref{sec:incremental} (cf.\
+\Cref{fig:splitclone}). Apart from compression, we propose \emph{merging} two equivalent subs into
+the same circuit as shown in \Cref{fig:merge}. Merging is a common (previously nameless) operation
+in PC literature and is the inverse of \textproc{Clone} (cf.\ \Cref{fig:splitclone}). In both
+cases, shrinking local transformations preserve smoothness, structure decomposability, determinism
+and the circuit's formula, although they change the PSDD's underlying distribution by reducing the
+number of parameters.
+
+\begin{figure}[t]
+  \begin{subfigure}{\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \newNamedOrNode[fill=boxgreen,inputs=nnn]{r}{-0.25,0}{1};
+      \newNamedAndNode[fill=boxblue,inputs=nn]{a1}{$(r) + (-2.0,-1.5)$}{$\mathbf{e_1}$};
+      \newNamedAndNode[fill=boxorange,inputs=nn]{a2}{$(r) + (0.0,-1.5)$}{$e_2$};
+      \newNamedAndNode[fill=boxpink!80,inputs=nn]{a3}{$(r) + (2.0,-1.5)$}{$\mathbf{e_3}$};
+
+      \node (p1) at ($(a1.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge B$};
+      \node (p2) at ($(a2.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge\neg B$};
+      \node (p3) at ($(a3.input 1) + (-0.7,-0.75)$) {\color{pviolet}$\neg A$};
+      \node (s1) at ($(a1.input 2) + (0,-1.25)$) {\color{psandy}$D$};
+      \node (s2) at ($(a2.input 2) + (0,-1.25)$) {\color{psandy}$\neg D$};
+      \node (s3) at ($(a3.input 2) + (0,-1.25)$) {\color{psandy}$D$};
+
+      \draw[edge] (r.input 1) -- ++(0,-0.3) -| (a1);
+      \draw[edge] (r.input 2) -- ++(0,-0.3) -| (a2);
+      \draw[edge] (r.input 3) -- ++(0,-0.3) -| (a3);
+      \draw[edge] (a1.input 1) -- ++(0,-0.3) -| (p1);
+      \draw[edge] (a2.input 1) -- ++(0,-0.3) -| (p2);
+      \draw[edge] (a3.input 1) -- ++(0,-0.3) -| (p3);
+      \draw[edge] (a1.input 2) -- ++(0,-0.4) -| (s1);
+      \draw[edge] (a2.input 2) -- ++(0,-0.4) -| (s2);
+      \draw[edge] (a3.input 2) -- ++(0,-0.4) -| (s3);
+
+      \node[style={single arrow,draw=red,thick}] (arrow) at (4.25,-0.5)
+        {\small\textrm{\textsc{Compress}}};
+
+      \newNamedOrNode[fill=boxgreen,inputs=nn]{r}{8.25,0}{1};
+      \newNamedAndNode[fill=boxorange,inputs=nn]{a1}{$(r) + (-1.5,-1.5)$}{$e_2$};
+      \newNamedAndNode[fill=boxteal,inputs=nn]{a2}{$(r) + (1.5,-1.5)$}{$\mathbf{e'}$};
+
+      \node (p1) at ($(a1.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge\neg B$};
+      \node (p2) at ($(a2.input 1) + (-1.2,-0.75)$) {\color{pviolet}$\neg A\vee(A\wedge B)$};
+      \node (s1) at ($(a1.input 2) + (0,-1.25)$) {\color{psandy}$\neg D$};
+      \node (s2) at ($(a2.input 2) + (0,-1.25)$) {\color{psandy}$D$};
+
+      \draw[edge] (r.input 1) -- ++(0,-0.3) -| (a1);
+      \draw[edge] (r.input 2) -- ++(0,-0.3) -| (a2);
+      \draw[edge] (a1.input 1) -- ++(0,-0.3) -| (p1);
+      \draw[edge] (a2.input 1) -- ++(0,-0.3) -| (p2);
+      \draw[edge] (a1.input 2) -- ++(0,-0.4) -| (s1);
+      \draw[edge] (a2.input 2) -- ++(0,-0.4) -| (s2);
+    \end{tikzpicture}
+    \caption{Compressing elements $e_1$ and $e_3$ into $e'$}
+    \label{fig:comp}
+  \end{subfigure}
+  \begin{subfigure}{\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \newNamedOrNode[fill=boxgreen,inputs=nnn]{r}{0,0}{1};
+      \newNamedAndNode[fill=boxblue,inputs=nn]{a1}{$(r) + (-2.0,-1.5)$}{$e_1$};
+      \newNamedAndNode[fill=boxorange,inputs=nn]{a2}{$(r) + (0.0,-1.5)$}{$e_2$};
+      \newNamedAndNode[fill=boxpink!80,inputs=nn]{a3}{$(r) + (2.0,-1.5)$}{$\mathbf{e_3}$};
+
+      \node (p1) at ($(a1.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge B$};
+      \node (p2) at ($(a2.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge\neg B$};
+      \node (p3) at ($(a3.input 1) + (-0.7,-0.75)$) {\color{pviolet}$\neg A$};
+      \node (s1) at ($(a1.input 2) + (0,-1.25)$) {\color{psandy}$D$};
+      \node (s2) at ($(a2.input 2) + (0,-1.25)$) {\color{psandy}$\neg D$};
+      \node (s3) at ($(a3.input 2) + (0,-1.25)$) {\color{psandy}$D$};
+
+      \draw[edge] (r.input 1) -- ++(0,-0.3) -| (a1);
+      \draw[edge] (r.input 2) -- ++(0,-0.3) -| (a2);
+      \draw[edge] (r.input 3) -- ++(0,-0.3) -| (a3);
+      \draw[edge] (a1.input 1) -- ++(0,-0.3) -| (p1);
+      \draw[edge] (a2.input 1) -- ++(0,-0.3) -| (p2);
+      \draw[edge] (a3.input 1) -- ++(0,-0.3) -| (p3);
+      \draw[edge] (a1.input 2) -- ++(0,-0.4) -| (s1);
+      \draw[edge] (a2.input 2) -- ++(0,-0.4) -| (s2);
+      \draw[edge] (a3.input 2) -- ++(0,-0.4) -| (s3);
+
+      \node[style={single arrow,draw=red,thick}] (arrow) at (4.25,-0.5)
+        {\small\textrm{\textsc{Merge}}};
+
+      \newNamedOrNode[fill=boxgreen,inputs=nnn]{r}{8.5,0}{1};
+      \newNamedAndNode[fill=boxblue,inputs=nn]{a1}{$(r) + (-2.0,-1.5)$}{$\mathbf{e_1}$};
+      \newNamedAndNode[fill=boxorange,inputs=nn]{a2}{$(r) + (0.0,-1.5)$}{$e_2$};
+      \newNamedAndNode[fill=boxpink!80,inputs=nn]{a3}{$(r) + (2.0,-1.5)$}{$\mathbf{e_3}$};
+
+      \node (p1) at ($(a1.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge B$};
+      \node (p2) at ($(a2.input 1) + (-0.6,-0.75)$) {\color{pviolet}$A\wedge\neg B$};
+      \node (p3) at ($(a3.input 1) + (-0.7,-0.75)$) {\color{pviolet}$\neg A$};
+      \node (s) at ($(a2) + (0,-2.5)$) {\color{psandy}$D$};
+      \node (s2) at ($(a2.input 2) + (0,-1.25)$) {\color{psandy}$\neg D$};
+
+      \draw[edge] (r.input 1) -- ++(0,-0.3) -| (a1);
+      \draw[edge] (r.input 2) -- ++(0,-0.3) -| (a2);
+      \draw[edge] (r.input 3) -- ++(0,-0.3) -| (a3);
+      \draw[edge] (a1.input 1) -- ++(0,-0.3) -| (p1);
+      \draw[edge] (a2.input 1) -- ++(0,-0.3) -| (p2);
+      \draw[edge] (a3.input 1) -- ++(0,-0.3) -| (p3);
+      \draw[edge] (a1.input 2) -- ++(0,-1.6) -| (s);
+      \draw[edge] (a2.input 2) -- ++(0,-0.4) -| (s2);
+      \draw[edge] (a3.input 2) -- ++(0,-1.6) -| (s);
+    \end{tikzpicture}
+    \caption{Merging subs $s_1$ and $s_3$ into a single sub}
+    \label{fig:merge}
+  \end{subfigure}
+  \caption{}
+  \label{fig:compmerge}
+\end{figure}
+
+To ensure that elements are mutual exclusive (and by consequence the partition is deterministic),
+we need to disallow relaxations in recursive calls to primes. For instance, if we had not imposed
+this restriction, a possible relaxation of $e_1$'s prime $A\wedge B$ into, say $B$, in
+\Cref{fig:partial-b} might contradict prime mutual exclusivity, as $B$ conflicts with $e_3$'s prime
+$\neg B$ (because $B\wedge\neg A\not\equiv\bot$). This is trivially solved by making sure that
+every partition in subcircuits rooted at primes is exact (here denoted by the function
+\textproc{SampleExactPartition}). If we bound the number of primes to a constant $k$, these exact
+subcircuits will never suffer from an exponential blow-up, as all subsequent (exact) partitions
+contain primes with at most $\left\lceil\log_2(k)\right\rceil$ variables and thus at most
+$2^{\left\lceil\log_2(k)\right\rceil}$ elements are constructed at each call.
+
 \subsection{Experiments}
+
+Just like in \textproc{Strudel} and \textproc{LearnPSDD}, to boost the performance of our approach
+we resort to mixtures of PSDDs. We separately sample $t$ models in parallel with
+\textproc{SamplePSDD}, learn their parameters through closed-form smoothed MLE \citep{kisa14} and
+then learn only mixture weights in five different approaches: (1) likelihood weighting (LLW), where
+each component's weight is proportional to its train likelihood; (2) uniform weights, (3)
+Expectation-Maximization, (4) stacking \citep{smyth98}, and (5) Bayesian Model Combination (BMC,
+\cite{monteith11}).
+
+We compare our results against \textproc{Strudel}, mixtures of \textproc{Strudel}s,
+\textproc{LearnPSDD} and \textproc{LearnSPN}. We used existing implementations coming from the
+Juice probabilistic circuits library \citep{dang21} for the first two, while \textproc{LearnPSDD}
+and \textproc{SamplePSDD} were implemented into the library. For \textproc{LearnSPN}, we used the
+PySPN library\footnote{\url{https://gitlab.com/pgm-usp/pyspn}} whose implementation uses $k$-means
+for learning sums and G-test for products. We look at four different datasets that contain some
+kind of structure to them, modeling them as logical formulae. We observe the impact of this prior
+knowledge by learning PCs both under low data regimes and lots of data. For \textproc{Strudel}, as
+proposed in \citet{dang20}, we used an initial PC compiled from a CLT learned purely from data (see
+\Cref{sec:strudel}). Initial circuits for \textproc{LearnPSDD} were compiled into canonical logic
+circuits from either a CNF or DNF when the logical restrictions permitted a tractable
+representation in such forms; when this was not the case, a BDD was compiled into a circuit
+instead. For the resulting initial circuit to contain variables not present in the formula, a
+product node whose children were the compiled PC and a fully factorized circuit over absent
+variables was created and set as root.
+
+All experiments were run on an Intel i7-8700K 3.70 GHz machine with 12 cores and 64GB. We limited
+\textproc{LearnPSDD} and \textproc{Strudel} both to at most 100 iterations, although runs with 1000
+iterations can be found in the supplementary material of \Cref{sec:samplepsdd-article}.
 
 \section{A Data Perspective}
 \label{sec:data}

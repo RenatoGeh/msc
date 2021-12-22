@@ -105,12 +105,15 @@
 
 % É possível definir como determinadas palavras podem (ou não) ser
 % hifenizadas; no entanto, a hifenização automática geralmente funciona bem
-\babelhyphenation{documentclass latexmk soft-ware} % todas as línguas
-\babelhyphenation[brazilian]{Fu-la-no}
-\babelhyphenation[english]{what-ever}
+%\babelhyphenation{documentclass latexmk soft-ware} % todas as línguas
+%\babelhyphenation[brazilian]{Fu-la-no}
+%\babelhyphenation[english]{what-ever}
 
 \input{conteudo/metadados} % título, autor, resumo/abstract, banca etc.
 
+% Add annex labels
+\crefname{annexl}{annex}{annexes}
+\Crefname{annexl}{Annex}{Annexes}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%% AQUI COMEÇA O CONTEÚDO DE FATO %%%%%%%%%%%%%%%%%%%%%%%%%
