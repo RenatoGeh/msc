@@ -378,6 +378,7 @@ constraints.
       \node[anchor=west]  at ($(n4) + (-0.1,-0.5)$) {\small $\Forget(\phi|_{A \wedge B}, C)=D$};
     \end{tikzpicture}
     \caption{Partial partition where subs are relaxed}
+    \label{fig:partial-b}
   \end{subfigure}
   \caption{An example of an invalid partition \textbf{(a)} due to subs disrespecting the vtree's
   right branch, here shown as the \protect\tikz\protect\draw[very thick,dashed,pbrickred] (0,0)
@@ -400,9 +401,86 @@ into an exact partition unless it has an exponential number of elements, and so 
 \emph{partial} partitions. The \emph{forget} operation takes a formula $\psi$ and marginalizes
 variable $X$: $\Forget(\psi, X)=\psi|_X\vee\psi|_{\neg X}$; by construction $\Forget(\psi,X)\geq
 \psi$. By forgetting all variables in $\set{F}$, we secure structure decomposability and produce a
-relaxation of the original formula.
+relaxation of the original formula. To do this efficiently, we make use of a BDD for representing
+formulae, as reduced BDDs are canonical and permit polynomial time restricting and forgetting.
 
-In practice, to efficiently produce 
+In more practical terms, the overall process of sampling a PSDD starts with a logical formula
+$\phi$, a vtree $\mathcal{V}$ and scope $\set{X}$. We recursively construct partial partitions by
+first sampling a fixed number of $k$ primes and evaluating subs with restrictions and $\Forget$s.
+Elements whose subs are removed, as their probability is always zero. For each prime and sub, we
+recursively call the same procedure on their formulae. \Cref{alg:samplepsdd} shows this recursive
+procedure formally. The sampling process of generating primes and their subs is shown in
+\Cref{alg:samplepartial}, and goes as follows. To produce primes (and subs), we must look at the
+space of all possible variable assignments coming from $\Sc(v^\gets)$, where $v$ is the
+relevant vtree node. If we fix a variable ordering to $\Sc(v^\gets)$, say an $m$-uple $\set{O}=\{
+X_1,\ldots,X_m\}$, then we might structure this space as a binary decision tree whose nodes are
+labeled as a variable and every edge denotes positive or negative literals over that variable. The
+path coming from a node to a leaf in this decision tree represents all chosen literals in a prime.
+An example of such a tree is shown as the right tree in \Cref{fig:partial-b}. We efficiently
+generate $k$ primes by starting from the root node labeled as variable $X_1$ and repeatedly
+expanding a leaf labeled $X_i$ with two children $X_{i+1}$ until the number of leaves is between
+$k-1$ and $k$ (expanding further would mean violating the bound on the number of primes). Every
+time we expand a leaf, we must generate the restrictions $\psi|_{X_i}$ and $\psi|_{\neg X_i}$,
+where $\psi$ is the formula up to that path, and associate them with the left and right children
+respectively. If $\psi|_{X_i}\equiv\psi|_{\neg X_i}$, or in other words the assignment of $X_i$
+does not change $\psi$'s semantics, then we relabel the node as $X_{i+1}$ and re-expand it with
+children $X_{i+2}$, effectively ignoring $X_{i+1}$. When this process terminates, we have at most
+$k$ conjunctive primes represented by all the paths coming from the root down to the leaves, each
+of these with an associated formula equivalent to restricting $\phi$ to all assignments
+$\phi|_\set{x}$. Now, to obtain valid subs as previously mentioned, we apply the $\Forget$
+operation to each sub over the scope of $\Sc(v^\gets)$, removing any variables from the wrong side
+of the vtree.
+
+\begin{algorithm}[t]
+  \caption{\textproc{SamplePartialPartition}}\label{alg:samplepartial}
+  \begin{algorithmic}[1]
+    \Require BDD $\phi$, vtree node $v$, number of primes $k$
+    \Ensure A set of sampled elemens
+    \State Define $\set{E}$ as an empty collection of sampled elements
+    \State Sample an ordering $X_1,\ldots,X_m$ of $\Sc(v^\gets)\cap\Sc(\phi)$
+    \State Let $\set{Q}$ be a queue initially containing $(\phi,1,\{\})$
+    \State $j\gets 1$\Comment{Counter of sampled elements}
+    \While{$|\set{E}<k$}
+      \State Pop top item $(\psi,i,p)$ from $\set{Q}$
+      \If{$j\geq k$ \textbf{or} $i>m$ \textbf{or} $\psi\equiv\top$}
+        \State Add $(p,\Forget(\phi|_p,\Sc(v^\gets)))$ to $\set{E}$
+        \State \textbf{continue}
+      \EndIf
+      \State $\alpha\gets\psi|_{X_i}$, $\beta\gets\psi|_{\neg X_i}$
+      \IIf{$\alpha\equiv\beta$}{enqueue $(\psi,i+1,p)$ into $\set{Q}$}
+      \NIElse
+        \IIf{$\alpha\not\equiv\bot$}{push $(\alpha,i+1,p\wedge X_i)$ to $\set{Q}$}
+        \IIf{$\beta\not\equiv\bot$}{push $(\beta,i+1,p\wedge\neg X_i)$ to $\set{Q}$}
+        \State $j\gets j+1$
+      \EndNIElse
+    \EndWhile
+    \State \textbf{return} $\set{E}$
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+  \caption{\textproc{SamplePSDD}}\label{alg:samplepsdd}
+  \begin{algorithmic}[1]
+    \Require BDD $\phi$, vtree node $v$, number of primes $k$
+    \Ensure A sampled PSDD structure
+    \If{$|\Sc(v)|=1$}
+      \IIf{$\phi$ is a literal}{\textbf{return} $\phi$ as a literal node}
+      \IElse{\textbf{return} a Bernoulli distribution input node from $\Sc(v)$}
+    \ElsIf{$\phi\equiv\top$}
+      \State \textbf{return} a fully factorized circuit over $\Sc(v)$
+    \EndIf
+    \State $\set{E}\gets\Call{SamplePartialPartition}{\phi,\Sc(v^\gets),k}$
+    \State Create a sum node $\Sum$
+    \State Randomly compress elements in $\set{E}$ with equal subs
+    \State Randomly merge elements in $\set{E}$ with equal subs
+    \For{each element $(p,s)\in\set{E}$}
+      \State $l\gets\Call{SampleExactPSDD}{p,v^\gets,k}$
+      \State $r\gets\Call{SamplePSDD}{s,v^\to,k}$
+      \State Add a product node with children $l$ and $r$ as a child of $\Sum$
+    \EndFor
+    \State \textbf{return} $\Sum$
+  \end{algorithmic}
+\end{algorithm}
 
 \subsection{Experiments}
 
