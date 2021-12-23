@@ -610,7 +610,8 @@ number of parameters.
     \caption{Merging subs $s_1$ and $s_3$ into a single sub}
     \label{fig:merge}
   \end{subfigure}
-  \caption{}
+  \caption{Examples of compression \textbf{(a)} and merging \textbf{(b)} as local transformations
+    for reducing the size of PSDDs. Both act on elements whose subs are logically equivalent.}
   \label{fig:compmerge}
 \end{figure}
 
@@ -652,8 +653,92 @@ product node whose children were the compiled PC and a fully factorized circuit 
 variables was created and set as root.
 
 All experiments were run on an Intel i7-8700K 3.70 GHz machine with 12 cores and 64GB. We limited
-\textproc{LearnPSDD} and \textproc{Strudel} both to at most 100 iterations, although runs with 1000
-iterations can be found in the supplementary material of \Cref{sec:samplepsdd-article}.
+\textproc{LearnPSDD} and \textproc{Strudel} both to 100 iterations, although runs with 1000
+iterations can be found in the supplementary material of \Cref{sec:samplepsdd-article}. In the
+remaining part of this section, we first address the performance of our proposed approach compared
+to the state-of-the-art and then provide an empirical analysis on the impact of vtrees and
+parameter choice for ensembles of \textproc{SamplePSDD}
+
+\subsubsection{LED Display}
+
+A seven-segment LED display consists of LED light segments which are separately turned on or off in
+order to represent a digit. \Cref{fig:led} shows some digits represented by a seven-segment
+display. Each digit is associated with a local constraint on the values of each segment. We adapt
+the approach by \citet{mattei20a} and generate a \texttt{led} dataset of faulty observations of the
+segments as follows. Each segment is represented by a pair of variables $(X_i,Y_i)$, where $Y_i$ is
+the observable state of segment $i$ (i.e.\ whether the segment is on or off) and $X_i$ is the
+latent state of $i$. We randomly sampled a PSDD over variables $X_i$ and $Y_i$ whose support are
+the valid configurations of segments $X_i$ representing the digits, and use that model to generate
+a dataset of \num{5000} training instances and \num{10000} test instances.
+
+\begin{figure}[t]
+  \begin{tikzpicture}
+    \node at (-2.5,0) {\sevensegnum{3}};
+    \node at (-1.2,0) {\sevensegnum{4}};
+    \node at (-2.5,-2.0) {\sevensegnum{5}};
+    \node at (-1.2,-2.0) {\sevensegnum{6}};
+
+    \node[anchor=west] at (0,0.75) {$\phi_3=\phantom{\neg} X_1 \wedge\phantom{\neg} X_2 \wedge\phantom{\neg} X_3 \wedge\phantom{\neg} X_4 \wedge \neg X_5 \wedge \neg X_6 \wedge\phantom{\neg} X_7$};
+    \node[anchor=west] at (0,0.25) {$\phi_4=\neg X_1 \wedge\phantom{\neg} X_2 \wedge\phantom{\neg} X_3 \wedge \neg X_4 \wedge \neg X_5 \wedge\phantom{\neg} X_6 \wedge\phantom{\neg} X_7$};
+    \node[anchor=west] at (0,-0.25) {$\phi_5=\phantom{\neg} X_1 \wedge \neg X_2 \wedge\phantom{\neg} X_3 \wedge\phantom{\neg} X_4 \wedge \neg X_5 \wedge\phantom{\neg} X_6 \wedge\phantom{\neg} X_7$};
+    \node[anchor=west] at (0,-0.75) {$\phi_6=\phantom{\neg} X_1 \wedge \neg X_2 \wedge\phantom{\neg} X_3 \wedge\phantom{\neg} X_4 \wedge\phantom{\neg} X_5 \wedge\phantom{\neg} X_6 \wedge\phantom{\neg} X_7$};
+    \node at (4,-1.5) {$\phi=\bigvee_{i=0}^9\phi_i$};
+
+    \node (d) at (10,-1) {\scalebox{1.5}{\sevensegnum{8}}};
+    \node at ($(d) + (0,1.75)$) {$X_1$};
+    \node at ($(d) + (1.25,0.6)$) {$X_2$};
+    \node at ($(d) + (1.25,-0.6)$) {$X_3$};
+    \node at ($(d) + (0,-1.75)$) {$X_4$};
+    \node at ($(d) + (-1.25,0.6)$) {$X_5$};
+    \node at ($(d) + (-1.25,-0.6)$) {$X_6$};
+    \node at ($(d) + (0.0,0.4)$) {$X_7$};
+
+    \foreach \i in {0,...,9} {
+      \node at ($(0.75, -2.5) + (0.75*\i,0)$) {\includegraphics[scale=1.75]{\i.pdf}};
+    }
+  \end{tikzpicture}
+  \caption{Seven-segment LED digits for 3, 4, 5 and 6 (left), the logical constraints for each
+  of these digit $\phi_i$ (top middle) and the resulting formula derived from listing all valid
+  configurations $\phi$ (middle), each latent variable $X_i$ corresponding to a segment's supposed
+state, and samples of pixel variants \texttt{led-pixels} for each digit (bottom middle).}
+  \label{fig:led}
+\end{figure}
+
+A more complex alternative configuration for the LED setting, \texttt{led-pixels}, is the
+interpretation of digits as images and segments as pixel regions. The segment constraints remain
+unchanged, but now pixels act as the latent variables. \Cref{fig:led} (bottom) shows ten samples
+for each the ten digits; each instance from the dataset is a $10\times 15$ black-and-white image.
+In this pixelized version, we do not explicitly describe, in the form of logical constraints, a
+one-to-one mapping of pixel regions as segments; instead, we visually identify key points where
+pixels most often activated given a segment's value. Let $\set{R}_s$ be pixel variables which are
+most oftn set to 1 when a segment $s$ is on. We build a constraint for each segment: $\psi(s)=s\to
+\bigvee_{r\in\set{R}_s} r$. We futher recognize which pixels are always off given a valid digit
+segment configuraton: $\phi(\set{s})=\left(\bigwedge_{p:p=0|\set{s}} \neg p\right)\wedge\left(
+\bigwedge_{s\in\set{s}} s\right)$. The full logic formula encoding all constraints is the
+conjunction of every possible $\phi$ and $\psi$.
+
+%Let $\set{S}_i$ the set of critical key pixels of segment $i$; the formula for the key pixels is
+%set to $\alpha=\bigvee_{i=1}^7\left( \bigwedge_{p\in\set{S}_i}p\right)\wedge X_i$. We also add a
+%constraint $\beta$ for pixels which are never on for a given digit. Let $f(i|d)$ a function that,
+%given a digit $d$, maps a segment $i$ to the set of all pixels which are always off when $i$ is
+%true. We set $\beta=\bigvee_{i=0}^9 \left\liv d= i\right\riv\wedge\left(\bigwedge_{p\in f(i)}\neg
+%p\right)$. The final constraint is then $\phi=\alpha\wedge\beta$.
+
+\begin{figure}[t]
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{ll_led.pdf}
+    \caption{}
+    \label{fig:ll-led}
+  \end{subfigure}
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{ll_led_pixels.pdf}
+    \caption{}
+    \label{fig:ll-led-pixels}
+  \end{subfigure}
+  \caption{Log-likelihoods for the unpixelized \texttt{led} \textbf{(a)} and pixelized
+    \texttt{led-pixels} \textbf{(a)} datasets.}
+  \label{fig:ll-led-all}
+\end{figure}
 
 \section{A Data Perspective}
 \label{sec:data}
