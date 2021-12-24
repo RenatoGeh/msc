@@ -447,7 +447,7 @@ $\Sc(v^\gets)$, removing any variables from the wrong side of the vtree.
     \State Sample an ordering $X_1,\ldots,X_m$ of $\Sc(v^\gets)\cap\Sc(\phi)$
     \State Let $\set{Q}$ be a queue initially containing $(\phi,1,\{\})$
     \State $j\gets 1$\Comment{Counter of sampled elements}
-    \While{$|\set{E}<k|$}
+    \While{$|\set{E}<k|$}\label{alg:samplepartial:line:while}
       \State Pop top item $(\psi,i,p)$ from $\set{Q}$
       \If{$j\geq k$ \textbf{or} $i>m$ \textbf{or} $\psi\equiv\top$}
         \State Add $(p,\Forget(\phi|_p,\Sc(v^\gets)))$ to $\set{E}$
@@ -475,6 +475,7 @@ $\Sc(v^\gets)$, removing any variables from the wrong side of the vtree.
       \IElse{\textbf{return} a Bernoulli distribution input node over variable $\Sc(v)$}
     \ElsIf{$\phi\equiv\top$}
       \State \textbf{return} any smooth, structure decomposable and deterministic PC over $\Sc(v)$
+      \label{alg:samplepsdd:line:top}
     \EndIf
     \State $\set{E}\gets\Call{SamplePartialPartition}{\phi,\Sc(v^\gets),k}$
     \State Create a sum node $\Sum$
@@ -636,7 +637,7 @@ each component's weight is proportional to its train likelihood; (2) uniform wei
 Expectation-Maximization, (4) stacking \citep{smyth98}, and (5) Bayesian Model Combination (BMC,
 \cite{monteith11}).
 
-We compare our results against \textproc{Strudel}, mixtures of \textproc{Strudel}s,
+We compare our results against \textproc{Strudel}, mixtures of 10 \textproc{Strudel}s,
 \textproc{LearnPSDD} and \textproc{LearnSPN}. We used existing implementations coming from the
 Juice probabilistic circuits library \citep{dang21} for the first two, while \textproc{LearnPSDD}
 and \textproc{SamplePSDD} were implemented into the library. For \textproc{LearnSPN}, we used the
@@ -654,10 +655,12 @@ variables was created and set as root.
 
 All experiments were run on an Intel i7-8700K 3.70 GHz machine with 12 cores and 64GB. We limited
 \textproc{LearnPSDD} and \textproc{Strudel} both to 100 iterations, although runs with 1000
-iterations can be found in the supplementary material of \Cref{sec:samplepsdd-article}. In the
-remaining part of this section, we first address the performance of our proposed approach compared
-to the state-of-the-art and then provide an empirical analysis on the impact of vtrees and
-parameter choice for ensembles of \textproc{SamplePSDD}
+iterations can be found in the supplementary material of \Cref{sec:samplepsdd-article}. For all
+experiments with \textproc{SamplePSDD}, when $\phi\equiv\top$ (line \ref{alg:samplepsdd:line:top}
+of \Cref{alg:samplepsdd}) we produced a fully factorized circuit. In the remaining part of this
+section, we first address the performance of our proposed approach compared to the state-of-the-art
+and then provide an empirical analysis on the impact of vtrees and parameter choice for ensembles
+of \textproc{SamplePSDD}
 
 \subsubsection{LED Display}
 
@@ -726,18 +729,238 @@ conjunction of every possible $\phi$ and $\psi$.
 
 \begin{figure}[t]
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{ll_led.pdf}
+    \includegraphics[width=\textwidth]{ll_led}
     \caption{}
     \label{fig:ll-led}
   \end{subfigure}
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{ll_led_pixels.pdf}
+    \includegraphics[width=\textwidth]{ll_led_pixels}
     \caption{}
     \label{fig:ll-led-pixels}
   \end{subfigure}
   \caption{Log-likelihoods for the unpixelized \texttt{led} \textbf{(a)} and pixelized
-    \texttt{led-pixels} \textbf{(a)} datasets.}
+    \texttt{led-pixels} \textbf{(b)} datasets.}
   \label{fig:ll-led-all}
+\end{figure}
+
+\Cref{fig:ll-led-all} shows how our approach fairs against competitors using different percentages
+of available training data on the unpixelized and pixelized versions of the dataset. The labels on
+the $x$-axis indicate percentage and number of training instances. We sampled $t=100$ circuits for
+both settings, with $k=32$ and $k=8$ for \texttt{led} and \texttt{led-pixels} respectively. Note
+how the use of logical constraints greatly improves performance even under extremely scarce data
+(with 1 or 2 datapoints). Most of the \textproc{SamplePSDD} approaches obtain the best performance
+with the full dataset, and ranks among the best when data size is small.
+
+\subsubsection{Cardinality Constraints}
+
+The \textproc{dota} dataset contains the result of \num{102944} online matches of the Dota 2
+videogame, made available at the UCI Repository. In this game, each team is composed of 5 players
+players, with each one controlling a single character out of a pool of 113. Each character can be
+controlled by at most one single player in a match. We represent the domain by 2 groups of 113
+Boolean variables $C_1^{(i)}$ and $C_2^{(i)}$, denoting whether the $i$-th character was selected
+by the first or second team, respectively. We then encode $113$-choose-$5$ cardinality constraints
+on the selection of each team (i.e.\ $\sum_{i=1}^113 C_j^{(i)}=5$ for $j\in\{1,2\}$).
+Unfortunately, adding the constraint that no character can be selected by both teams
+$\neg(C_1^{(i)}\wedge C_2^{(i)})$ made the BDD representation of the formula intractable, and so
+was ignored. Since the CNF representation of cardinality constraints is intractable, we used a PSDD
+compiled from a BDD to generate an initial circuit for \textproc{LearnPSDD} (as BDDs can
+efficiently encode such restrictions \citep{een06}). We set the number of components for
+\textproc{SamplePSDD} to $t=30$ and bound the number of sampled elements to $k=3$.
+
+\begin{figure}[t]
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{ll_dota}
+    \caption{}
+    \label{fig:ll-dota}
+  \end{subfigure}
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{ll_sushi_choose}
+    \caption{}
+    \label{fig:ll-sushi-choose}
+  \end{subfigure}
+  \caption{Log-likelihoods for the \texttt{dota} \textbf{(a)} and $10$-choose-$5$ \texttt{sushi}
+    \textbf{(b)} datasets.}
+  \label{fig:ll-cardinality}
+\end{figure}
+
+The plot in \Cref{fig:ll-dota} shows the test log-likelihood of the tested approaches. Despite
+accurately encoding logical constraints, \textproc{LearnPSDD} initially obtains worse performance
+when compared to \textproc{SampledPSDD}, but quickly picks up, outperforming other models by a
+large margin. \textproc{SamplePSDD} ranks first for small data regimes, and is comparable to
+\textproc{Strudel} (and mixtures of) for large training datasets. \textproc{LearnSPN} encountered
+problems scaling to more than \num{50000} instances due to intensive memory usage in both
+clustering and pairwise independence testing.
+
+We also compared methods on the \texttt{sushi} dataset \citep{kamishima03}, using the setting
+proposed in \citet{shen17}. The data contains a collection of \num{5000} rankings of \num{10}
+different types of sushi. For each ranking, we create \num{10} Boolean variables denoting whether
+an item was ranked among the top 5, and ignore their relative position. The logical constraints
+represent the selection of \num{5} out of \num{10} items. We split the dataset into \num{3500}
+instances for training and \num{1500} for the test set and evaluated the log-likelihood on both
+tasks. The plot in \Cref{fig:ll-sushi-choose} shows the log-likelihood for this data. For this
+dataset, we set $t=30$ and $k=3$ for ensembles of \textproc{SamplePSDD}. \textproc{LearPSDD}
+obtains superior performance accross some of the low sample sizes, but our approaches were able to
+quickly pick up and tie with \textproc{LearnPSDD} when using the LLW, stacking and EM strategies.
+
+\subsubsection{Preference Learning}
+
+We also evaluated performance on the original task of ranking items on the \texttt{sushi} dataset.
+We adopt the same encoding and methodology as \citep{choi15}, where each ranking is encoded by a
+set of Boolean variables $X_{ij}$ indicating whether the $i$-th item was ranked in the $j$-th
+position. We use same parameters for ensembles of \textproc{SamplePSDD} as the previous dataset and
+set $t=30$ and $k=3$. The test log-likelihood performance of each different method is shown in
+\Cref{fig:ll-sushi-ranking}. The results are qualitatively similar to the previous experiments:
+\textproc{SamplePSDD} performed better than pure data approaches under low data yet achieved
+competitive results when given the full data. In this case, however, we found that
+\textproc{LearnPSDD} ranked first by a large margin compared to others.
+
+\begin{figure}[t]
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{ll_sushi_ranking}
+    \caption{}
+    \label{fig:ll-sushi-ranking}
+  \end{subfigure}
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{sushi_time}
+    \caption{}
+    \label{fig:sushi-time}
+  \end{subfigure}
+  \caption{Log-likelihood for the \texttt{sushi} ranking \textbf{(a)} dataset and curves for mean
+  average time (in seconds) of learning a single \textproc{LearnPSDD} circuit, one
+  \textproc{Strudel} circuit (CLT initialized), a mixture of 10 shared-structure \textproc{Strudel}
+  components, a single \textproc{SamplePSDD} PC and an ensemble of 100 \textproc{SamplePSDD}
+  circuits.}
+  \label{fig:ll-preference}
+\end{figure}
+
+\subsubsection{Scalability, Complexity and Learning Time}
+
+The major advantage of \textproc{SamplePSDD} compared to other PSDD learning algorithms comes from
+its ability to learn from both data and a logical formula $\phi$ even when $\phi$ defines an
+intricate Boolean formula over many variables. Interestingly, how capable \textproc{SamplePSDD} is
+of learning from $\phi$ comes not only from the algorithm itself, but how $\phi$ is represented. In
+fact, any data structure with tractable restriction and reduction (to a canonical form) can be used
+in place of the BDD shown in \Cref{alg:samplepsdd}. We do not require forgetting to be tractable
+due to an implementational ``trick'' in \textproc{SamplePSDD} that allows a fast implementation to
+ignore variables not in the scope of the vtree. More details can be found in the supplemental
+material of \Cref{sec:samplepsdd-article}. Consequently, how scalable our proposed algorithm is
+depends on the representational power of the tool used for manipulating logical formulae. This is
+shown more concretely when we learn from the constraints set by the \texttt{dota} dataset: had we
+tried to manipulate formulae with a CNF, the intractability of cardinality constraints would
+unfortunately impede any progress.
+
+We no provide an analysis on the complexity of $\textproc{SamplePSDD}$. We start with the
+$\textproc{SamplePartialPartition}$ subroutine. If we choose a BDD for manipulating formulae, then
+restrictions are done in $\bigo(c\log c)$, where $c$ is the size of the BDD's graph. At every
+iteration of the main loop in line \ref{alg:samplepartial:line:while} of \Cref{alg:samplepartial},
+a leaf of the binary decision tree is split into two, increasing the number of leaves (and
+therefore primes) by one. This is repeated until $k$ leaves of the decision tree have been
+expanded, bringing \textproc{SamplePartialPartition}'s complexity to $\bigo(k\cdot c\log c)$. Every
+call of \textproc{SamplePSDD} (apart from base cases) produces a new partition and randomly
+compress and merge elements. Compression requires applying a disjunction over two primes, both of
+which are conjunctions of literals, represented in BDDs as a graph of size linear to the number of
+terms. Because primes can have at most $\left\lceil\log_2(k)\right\rceil$, the disjunction of two
+such conjunctions is done in $\bigo(\log_2^2 k)$. Merging (or compressing) $n$ elements
+essentially subtracts the number of recursive calls for each merge (or compression) by $n-1$.
+Therefore, every \textproc{SamplePSDD} recursive call is $\bigo\left(k\cdot c\log c+\log_2^2 k
+\right)$.
+
+We empirically evaluate the time it takes to learn a single circuit from each of
+\textproc{LearnPSDD}, \textproc{Strudel} and \textproc{SamplePSDD}. We also measure running times
+for learning 10 structure-sharing circuits as components of a mixture of \textproc{Strudel}s and
+100 (structurally) distinct PCs sampled from \textproc{SamplePSDD}, each with parameters learned
+from closed-form MLE. \Cref{fig:sushi-time} shows the time it takes to run each of these settings
+on the \texttt{sushi} ranking dataset. On average, \textproc{Strudel} took approximately \num{15}
+seconds, \textproc{LearnPSDD} \num{13} minutes and \num{25} seconds, and \textproc{SamplePSDD}
+about \num{2.76} seconds for learning a single PSDD.
+
+\subsubsection{Performance and Sampling Bias}
+
+The approximation quality of \textproc{SamplePSDD} is highly dependent on both the vtree and
+maximum number of primes. In this section, we compare the impact of both in terms of performance
+and circuit complexity. We assess performance by the log-likelihoods in the test set, as well as
+consistency with the original logical constraints. The latter is measured by randomly sampling
+\num{5000} (possibly invalid) instances and evaluating whether the circuit correctly decides their
+value. A set of the top \num{100} sampled PSDDs (in terms of log-likelihood in the train set) are
+selected out of \num{500} circuits learned on the $10$-choose-$5$ \texttt{sushi} dataset to compose
+the ensemble. Circuit complexity is estimated in terms of both time taken to sample all 500
+circuits and graph size (i.e.\ number of nodes) of each individually generated PSDD.
+
+\begin{figure}[t]
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{k_ll}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{vtree_ll}
+    \caption{}
+  \end{subfigure}
+  \caption{Impact of the number of bounded primes (left) and structure of vtree (right) on the
+    test log-likelihood for the $10$-choose-$5$ \texttt{sushi} dataset.}
+  \label{fig:ll-comp}
+\end{figure}
+
+It is quite clear that the structure of the vtree is tightly linked to the structure of a PSDD,
+especially given the graphical constraints imposed by \textproc{SamplePSDD} and the fact that subs
+need to obey a vtree's scope (and thus its structure). For instance, (near) right vtrees keep the
+number of primes fixed and require no approximation, while (near) left vtrees discard a large
+number of primes. In order to evaluate the effect of the type of vtree on the quality of sampled
+structures, we compared the performance of \textsc{SamplePSDD} as we vary the bias towards
+generation of right-leaning vtrees. Given a parameter $p$, we grow a vtree in a top-down manner
+where at each node we independently assign each variable to the right child with probability $p$.
+Small values of $p$ produce left-leaning vtrees, while vtrees are more likely to lean to the
+right when $p>0.5$. Left leaning vtrees produce especially small networks compared to other vtrees,
+as more variables are left unmentioned because of relaxations coming from the need for a bounded
+number of primes. To produce decently sized circuits, we increase the number of sampled primes $k$
+when $p$ is low and decrease $k$ when $p$ is high.
+
+\Cref{fig:ll-comp} shows the log-likelihood, \Cref{fig:imp-comp} shows consistency and
+\Cref{fig:compl-comp} shows circuit complexity when varying the type of vtrees (left) used for
+guiding the PSDD construction and the bound on the number of primes (right). The blue shaded area
+represents the interval of values (worse to best ranked) for individual circuits. To verify
+consistency, we evaluate the PSDDs in terms of satisfiability of a given example. An ensemble
+returned a configuration as satisfiable if any of its models attributed some nonzero probability to
+it; and unsatisfiable if all models gave zero probability. This evaluation gives a lower bound to
+consistency, which means all models eventually unanimously agreed on satisfiability when vtree
+right bias $\geq 0.65$. Alternatively, since \textproc{SamplePSDD} is a relaxation of the original
+formula, an upper bound on consistency could be achieved by evaluating whether any model within the
+ensemble gave a zero probability to the example; this upper bound curve on consistency would be
+equivalent to the top side of the shaded area. Interestingly, we note that the likelihood weighting
+strategy (LLW) dominates over others on consistency. This is because LLW often degenerates to a few
+models, giving zero probability to lower scoring PSDDs, which means only a small subset of circuits
+decide on satisfiability, and thus a more relaxed model is less likely to disagree with the
+consensus. On the other hand, this does not translate to better data fitness on the general case,
+as we clearly see in \Cref{fig:ll-led-all,fig:ll-cardinality,fig:ll-preference}.
+
+
+\begin{figure}[t]
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{k_imp}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{vtree_imp}
+    \caption{}
+  \end{subfigure}
+  \caption{Impact of the number of bounded primes (left) and structure of vtree (right) on the
+    consistency of sampled PSDDs with the original logical constraints for the $10$-choose-$5$
+    \texttt{sushi} dataset.}
+  \label{fig:imp-comp}
+\end{figure}
+
+\begin{figure}[t]
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{k_complexity}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}{0.495\textwidth}
+    \includegraphics[width=\textwidth]{vtree_complexity}
+    \caption{}
+  \end{subfigure}
+  \caption{Impact of the number of bounded primes (left) and structure of vtree (right) on circuit
+    size (in number of nodes) and learning time (in seconds) for the $10$-choose-$5$ \texttt{sushi}
+    dataset.}
+  \label{fig:compl-comp}
 \end{figure}
 
 \section{A Data Perspective}
