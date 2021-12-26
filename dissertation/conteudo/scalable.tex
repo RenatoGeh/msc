@@ -729,12 +729,12 @@ conjunction of every possible $\phi$ and $\psi$.
 
 \begin{figure}[t]
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{ll_led}
+    \resizebox{\textwidth}{!}{\includegraphics{ll_led}}
     \caption{}
     \label{fig:ll-led}
   \end{subfigure}
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{ll_led_pixels}
+    \resizebox{\textwidth}{!}{\includegraphics{ll_led_pixels}}
     \caption{}
     \label{fig:ll-led-pixels}
   \end{subfigure}
@@ -769,12 +769,12 @@ efficiently encode such restrictions \citep{een06}). We set the number of compon
 
 \begin{figure}[t]
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{ll_dota}
+    \resizebox{\textwidth}{!}{\includegraphics{ll_dota}}
     \caption{}
     \label{fig:ll-dota}
   \end{subfigure}
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{ll_sushi_choose}
+    \resizebox{\textwidth}{!}{\includegraphics{ll_sushi_choose}}
     \caption{}
     \label{fig:ll-sushi-choose}
   \end{subfigure}
@@ -816,12 +816,12 @@ competitive results when given the full data. In this case, however, we found th
 
 \begin{figure}[t]
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{ll_sushi_ranking}
+    \resizebox{\textwidth}{!}{\includegraphics{ll_sushi_ranking}}
     \caption{}
     \label{fig:ll-sushi-ranking}
   \end{subfigure}
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{sushi_time}
+    \resizebox{\textwidth}{!}{\includegraphics{sushi_time}}
     \caption{}
     \label{fig:sushi-time}
   \end{subfigure}
@@ -888,14 +888,14 @@ circuits and graph size (i.e.\ number of nodes) of each individually generated P
 
 \begin{figure}[t]
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{k_ll}
+    \resizebox{\textwidth}{!}{\includegraphics{vtree_ll}}
     \caption{}
   \end{subfigure}
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{vtree_ll}
+    \resizebox{\textwidth}{!}{\includegraphics{k_ll}}
     \caption{}
   \end{subfigure}
-  \caption{Impact of the number of bounded primes (left) and structure of vtree (right) on the
+  \caption{Impact of the structure of vtree (left) and number of bounded primes (right) on the
     test log-likelihood for the $10$-choose-$5$ \texttt{sushi} dataset.}
   \label{fig:ll-comp}
 \end{figure}
@@ -914,9 +914,24 @@ as more variables are left unmentioned because of relaxations coming from the ne
 number of primes. To produce decently sized circuits, we increase the number of sampled primes $k$
 when $p$ is low and decrease $k$ when $p$ is high.
 
+\begin{figure}[t]
+  \begin{subfigure}{0.495\textwidth}
+    \resizebox{\textwidth}{!}{\includegraphics{vtree_imp}}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}{0.495\textwidth}
+    \resizebox{\textwidth}{!}{\includegraphics{k_imp}}
+    \caption{}
+  \end{subfigure}
+  \caption{Impact of the structure of vtree (left) and number of bounded primes (right) on the
+    consistency of sampled PSDDs with the original logical constraints for the $10$-choose-$5$
+    \texttt{sushi} dataset.}
+  \label{fig:imp-comp}
+\end{figure}
+
 \Cref{fig:ll-comp} shows the log-likelihood, \Cref{fig:imp-comp} shows consistency and
-\Cref{fig:compl-comp} shows circuit complexity when varying the type of vtrees (left) used for
-guiding the PSDD construction and the bound on the number of primes (right). The blue shaded area
+\Cref{fig:compl-comp} shows circuit complexity when varying the bound on the number of primes
+(left) and the type of vtrees used for guiding the PSDD construction (right). The blue shaded area
 represents the interval of values (worse to best ranked) for individual circuits. To verify
 consistency, we evaluate the PSDDs in terms of satisfiability of a given example. An ensemble
 returned a configuration as satisfiable if any of its models attributed some nonzero probability to
@@ -932,32 +947,16 @@ decide on satisfiability, and thus a more relaxed model is less likely to disagr
 consensus. On the other hand, this does not translate to better data fitness on the general case,
 as we clearly see in \Cref{fig:ll-led-all,fig:ll-cardinality,fig:ll-preference}.
 
-
 \begin{figure}[t]
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{k_imp}
+    \resizebox{\textwidth}{!}{\includegraphics{vtree_complexity}}
     \caption{}
   \end{subfigure}
   \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{vtree_imp}
+    \resizebox{\textwidth}{!}{\includegraphics{k_complexity}}
     \caption{}
   \end{subfigure}
-  \caption{Impact of the number of bounded primes (left) and structure of vtree (right) on the
-    consistency of sampled PSDDs with the original logical constraints for the $10$-choose-$5$
-    \texttt{sushi} dataset.}
-  \label{fig:imp-comp}
-\end{figure}
-
-\begin{figure}[t]
-  \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{k_complexity}
-    \caption{}
-  \end{subfigure}
-  \begin{subfigure}{0.495\textwidth}
-    \includegraphics[width=\textwidth]{vtree_complexity}
-    \caption{}
-  \end{subfigure}
-  \caption{Impact of the number of bounded primes (left) and structure of vtree (right) on circuit
+  \caption{Impact of the structure of vtree (left) and number of bounded primes (right) on circuit
     size (in number of nodes) and learning time (in seconds) for the $10$-choose-$5$ \texttt{sushi}
     dataset.}
   \label{fig:compl-comp}
@@ -965,6 +964,19 @@ as we clearly see in \Cref{fig:ll-led-all,fig:ll-cardinality,fig:ll-preference}.
 
 \section{A Data Perspective}
 \label{sec:data}
+
+We now turn our attention to scalably learning a PC purely from data. Throughout this section, we
+introduce and motivate a novel approach to learning smooth and structure decomposable circuits by
+randomly partitioning the data space in \divclass{} fashion. We show that our method produces
+competitive PCs at a fraction of the time. Before we go through with our proposed approach in more
+detail however, we must first lay the groundwork and motivate the decisions behind our structure
+learning algorithm. We begin by re-emphasizing the connection between probabilistic circuits and
+density estimation trees seen in \Cref{eg:det}, variants of decision trees for density estimation
+\citep{ram11,smyth95,hang19}. We follow by revisiting \emph{random projections}
+\citep{dasgupta08a,dasgupta08b}, a well-known technique for hierarchically partitioning data
+through oblique hyperplanes. Next, we present in detail a very fast structure learning algorithm
+for quickly generating smooth and structure decomposable circuits. Despite their simplicity, we
+empirically show their competitive performance compared to state-of-the-art.
 
 \subsection{\textproc{LearnRP}}
 
