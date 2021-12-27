@@ -967,16 +967,35 @@ as we clearly see in \Cref{fig:ll-led-all,fig:ll-cardinality,fig:ll-preference}.
 
 We now turn our attention to scalably learning a PC purely from data. Throughout this section, we
 introduce and motivate a novel approach to learning smooth and structure decomposable circuits by
-randomly partitioning the data space in \divclass{} fashion. We show that our method produces
-competitive PCs at a fraction of the time. Before we go through with our proposed approach in more
-detail however, we must first lay the groundwork and motivate the decisions behind our structure
-learning algorithm. We begin by re-emphasizing the connection between probabilistic circuits and
-density estimation trees seen in \Cref{eg:det}, variants of decision trees for density estimation
-\citep{ram11,smyth95,hang19}. We follow by revisiting \emph{random projections}
-\citep{dasgupta08a,dasgupta08b}, a well-known technique for hierarchically partitioning data
-through oblique hyperplanes. Next, we present in detail a very fast structure learning algorithm
-for quickly generating smooth and structure decomposable circuits. Despite their simplicity, we
-empirically show their competitive performance compared to state-of-the-art.
+randomly partitioning the data space in a \divclass{} class fashion. We show that our method
+produces competitive PCs at a fraction of the time. Before we go through with our proposal in
+detail, we must first lay the groundwork and motivate the decisions behind our structure learning
+algorithm. We begin by re-emphasizing the connection between probabilistic circuits and density
+estimation trees briefly discussed in \Cref{eg:det}. We follow by revisiting \emph{random
+projections} \citep{dasgupta08a,dasgupta08b}, a well-known technique for hierarchically
+partitioning data through oblique hyperplanes. Next, we present in detail a very fast structure
+learning algorithm for quickly generating smooth and structure decomposable circuits. Despite their
+simplicity, we empirically show their competitive performance compared to state-of-the-art.
+
+Recently, \citet{correia20} showed that (ensembles of) decision trees (DTs) learned for prediction
+tasks can be easily extended into full probabilistic models represented as probabilistic circuits.
+Besides equipping decision forests with more principles approaches to handling missing data and
+diagnosing outliers, this bridge between decision trees and PCs suggests an interesting alternative
+to learning the latter using the efficient inductive algorithms available for the former
+\citep{correia20,ram11,khosravi20}. Despite this, most works addressing such a connection have
+focused on the discriminative side of DTs, with much of the effort put onto classification rather
+than generative tasks such as density estimation. Here, we explore the generative side of DTs,
+often referred as density estimation trees (DETs, \cite{ram11,ho19,smyth95}), within the framework
+of PCs.
+
+As we discussed in \Cref{eg:det}, a DET can be represented as a smooth and deterministic PC with
+only sums and input nodes, the latter's supports restricted to the data cells induced by the
+partitioning data hyperplanes. The resulting density of this DET PC is given by
+\begin{equation*}
+  p_\mathcal{C}(\set{x})=\sum_{\Leaf\in\operatorname{Inputs}(\mathcal{C})}w_{\Leaf}\cdot\Leaf(\set{x})\cdot\liv\set{x}\in\Leaf\riv,
+\end{equation*}
+where $\liv\set{x}\in\Leaf\riv$ is an indicator function that returns 1 if $\set{x}$ is within
+$\Leaf$'s cell and 0 otherwise. Data is usually partitioned by axes-aligned hyperplanes 
 
 \subsection{\textproc{LearnRP}}
 

@@ -1901,12 +1901,12 @@ now ready to understand how to build them in a principled way.
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Density estimation trees as probabilistic circuits}{det}
   A density estimation tree is a decision tree for the task of density estimation \citep{ram11}.
   Briefly, a decision tree $\mathcal{T}$ partitions the data space (usually $\mathbb{R}^d$) into
-  cells by laying out hyperplanes usually orthogonal to the axes, essentially creating a latent
-  variable for each decision tree node that determines in which edge an observation should fall
-  into. The density function of a tree $\mathcal{T}$ given a dataset $\set{D}$ of dimension $d$ is
-  defined as the piecewise function
+  cells by laying out hyperplanes usually orthogonal to the axes, creating a latent variable for
+  each node that essentially determines in which edge an observation should fall into. The density
+  function of a tree $\mathcal{T}$ given a dataset $\set{D}$ of dimension $d$ is defined as the
+  piecewise function
   \begin{equation*}
-    p_\mathcal{T}(\set{x})=\sum_{\Leaf\in\operatorname{Leaves}(\mathcal{T})}\frac{\left|\set{D}\in\Leaf\right|}{|\set{D}|\cdot\operatorname{Vol}(\Leaf)}\cdot\liv\set{x}\in\Leaf\riv,
+    p_\mathcal{T}(\set{x})=\sum_{\Leaf\in\operatorname{Leaves}(\mathcal{T})}\frac{1}{\operatorname{Vol}(\Leaf)}\cdot\frac{\left|\set{D}\in\Leaf\right|}{|\set{D}|}\cdot\liv\set{x}\in\Leaf\riv,
   \end{equation*}
   where $\left|\set{D}\in\Leaf\right|$ indicates the number of assignments $\set{x}$ in the
   training dataset $\set{D}$ which fall inside the cell determined by leaf $\Leaf$, and
@@ -1918,9 +1918,13 @@ now ready to understand how to build them in a principled way.
   Equivalently, a sum node in a PC that determines the on-off state of a latent variable
   partitioning the data space configures the same semantics as a density estimation tree. Instead
   of delegating an observation's probability to the tree's leaves, a PC spreads out this density to
-  both weights in sum nodes and density in input nodes. For this equivalence to hold, however
-  inputs must constraint their support to the space determined by all sum nodes' latent variables
-  up to the root.
+  both weights in sum nodes and density in input nodes. Let $\mathcal{C}$ a PC whose nodes are all
+  sum nodes which encode such latent partitions and whose input nodes are truncated to follow these
+  latent variables (i.e.\ their support is only over the space determined by the partitionings);
+  collapse all layers (and weights) into a shallow PC with a single sum layer. Its value is then
+  \begin{equation*}
+    p_\mathcal{C}(\set{x})=\sum_{\Leaf\in\operatorname{Inputs}(\mathcal{C})}w_{\Leaf}\cdot\Leaf(\set{x})\cdot\liv\set{x}\in\Leaf\riv.
+  \end{equation*}
   \tcblower
   \centering
   \begin{tikzpicture}
@@ -1930,8 +1934,8 @@ now ready to understand how to build them in a principled way.
     \draw[very thick,boxblue,dashed] (3.5,0) -- node[left,pos=0.9] {\color{boxblue}$\set{A}$} (3.5,5);
     \draw[very thick,boxgreen,dashed] (0,2.5) -- node[right,pos=1] {\color{boxgreen}$\set{B}$} (3.5,2.5);
     \draw[very thick,boxpurple!80,dashed] (2,0) -- node[above,pos=1] {\color{boxpurple}$\set{C}$} (2,2.5);
-    \node at (1,1.25) {$L_1$};
-    \node at (2.75,1.25) {$L_2$};
+    \node at (1,1.25) {$\Leaf_1$};
+    \node at (2.75,1.25) {$\Leaf_2$};
     \node[circle,inner sep=0pt,minimum size=3pt,fill=black,label=above right:{$\set{x}$}] at (1.5,1.9) {};
 
     \node[inner sep=1pt,minimum size=12pt,circle,fill=boxblue!80] (a) at (3,-1) {$\set{A}$};
@@ -1949,11 +1953,11 @@ now ready to understand how to build them in a principled way.
     \draw (c) -- node[above right,pos=0.5] {$\set{x}>\set{C}$} (l2);
     \draw[edge,boxdgray] (c) edge[bend left=15] (l1);
 
-    \newSumNode[fill=boxblue!80,label=above left:{$\set{A}$}]{a}{$(a) + (0,-5.5)$};
+    \newSumNode[fill=boxblue!80,label=above left:{$\set{A}$}]{a}{$(a) + (0,-6.0)$};
     \newSumNode[fill=boxgreen!80,label=above left:{$\set{B}$}]{b}{$(a) + (-1,-1.5)$};
     \newSumNode[fill=boxpurple!60,label=above right:{$\set{C}$}]{c}{$(b) + (1,-1.5)$};
-    \newGaussNode[fill=boxpink!30,label=below:{$L_1\cdot\liv\set{x}\in L_1\riv$}]{l1}{$(c) + (-1.5,-1.5)$};
-    \newGaussNode[fill=boxgoldenrod!40,label=below:{$L_2\cdot\liv\set{x}\in L_2\riv$}]{l2}{$(c) + (1,-1.5)$};
+    \newGaussNode[fill=boxpink!30,label=below:{$\Leaf_1\cdot\liv\set{x}\in\Leaf_1\riv$}]{l1}{$(c) + (-1.5,-1.5)$};
+    \newGaussNode[fill=boxgoldenrod!40,label=below:{$\Leaf_2\cdot\liv\set{x}\in\Leaf_2\riv$}]{l2}{$(c) + (1,-1.5)$};
     \draw[edge] (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}>\set{A}$} ($(a) + (1,-1.5)$);
     \draw[edge] (a) -- node[above left,pos=0.5] {$\set{x}\leq\set{A}$} (b);
     \draw[edge,boxdgray] (a) edge[bend left=15] (b);
@@ -1963,5 +1967,12 @@ now ready to understand how to build them in a principled way.
     \draw[edge] (c) -- node[above left,pos=0.5] {$\set{x}\leq\set{C}$} (l1);
     \draw[edge] (c) -- node[above right,pos=0.5] {$\set{x}>\set{C}$} (l2);
     \draw[edge,boxdgray] (c) edge[bend left=15] (l1);
+
+    \newSumNode[fill=boxteal]{r}{$(a) + (-0.5,-6.5)$};
+    \newGaussNode[fill=boxpink!30,label=below:{$\Leaf_1\cdot\liv\set{x}\in\Leaf_1\riv$}]{l1}{$(r) + (-1.5,-1.5)$};
+    \newGaussNode[fill=boxgoldenrod!40,label=below:{$\Leaf_2\cdot\liv\set{x}\in\Leaf_2\riv$}]{l2}{$(r) + (1.5,-1.5)$};
+    \node at ($(r) + (0,-1.5)$) {$\cdots$};
+    \draw[edge] (r) -- node[above left,pos=0.5] {$w_{\Leaf_1}$} (l1);
+    \draw[edge] (r) -- node[above right,pos=0.5] {$w_{\Leaf_2}$} (l2);
   \end{tikzpicture}
 \end{example}
