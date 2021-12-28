@@ -1002,12 +1002,12 @@ into a single-layer shallow PC. These latent variables usually consist of partit
 hyperplanes, dividing data into two parts, each represented as the subcircuit rooted at each child
 of the sum node.
 
-A $k$-d tree is a subclass of decision trees which essentially hierarchically partition data into
-more or less equally sized portions, usually through axis-aligned hyperplanes, that is, they split
-the data according to the value of a single variable at a time \citep{bentley75,hang19,ho95}.
+A $k$-d tree is a subclass of decision trees which hierarchically partitions data into more or less
+equally sized parts, usually by splitting the data according to the value of a single variable at a
+time \citep{bentley75,hang19,ho95}, essentially producing axis-aligned hyperplanes.
 \citet{dasgupta08b} noted that such an approach cannot ensure that the resulting partitioning of
 the input space approximates the intrinsic dimensionality of data (roughly understood as a manifold
-of low-dimension). In contrast, they provide a simple strategy for space partitioning that consists
+of low dimension). In contrast, they provide a simple strategy for space partitioning that consists
 in recursively partitioning the space according to a random separating hyperplane. This
 approximates a random projection of the data and has the following theoretical guarantee
 \citep{dasgupta08b}:
@@ -1046,6 +1046,7 @@ approximates a random projection of the data and has the following theoretical g
   \end{subfigure}
   \caption{Two partitionings induced by $k$-d trees: \textbf{(a)} shows axis-aligned splits and
     \textbf{(b)} random projection splits. Gray dots are datapoints, dashed lines are (hyper)planes.}
+    \label{fig:projections}
 \end{figure}
 
 \begin{quote}
@@ -1060,7 +1061,149 @@ time in the dataset size (number of instances and variables). \citet{dasgupta08a
 empirically show that employing random projections boosts performance significantly compared to
 regular axis-aligned projections.
 
+\subsection{Random Projections}
 
+Let $\set{D}$ a dataset with $\set{X}$ variables. A function $f:\mathcal{X}\to\{0,1\}$ describes a
+hyperplane over variables in $\set{X}$ and is here called a \emph{rule}. A rule partitions data by
+assigning observations to either one, $\set{S}_1=\{\set{x}\in\set{D}:f(\set{x})=0\}$, or the other,
+$\set{S}_2=\{\set{x}\in\set{D}:f(\set{x}=1\}$, of two data partitions. In $k$-d trees, this
+partitioning proceeds recursively until $|\set{D}|$ is sufficiently small. When employing
+axis-aligned partitions, $f$ typically selects the variable with the largest variance (or some
+other measure of spread) in $\set{D}$ and separates instance according to the median value of that
+variable. The process is similar to the induction of decision trees, except that in this case the
+rules discriminate against a target variable \citep{breiman01}.
+
+The statistical properties of estimates obtained from the instances at the leaves of a $k$-d tree
+depend on the rate at which the diameter of the partitions are reduced once we move down the tree.
+For a space of dimension $m$, a $k$-d tree induced by the process described might require $m$
+levels to halve the diameter of the original data \citep{dasgupta08b}. This is true even for
+datasets of low intrinsic dimension. The latter is variously defined, and different definitions
+lead to different theoretical properties. A common surrogate metric is the \emph{doubling
+dimension} of the dataset $\set{D}\subset\mathbb{R}^m$, given by the smallest integer $d$ such that
+the intersection of $\set{D}$ and any ball of radius $r$ centered at $\set{x}\in\set{D}$ can be
+covered by at most $2^d$ balls of radius $\frac{r}{2}$ \citep{dhesi10}.
+
+\begin{algorithm}[t]
+  \caption{\textproc{SplitSID}}\label{alg:splitsid}
+  \begin{algorithmic}[1]
+    \Require Dataset $\set{D}\subset\mathbb{R}^m$
+    \Ensure A partition $\set{S}_1,\set{S}_2$ of $\set{D}$
+    \State Let $n$ be the number of examples in $\set{D}$
+    \State Sample a random unit direction $\set{w}$
+    \State Sort $\set{a}=\set{w}\cdot\set{x}$ for $\set{x}\in\set{D}$ s.t.\ $a_1\leq a_2\leq\dotsb\leq a_n$
+    \For{each $i\in\left[n-1\right]$}
+      \State $\mu_1 = \frac{1}{i}\sum_{j=1}^i a_i$, \; $\mu_2 = \frac{1}{n-i}\sum_{j=i+1}^n a_i$
+      \State $c_i = \sum_{j=1}^i (a_j - \mu_1)^2 + \sum_{j+1}^n (a_j - \mu_2)^2$
+    \EndFor
+    \State Find $i$ that minimizes $c_i$ and set $\theta = (a_i + a_{i+1})/2$
+    \State $\set{S}_1 \gets \{\set{x} \in \set{D}: \set{w} \cdot \set{x} \leq \theta   \}$
+    \State \textbf{return} $(\set{S}_1,\set{D} \setminus \set{S}_1)$
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+  \caption{\textproc{SplitMax}}\label{alg:splitmax}
+  \begin{algorithmic}[1]
+    \Require Dataset $\set{D} \subset \mathbb{R}^m$ and constant $r$
+    \Ensure A partition $(\set{S}_1,\set{S}_2)$ of $\set{D}$
+    \State Sample a random unit direction $\set{w}$
+    \State Pick any $\set{x}\in\set{D}$ and let $\set{y}$ be $\set{x}$'s farthest point in $\set{D}$
+    \State Sample $\delta$ uniformly in $[-c,c]$, where ${c=r\cdot\operatorname{dist}(\set{x},\set{y})/\sqrt{m}}$
+    \State $\set{S}_1\gets\{\set{x}\in\set{D}:\set{w}\cdot\set{x}\leq\operatorname{median}(\{\set{z}\cdot\set{w}:\set{z}\in\set{D}\})+\delta\}$
+    \State \textbf{return} $(\set{S}_1,\set{D}\setminus\set{S}_1)$
+  \end{algorithmic}
+\end{algorithm}
+
+Random Projection Trees (RPTrees) are a special type of $k$-d trees that split along a random
+direction of the space. Two such splitting rules are given by \Cref{alg:splitsid,alg:splitmax},
+where in the latter $\operatorname{dist}(\set{x},\set{y})$ refers to the Euclidean distance. The
+intuition behind either rule is to generate a random hyperplane (unit direction) and then find a
+threshold projection value that roughly divides dataset $\set{D}$ into two approximately equally
+sized subsets. \Cref{alg:splitsid} attempts at finding such a threshold by minimizing the average
+squared interpoint distance (SID), while \Cref{alg:splitmax} uses a random noise proportional to
+the average diameter of $\set{D}$. As discussed by \citet{dasgupta08b} and by \citet{dasgupta08a},
+either optimizing or randomizing the threshold leads to better separation of data than simply
+selecting the median point. \Cref{fig:projections} shows the difference between axis-aligned and
+random projections, while \Cref{fig:rps} shows an example of space partitioning induced by 2-level
+RPTrees using each of the rules with the same direction vectors $w$. Note that the rules produce
+quite different splits despite using the same random directions.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[t]{0.495\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+        title={\textproc{SplitMax}},
+        tick style={draw=none},
+        ytick=\empty,
+        xtick=\empty,
+        enlargelimits=0,
+        ymin=-1.8,
+        ymax=1.8,
+        xmin=-1.8,
+        xmax=1.8,
+      ]
+        \addplot[only marks, olive, opacity=0.5] table {data/max_1_full_parts.data};
+        \addplot[only marks, teal, opacity=0.5] table {data/max_2_full_parts.data};
+        \addplot[only marks, magenta, opacity=0.5] table {data/max_3_full_parts.data};
+        \addplot[only marks, violet, opacity=0.5] table {data/max_4_full_parts.data};
+        \addplot[black, thick] coordinates {
+          (-0.7435410726460153, 0.2259926265097693)
+          (2, -1.906932050205991)
+        };
+        \addplot[black, thick] coordinates {
+          (-0.5739178598189635, 0.33907476839447037)
+          (-2, 2.4781979786660253)
+        };
+        \addplot[black,thick] coordinates {
+          (-2, -0.6116466583928871)
+          (2, 2.0550200082737793)
+        };
+      \end{axis}
+    \end{tikzpicture}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.495\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+        title={\textsc{SplitSID}},
+        tick style={draw=none},
+        ytick=\empty,
+        xtick=\empty,
+        enlargelimits=0,
+        ymin=-1.8,
+        ymax=1.8,
+        xmin=-1.8,
+        xmax=1.8
+      ]
+        \addplot[only marks, olive, opacity=0.5] table {data/sid_1_full_parts.data};
+        \addplot[only marks, teal, opacity=0.5] table {data/sid_2_full_parts.data};
+        \addplot[only marks, magenta, opacity=0.5] table {data/sid_3_full_parts.data};
+        \addplot[only marks, violet, opacity=0.5] table {data/sid_4_full_parts.data};
+        \addplot[black, thick] coordinates {
+        (-2, -1.3212366499672479)
+        (2, 1.3454300166994186)
+        };
+        \addplot[black, thick] coordinates {
+        (-2, 2.346171790525994)
+        (-0.3073499505415808, -0.19280328366163507)
+        };
+        \addplot[black,thick] coordinates {
+        (-0.023469760285374355, -0.003549823490830769)
+        (2, -1.576665905962419)
+        };
+      \end{axis}
+    \end{tikzpicture}
+  \end{subfigure}
+  \caption{Example of space partitioning by RPTrees grown using different split rules but the same random directions.}
+  \label{fig:rps}
+\end{figure}
+
+Unlike standard $k$-d trees, RPTrees ensure that, for a data with doubling dimension $d$, at most
+$d$ levels are necessary to half the diameter of the data, irrespective of its dimension. This
+leads to improved statistical properties that are connected to that notion of low intrinsic
+dimensionality \citep{dasgupta08b,dhesi10}.
 
 \subsection{\textproc{LearnRP}}
 
