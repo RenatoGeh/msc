@@ -985,17 +985,82 @@ to learning the latter using the efficient inductive algorithms available for th
 \citep{correia20,ram11,khosravi20}. Despite this, most works addressing such a connection have
 focused on the discriminative side of DTs, with much of the effort put onto classification rather
 than generative tasks such as density estimation. Here, we explore the generative side of DTs,
-often referred as density estimation trees (DETs, \cite{ram11,ho19,smyth95}), within the framework
-of PCs.
+often referred as density estimation trees (DETs, \cite{ram11,hang19,smyth95}), within the framework
+of PCs, taking inspiration from known algorithms for building DTs and DETs, and transplanting them
+to PCs.
 
-As we discussed in \Cref{eg:det}, a DET can be represented as a smooth and deterministic PC with
-only sums and input nodes, the latter's supports restricted to the data cells induced by the
+As shortly discussed in \Cref{eg:det}, a DET can be represented as a smooth and deterministic PC
+with only sums and input nodes, the latter's supports restricted to the data cells induced by the
 partitioning data hyperplanes. The resulting density of this DET PC is given by
 \begin{equation*}
   p_\mathcal{C}(\set{x})=\sum_{\Leaf\in\operatorname{Inputs}(\mathcal{C})}w_{\Leaf}\cdot\Leaf(\set{x})\cdot\liv\set{x}\in\Leaf\riv,
 \end{equation*}
 where $\liv\set{x}\in\Leaf\riv$ is an indicator function that returns 1 if $\set{x}$ is within
-$\Leaf$'s cell and 0 otherwise. Data is usually partitioned by axes-aligned hyperplanes 
+$\Leaf$'s cell and 0 otherwise. The above formula comes from collapsing a circuit with only sum
+layers, where each sum corresponds to a latent variable representing a partitioning of the data,
+into a single-layer shallow PC. These latent variables usually consist of partitioning data through
+hyperplanes, dividing data into two parts, each represented as the subcircuit rooted at each child
+of the sum node.
+
+A $k$-d tree is a subclass of decision trees which essentially hierarchically partition data into
+more or less equally sized portions, usually through axis-aligned hyperplanes, that is, they split
+the data according to the value of a single variable at a time \citep{bentley75,hang19,ho95}.
+\citet{dasgupta08b} noted that such an approach cannot ensure that the resulting partitioning of
+the input space approximates the intrinsic dimensionality of data (roughly understood as a manifold
+of low-dimension). In contrast, they provide a simple strategy for space partitioning that consists
+in recursively partitioning the space according to a random separating hyperplane. This
+approximates a random projection of the data and has the following theoretical guarantee
+\citep{dasgupta08b}:
+
+\begin{figure}[t]
+  \def\points{(2.3,4.38),(1.8,4.0),(2.8,4.0),(1.6,3.3),(2.5,3),(3.1,2.8),(3.8,3.1),(4.3,3.3),(4,2.6),(4.5,2.4),(3.3,2.3),(2.1,2.0),(3.1,1.8),(2.4,1.6),(2.9,1.5),(2.5,1.3),(3.1,1.1),(3.1,0.6),(2.7,0.8),(1.5,0.8),(1.7,1.3),(1.2,1.5),(3.6,0.5),(4,0.3),(4.1,0.6),(3.8,0.8),(4.4,0.8),(4,1.1),(4.3,1.1),(4.6,1),(3.6,1.2),(3.9,1.4),(4.2,1.4),(4.6,1.4),(4.4,1.7),(3.8,1.7)}
+  \begin{subfigure}[t]{0.495\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \foreach \p in \points {
+        \node[circle,inner sep=0pt,minimum size=2pt,fill=boxgray] at \p {};
+      }
+      \draw[very thick,boxblue,dashed] (3.5,0) -- node[left,pos=0.9] {\color{boxblue}$\set{A}$} (3.5,5);
+      \draw[very thick,boxgreen,dashed] (0,2.5) -- node[right,pos=1] {\color{boxgreen}$\set{B}$} (3.5,2.5);
+      \draw[very thick,boxpurple!80,dashed] (2,0) -- node[above,pos=1] {\color{boxpurple}$\set{C}$} (2,2.5);
+      \draw[very thick,boxmunsel,dashed] (0,3.75) -- node[right,pos=1] {\color{boxmunsel}$\set{D}$} (3.5,3.75);
+      \draw[very thick,boxolive!80!black,dashed] (3.5,2) -- node[below,pos=0.5] {\color{boxolive!80!black}$\set{E}$} (5,2);
+      \draw[very thick] (0,0) rectangle (5, 5);
+    \end{tikzpicture}
+    \caption{Axis-aligned projections}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.495\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \foreach \p in \points {
+        \node[circle,inner sep=0pt,minimum size=2pt,fill=boxgray] at \p {};
+      }
+      \draw[very thick,boxblue,dashed] (2.2,0) coordinate (a1) -- node[left,pos=0.9] {\color{boxblue}$\set{A}$} (5,3.1) coordinate (a2);
+      \draw[very thick,boxgreen,dashed] ($(a1)!0.5!(a2)$) coordinate (b1) -- node[above right,pos=0.9] {\color{boxgreen}$\set{B}$} (0,4.2) coordinate (b2);
+      \draw[very thick,boxpurple!80,dashed] ($(b1)!0.35!(b2)$) coordinate (c1) -- node[above left,pos=0.7] {\color{boxpurple}$\set{C}$} (5,5) coordinate (c2);
+      \draw[very thick,boxmunsel,dashed] ($(b1)!0.22!(b2)$) coordinate (d1) -- node[above left,pos=0.9] {\color{boxmunsel}$\set{D}$} (1.8,0) coordinate (d2);
+      \draw[very thick,boxolive!80!black,dashed] ($(a1)!0.45!(a2)$) -- node[right,pos=0.6] {\color{boxolive!80!black}$\set{E}$} (5,0);
+      \draw[very thick] (0,0) rectangle (5, 5);
+    \end{tikzpicture}
+    \caption{Random projections}
+  \end{subfigure}
+  \caption{Two partitionings induced by $k$-d trees: \textbf{(a)} shows axis-aligned splits and
+    \textbf{(b)} random projection splits. Gray dots are datapoints, dashed lines are (hyper)planes.}
+\end{figure}
+
+\begin{quote}
+  If the data has intrinsic dimension $d$, then with constant probability the part of the data at
+  level $d$ or higher of the tree has average diameter less than half of the data.
+\end{quote}
+
+Accordingly, the depth of the tree needs only to grow proportionally to the intrinsic dimension and
+not to the number of variables. In addition to that and to other theoretical insurances
+\citep{dhesi10}, the recursive partitioning scheme proposed is extremely fast, taking linearithmic
+time in the dataset size (number of instances and variables). \citet{dasgupta08a} further
+empirically show that employing random projections boosts performance significantly compared to
+regular axis-aligned projections.
+
+
 
 \subsection{\textproc{LearnRP}}
 

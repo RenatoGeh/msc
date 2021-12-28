@@ -1930,13 +1930,13 @@ now ready to understand how to build them in a principled way.
   \begin{tikzpicture}
     \fill[boxpink!30] (0,0) rectangle (2,2.5);
     \fill[boxgoldenrod!40] (2,0) rectangle (3.5,2.5);
-    \draw[very thick] (0,0) rectangle (5, 5);
     \draw[very thick,boxblue,dashed] (3.5,0) -- node[left,pos=0.9] {\color{boxblue}$\set{A}$} (3.5,5);
     \draw[very thick,boxgreen,dashed] (0,2.5) -- node[right,pos=1] {\color{boxgreen}$\set{B}$} (3.5,2.5);
     \draw[very thick,boxpurple!80,dashed] (2,0) -- node[above,pos=1] {\color{boxpurple}$\set{C}$} (2,2.5);
     \node at (1,1.25) {$\Leaf_1$};
     \node at (2.75,1.25) {$\Leaf_2$};
     \node[circle,inner sep=0pt,minimum size=3pt,fill=black,label=above right:{$\set{x}$}] at (1.5,1.9) {};
+    \draw[very thick] (0,0) rectangle (5, 5);
 
     \node[inner sep=1pt,minimum size=12pt,circle,fill=boxblue!80] (a) at (3,-1) {$\set{A}$};
     \node[inner sep=1pt,minimum size=12pt,circle,fill=boxgreen!80] (b) at ($(a) + (-1,-1.5)$) {$\set{B}$};
