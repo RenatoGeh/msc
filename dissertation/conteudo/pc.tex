@@ -20,7 +20,7 @@ probability density functions of complex non-parametric models as well. To simpl
 here on out we shall use the term distribution and probability density (resp. mass) function
 interchangeably and argue that the input node represents a probability distribution.
 \begin{example}[sidebyside,lefthand width=0.6\textwidth]{Gaussians as probabilistic circuits}{gaussians} %
-  Let $\Leaf_p$ an input node and $p(X)=\gaussian(X;\mu,\sigma^2)$ a univariate Gaussian
+  Let $\Leaf_p$ be an input node and $p(X)=\gaussian(X;\mu,\sigma^2)$ a univariate Gaussian
   distribution. Computing any query on $\Leaf_p$ is straightforward: any query on
   $\Leaf_p$ directly translates to $p$. As an example, suppose $\mu=0$ and $\sigma^2=1$ and
   we wish to compute $\Leaf_p(x=0.8)$. The probability of this input shall then be
@@ -70,7 +70,7 @@ interchangeably and argue that the input node represents a probability distribut
     \end{tikzpicture}
   \end{center}
 \end{example}
-Let $\Leaf_p$ a PC input node and denote $p$ as its inherent probability distribution. By
+Let $\Leaf_p$ be a PC input node and denote $p$ as its inherent probability distribution. By
 definition, any query $f:\mathcal{X}\to \mathcal{Y}$ which is tractable on $p$ is tractable on
 $\Leaf_p$. We shall denote $\Leaf_p(\set{X})=p(\set{X})$, and often omit $p$ when its explicit form
 is not needed. Evidently, a single input node lacks the expressivity for modeling complex models, otherwise we
@@ -471,14 +471,14 @@ childrens' scopes are distinct. The size of a probabilistic circuit is the numbe
 edges of its computational graph. We use $|\mathcal{C}|$ to denote the size of a probabilistic
 circuit $\mathcal{C}$.
 
-Let $\mathcal{C}$ a probabilistic circuit and node $\Node\in\mathcal{C}$. We say that
+Let $\mathcal{C}$ be a probabilistic circuit and node $\Node\in\mathcal{C}$. We say that
 $\mathcal{S}_{\Node}$ is a subcircuit of $\mathcal{C}$ rooted at $\Node$ if $\mathcal{S}_{\Node}$'s
 root is $\Node$, all nodes and edges in $\mathcal{S}_{\Node}$ are also in $\mathcal{C}$ and
 $\mathcal{S}$ is also a probabilistic circuit. We now introduce the concept of induced subcircuits
 \citep{chan06,dennis15,peharz14}.
 
 \begin{definition}[Induced subcircuit]\label{def:inducedsub}
-  Let $\mathcal{C}$ a probabilistic circuit. An induced subcircuit $\mathcal{S}$ of $\mathcal{C}$
+  Let $\mathcal{C}$ be a probabilistic circuit. An induced subcircuit $\mathcal{S}$ of $\mathcal{C}$
   is a subcircuit of $\mathcal{C}$ rooted at $\mathcal{C}$'s root such that all edges coming out of
   product nodes in $\mathcal{C}$ are also in $\mathcal{S}$, and of all edges coming out of sum
   nodes in $\mathcal{C}$, only one is in $\mathcal{S}$.
@@ -635,7 +635,8 @@ $\mathcal{S}$ is also a probabilistic circuit. We now introduce the concept of i
       }
     \end{center}
   \end{subfigure}
-  \caption{A probabilistic circuit (a) and 3 of the 12 possible induced subcircuits (b).}
+  \caption{A probabilistic circuit \uncaption{(a)} and 3 of the 12 possible induced subcircuits
+    \uncaption{(b)}.}
   \label{fig:induced}
 \end{figure}
 
@@ -685,7 +686,7 @@ procedures are formalized in the theorem below.
 
 \begin{restatable}[\cite{poon11,pclec,vergari21}]{theorem}{linevi}
   \label{thm:linevi}
-  Let $\mathcal{C}$ a \emph{smooth} and \emph{decomposable} PC. Any one of \evi{}, \mar{} or \con{}
+  Let $\mathcal{C}$ be a \emph{smooth} and \emph{decomposable} PC. Any one of \evi{}, \mar{} or \con{}
   can be computed in linear time (in the number of edges of $\mathcal{C}$).
 \end{restatable}
 
@@ -773,8 +774,8 @@ procedures are formalized in the theorem below.
     \end{center}
     \caption{}
   \end{subfigure}
-  \caption{Decomposable but non-smooth (a), smooth but non-decomposable (b), and smooth and
-  decomposable (c) circuits.}
+  \caption{Decomposable but non-smooth \uncaption{(a)}, smooth but non-decomposable
+    \uncaption{(b)}, and smooth and decomposable \uncaption{(c)} circuits.}
 \end{figure}
 
 Importantly, \evi{} and \con{} are both special cases of \mar{} in the sense that they are
@@ -792,7 +793,7 @@ $\mathcal{C}$. For \con{}, it suffices to run two \mar{}s.
   \begin{algorithmic}[1]
     \Require A probabilistic circuit $\mathcal{C}$ and complete assignment $\set{x}$
     \Ensure Probability $\mathcal{C}(\set{x})$
-    \State Let $v$ a hash function mapping a node to its probability
+    \State Let $v$ be a hash function mapping a node to its probability
     \For{each $\Node$ in reverse topological order}
       \IIf{$\Node$ is an input}{$v_{\Node}\gets\Node(\set{x})$}
       \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
@@ -806,7 +807,7 @@ $\mathcal{C}$. For \con{}, it suffices to run two \mar{}s.
   \begin{algorithmic}[1]
     \Require A probabilistic circuit $\mathcal{C}$ and partial assignment $\set{x}$
     \Ensure Probability $\int\mathcal{C}(\set{x},\set{y})\dif\set{y}$
-    \State Let $v$ a hash function mapping a node to its probability
+    \State Let $v$ be a hash function mapping a node to its probability
     \For{each $\Node$ in reverse topological order}
       \IIf{$\Node$ is an input}{$v_{\Node}\gets\int\Node(\set{x},\set{y})\dif\set{y}$}
       \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
@@ -871,7 +872,7 @@ propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, w
   \begin{algorithmic}[1]
     \Require A probabilistic circuit $\mathcal{C}$ and evidence assignment $\set{x}$
     \Ensure Probability $\max_{\set{y}}\mathcal{C}(\set{y}|\set{x})$
-    \State Let $v$ a hash function mapping a node to its probability
+    \State Let $v$ be a hash function mapping a node to its probability
     \For{each $\Node$ in reverse topological order}
       \IIf{$\Node$ is an input}{$v_{\Node}\gets\max_{\set{y}}\Node(\set{y},\set{x})$}
       \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\max_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
@@ -900,7 +901,7 @@ With determinism, we now have access to \map{}.
 
 \begin{restatable}[\cite{peharz16}]{theorem}{det}
   \label{thm:det}
-  Let $\mathcal{C}$ a smooth, decomposable and \emph{deterministic} PC. \map{} is computable in
+  Let $\mathcal{C}$ be a smooth, decomposable and \emph{deterministic} PC. \map{} is computable in
   linear time (in the number of edges of $\mathcal{C}$).
 \end{restatable}
 
@@ -1001,7 +1002,7 @@ tree), a data structure that defines a (partial) ordering of variables.
   whose leaf nodes have a one-to-one and onto mapping $\phi_{\vtree}$ with $\set{X}$.
 \end{definition}
 
-We shall adopt the same scope definition and notation $\Sc(\cdot)$ for vtrees as in PCs. Let $v$ a
+We shall adopt the same scope definition and notation $\Sc(\cdot)$ for vtrees as in PCs. Let $v$ be a
 vtree node from a vtree $\vtree$. If $v$ is a leaf node, its scope is $\phi_{\vtree}(v)$, i.e.\ the
 leaf's assigned variable; otherwise its scope is the union of the scope of its children. For an
 inner node $v$, we shall call its left child $\lch{v}$ and right child $\rch{v}$. Every inner node
@@ -1019,7 +1020,7 @@ Obviously, the above definition is vague with regards to which child (i.e.\ grap
 right) of $\Prod$ should respect the scope of which $v$ child. We therefore assume a fixed order
 for $\Prod$'s children and say that the (graphically) left child is called the \emph{prime} and
 (graphically) right child the \emph{sub}, and refer to $\Prod$ as an \emph{element}. This
-ultimately means that the scope of the prime (resp.  sub) of $\Prod$ must be the same as the scope
+ultimately means that the scope of the prime (resp. sub) of $\Prod$ must be the same as the scope
 of the left (resp. right) child of $v$. Although the graphical concept of left and right is needed
 for easily visualizing the scope partitioning of a product with respect to a vtree node, we do not
 use it strictly. In fact, when the situation is unambiguous, we compactly represent the
@@ -1127,9 +1128,9 @@ computational graph without adhering to the left-right convention in favor of re
     \caption{}
     \label{fig:norespect}
   \end{subfigure}
-  \caption{A vtree (a) defining an order $(A,B,C,D)$, a 2-standard structure decomposable
-    probabilistic circuit that respects the vtree (b), and a 2-standard decomposable probabilistic
-    circuit that does not (c).}
+  \caption{A vtree \uncaption{(a)} defining an order $(A,B,C,D)$, a 2-standard structure
+    decomposable probabilistic circuit that respects the vtree \uncaption{(b)}, and a 2-standard
+    decomposable probabilistic circuit that does not \uncaption{(c)}.}
   \label{fig:vtreeresp}
 \end{figure}
 
@@ -1146,7 +1147,7 @@ its product nodes have exactly two children.
 
 \begin{definition}[Structure decomposability]
   \label{def:sdec}%
-  Let $\mathcal{C}$ a 2-standard probabilistic circuit and $\vtree$ a vtree with same scope as
+  Let $\mathcal{C}$ be a 2-standard probabilistic circuit and $\vtree$ a vtree with same scope as
   $\mathcal{C}$. $\mathcal{C}$ is said to be \emph{structure decomposable} if every $i$-th product
   layer of $\mathcal{C}$ respects every $i$-th inner node layer of $\vtree$.
 \end{definition}
@@ -1451,9 +1452,9 @@ $X$ and $\neg X$ for literal nodes.
     \label{fig:lc2}
   \end{subfigure}
   \caption{Two smooth, structure decomposable and deterministic logic circuits encoding the same
-    logic constraint $\phi\equiv(A\wedge B)\vee(\neg C\wedge D)$ for a balanced (a) and a
-  right-linear (b) vtree. In (a), a circuit evaluation for an assignment, with each node value in
-the bottom-up evaluation pass shown inside nodes.}
+    logic constraint $\phi\equiv(A\wedge B)\vee(\neg C\wedge D)$ for a balanced \uncaption{(a)} and a
+    right-linear \uncaption{(b)} vtree. In \uncaption{(a)}, a circuit evaluation for an assignment,
+    with each node value in the bottom-up evaluation pass shown inside nodes.}
   \label{fig:logic}
 \end{figure}
 
@@ -1712,7 +1713,7 @@ to a distribution. This kind of query is enabled by the following result.
       $\vtree$
     \Ensure The expectation $\mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]=\int\mathcal{C}(\set{x})
       \mathcal{L}(\set{x})\dif\set{x}$
-    \State Let $v$ a hash function mapping a pair of nodes to an expectation
+    \State Let $v$ be a hash function mapping a pair of nodes to an expectation
     \For{each pair of nodes $(\Node_\mathcal{C},\Node_\mathcal{L})$ in reverse topological order}\label{alg:expc:line:top}
       \IIf{$\Node_\mathcal{C}$ is an input}{$v_{\Node_\mathcal{C},\Node_\mathcal{L}}\gets
         \mathbb{E}_{\Node_\mathcal{C}}\left[\Node_\mathcal{L}\right]$}
@@ -1733,7 +1734,7 @@ to a distribution. This kind of query is enabled by the following result.
   edges).
 \end{restatable}
 
-Let $\mathcal{C}$ a smooth and structure decomposable circuit with vtree $\vtree$, and
+Let $\mathcal{C}$ be a smooth and structure decomposable circuit with vtree $\vtree$, and
 $\mathcal{L}$ a logic circuit representing a logical query whose vtree is also $\vtree$. Computing
 the probability of $\mathcal{L}$ with respect to the distribution encoded by $\mathcal{C}$ is done
 by a bottom-up evaluation over both circuits at the same time. \Cref{alg:expc} shows the procedure
@@ -1918,7 +1919,7 @@ now ready to understand how to build them in a principled way.
   Equivalently, a sum node in a PC that determines the on-off state of a latent variable
   partitioning the data space configures the same semantics as a density estimation tree. Instead
   of delegating an observation's probability to the tree's leaves, a PC spreads out this density to
-  both weights in sum nodes and density in input nodes. Let $\mathcal{C}$ a PC whose nodes are all
+  both weights in sum nodes and density in input nodes. Let $\mathcal{C}$ be a PC whose nodes are all
   sum nodes which encode such latent partitions and whose input nodes are truncated to follow these
   latent variables (i.e.\ their support is only over the space determined by the partitionings);
   collapse all layers (and weights) into a shallow PC with a single sum layer. Its value is then

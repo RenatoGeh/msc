@@ -8,8 +8,7 @@ algorithms for probabilistic circuits. We approach the problem of learning scala
 distinct points of view. In \Cref{sec:logical}, we are interested in PCs whose support encodes a
 given logical constraint as certain knowledge; we show how both the probabilistic issue of data
 fitness, as well as the logical question of whether the circuit successfully compiles a knowledge
-base can be accomplished by aggregating PC samples into ensembles of models. In \Cref{sec:data}, we
-look at PCs solely from the perspective of data fitness; we exploit the connection between PCs and
+base can be accomplished by aggregating PC samples into ensembles of models. In \Cref{sec:data}, we look at PCs solely from the perspective of data fitness; we exploit the connection between PCs and
 generative random forests \citep{correia20,ho95} and revisit a well-known technique based on random
 projections for constructing random trees \citep{dasgupta08a,dasgupta08b}, presenting a simple and
 fast yet effective way of learning PCs.
@@ -237,7 +236,7 @@ consider a naïve approach.
   \label{fig:partition}
 \end{figure}
 
-Let $\phi$ a logical formula acting as our knowledge base, and assume that a vtree $\vtree$ is
+Let $\phi$ be a logical formula acting as our knowledge base, and assume that a vtree $\vtree$ is
 given beforehand. To compile a PSDD from $\phi$, we must decompose it down to a disjunction of
 prime and sub conjunctions. This is a non-trivial problem, as primes must not only be mutual
 exclusive (to ensure determinism) but exhaustive (to make sure the circuit is coherent with $\phi$
@@ -380,10 +379,10 @@ constraints.
     \caption{Partial partition where subs are relaxed}
     \label{fig:partial-b}
   \end{subfigure}
-  \caption{An example of an invalid partition \textbf{(a)} due to subs disrespecting the vtree's
+  \caption{An example of an invalid partition \uncaption{(a)} due to subs disrespecting the vtree's
   right branch, here shown as the \protect\tikz\protect\draw[very thick,dashed,pbrickred] (0,0)
   rectangle (0.5,-0.25); box with scope $\set{S}$. To fix this infraction, variables who do not
-  belong to $\set{S}$ are \emph{forgotten}, as \textbf{(b)} shows.}
+  belong to $\set{S}$ are \emph{forgotten}, as \uncaption{(b)} shows.}
   \label{fig:partial}
 \end{figure}
 
@@ -394,7 +393,7 @@ probabilities provide an upper bound independent of the actual probabilities.
 
 Looking back to the issue of bounding the number of elements per partition, a solution to the
 problem of tractability and structure decomposability comes by employing \emph{partial} partitions
-instead of \emph{exact} partitions. Let $\Sum$ a sum node, and call $s_i$ one of its sub and $v$
+instead of \emph{exact} partitions. Let $\Sum$ be a sum node, and call $s_i$ one of its sub and $v$
 the vtree node for $\Sum$; denote by $\set{F}=\Sc(s_i)\setminus\Sc(v^\to)$, that is, the variables
 in $s_i$ which should \emph{not} have been in the sub. We already know that $\Sum$ cannot be turned
 into an exact partition unless it has an exponential number of elements, and so we look to
@@ -495,7 +494,7 @@ add variety to sampled circuits and reduce their size. Here we introduce two \em
 transformations, directly opposed to \incrclass{}'s \emph{growing} local transformations. We borrow
 the concept of \emph{compression}, used to minimize a logic circuit down to a canonical
 representation \citep{darwiche11}, and use it to join multiple elements into a single one during
-learning. Let $e_1,\ldots,e_q$ elements whose subs $s_1,\ldots,s_q$ are all equivalent to $s$, or
+learning. Let $e_1,\ldots,e_q$ be elements whose subs $s_1,\ldots,s_q$ are all equivalent to $s$, or
 more formally $s\equiv s_i\equiv s_j$, $i\neq j$; in this case, the disjunction over these elements
 factorizes over $s$
 \begin{equation*}
@@ -611,8 +610,9 @@ number of parameters.
     \caption{Merging subs $s_1$ and $s_3$ into a single sub}
     \label{fig:merge}
   \end{subfigure}
-  \caption{Examples of compression \textbf{(a)} and merging \textbf{(b)} as local transformations
-    for reducing the size of PSDDs. Both act on elements whose subs are logically equivalent.}
+  \caption{Examples of compression \uncaption{(a)} and merging \uncaption{(b)} as local
+    transformations for reducing the size of PSDDs. Both act on elements whose subs are logically
+    equivalent.}
   \label{fig:compmerge}
 \end{figure}
 
@@ -701,9 +701,9 @@ a dataset of \num{5000} training instances and \num{10000} test instances.
     }
   \end{tikzpicture}
   \caption{Seven-segment LED digits for 3, 4, 5 and 6 (left), the logical constraints for each
-  of these digit $\phi_i$ (top middle) and the resulting formula derived from listing all valid
-  configurations $\phi$ (middle), each latent variable $X_i$ corresponding to a segment's supposed
-state, and samples of pixel variants \texttt{led-pixels} for each digit (bottom middle).}
+    of these digit $\phi_i$ (top middle) and the resulting formula derived from listing all valid
+    configurations $\phi$ (middle), each latent variable $X_i$ corresponding to a segment's supposed
+    state, and samples of pixel variants \texttt{led-pixels} for each digit (bottom middle).}
   \label{fig:led}
 \end{figure}
 
@@ -738,8 +738,8 @@ conjunction of every possible $\phi$ and $\psi$.
     \caption{}
     \label{fig:ll-led-pixels}
   \end{subfigure}
-  \caption{Log-likelihoods for the unpixelized \texttt{led} \textbf{(a)} and pixelized
-    \texttt{led-pixels} \textbf{(b)} datasets.}
+  \caption{Log-likelihoods for the unpixelized \texttt{led} \uncaption{(a)} and pixelized
+    \texttt{led-pixels} \uncaption{(b)} datasets.}
   \label{fig:ll-led-all}
 \end{figure}
 
@@ -778,8 +778,8 @@ efficiently encode such restrictions \citep{een06}). We set the number of compon
     \caption{}
     \label{fig:ll-sushi-choose}
   \end{subfigure}
-  \caption{Log-likelihoods for the \texttt{dota} \textbf{(a)} and $10$-choose-$5$ \texttt{sushi}
-    \textbf{(b)} datasets.}
+  \caption{Log-likelihoods for the \texttt{dota} \uncaption{(a)} and $10$-choose-$5$ \texttt{sushi}
+    \uncaption{(b)} datasets.}
   \label{fig:ll-cardinality}
 \end{figure}
 
@@ -825,11 +825,11 @@ competitive results when given the full data. In this case, however, we found th
     \caption{}
     \label{fig:sushi-time}
   \end{subfigure}
-  \caption{Log-likelihood for the \texttt{sushi} ranking \textbf{(a)} dataset and curves for mean
-  average time (in seconds) of learning a single \textproc{LearnPSDD} circuit, one
-  \textproc{Strudel} circuit (CLT initialized), a mixture of 10 shared-structure \textproc{Strudel}
-  components, a single \textproc{SamplePSDD} PC and an ensemble of 100 \textproc{SamplePSDD}
-  circuits.}
+  \caption{Log-likelihood for the \texttt{sushi} ranking \uncaption{(a)} dataset and curves for
+    mean average time (in seconds) of learning a single \textproc{LearnPSDD} circuit, one
+    \textproc{Strudel} circuit (CLT initialized), a mixture of 10 shared-structure
+    \textproc{Strudel} components, a single \textproc{SamplePSDD} PC and an ensemble of 100
+    \textproc{SamplePSDD} circuits \uncaption{(b)}.}
   \label{fig:ll-preference}
 \end{figure}
 
@@ -1063,15 +1063,16 @@ regular axis-aligned projections.
 
 \subsection{Random Projections}
 
-Let $\set{D}$ a dataset with $\set{X}$ variables. A function $f:\mathcal{X}\to\{0,1\}$ describes a
+Let $\set{D}$ be a dataset with $\set{X}$ variables. A function $f:\mathcal{X}\to\{0,1\}$ describes a
 hyperplane over variables in $\set{X}$ and is here called a \emph{rule}. A rule partitions data by
-assigning observations to either one, $\set{S}_1=\{\set{x}\in\set{D}:f(\set{x})=0\}$, or the other,
-$\set{S}_2=\{\set{x}\in\set{D}:f(\set{x}=1\}$, of two data partitions. In $k$-d trees, this
-partitioning proceeds recursively until $|\set{D}|$ is sufficiently small. When employing
-axis-aligned partitions, $f$ typically selects the variable with the largest variance (or some
-other measure of spread) in $\set{D}$ and separates instance according to the median value of that
-variable. The process is similar to the induction of decision trees, except that in this case the
-rules discriminate against a target variable \citep{breiman01}.
+assigning observations to either one, $\set{S}_1=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge
+f(\set{x})=0\}$, or the other, $\set{S}_2=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge
+f(\set{x}=1)\}$, of two data partitions. In $k$-d trees, this partitioning proceeds recursively
+until $|\set{D}|$ is sufficiently small. When employing axis-aligned partitions, $f$ typically
+selects the variable with the largest variance (or some other measure of spread) in $\set{D}$ and
+separates instance according to the median value of that variable. The process is similar to the
+induction of decision trees, except that in this case the rules discriminate against a target
+variable \citep{breiman01}.
 
 The statistical properties of estimates obtained from the instances at the leaves of a $k$-d tree
 depend on the rate at which the diameter of the partitions are reduced once we move down the tree.
@@ -1096,7 +1097,7 @@ covered by at most $2^d$ balls of radius $\frac{r}{2}$ \citep{dhesi10}.
       \State $c_i = \sum_{j=1}^i (a_j - \mu_1)^2 + \sum_{j+1}^n (a_j - \mu_2)^2$
     \EndFor
     \State Find $i$ that minimizes $c_i$ and set $\theta = (a_i + a_{i+1})/2$
-    \State $\set{S}_1 \gets \{\set{x} \in \set{D}: \set{w} \cdot \set{x} \leq \theta   \}$
+    \State $\set{S}_1 \gets \{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge\set{w}\cdot\set{x}\leq\theta\}$
     \State \textbf{return} $(\set{S}_1,\set{D} \setminus \set{S}_1)$
   \end{algorithmic}
 \end{algorithm}
@@ -1109,7 +1110,7 @@ covered by at most $2^d$ balls of radius $\frac{r}{2}$ \citep{dhesi10}.
     \State Sample a random unit direction $\set{w}$
     \State Pick any $\set{x}\in\set{D}$ and let $\set{y}$ be $\set{x}$'s farthest point in $\set{D}$
     \State Sample $\delta$ uniformly in $[-c,c]$, where ${c=r\cdot\operatorname{dist}(\set{x},\set{y})/\sqrt{m}}$
-    \State $\set{S}_1\gets\{\set{x}\in\set{D}:\set{w}\cdot\set{x}\leq\operatorname{median}(\{\set{z}\cdot\set{w}:\set{z}\in\set{D}\})+\delta\}$
+    \State $\set{S}_1\gets\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge\set{w}\cdot\set{x}\leq\operatorname{median}(\{\set{z}\cdot\set{w}\,|\,\set{z}\in\set{D}\})+\delta\}$
     \State \textbf{return} $(\set{S}_1,\set{D}\setminus\set{S}_1)$
   \end{algorithmic}
 \end{algorithm}
@@ -1203,8 +1204,54 @@ quite different splits despite using the same random directions.
 Unlike standard $k$-d trees, RPTrees ensure that, for a data with doubling dimension $d$, at most
 $d$ levels are necessary to half the diameter of the data, irrespective of its dimension. This
 leads to improved statistical properties that are connected to that notion of low intrinsic
-dimensionality \citep{dasgupta08b,dhesi10}.
+dimensionality \citep{dasgupta08b,dhesi10}. Inspired by these findings, we propose a fast
+randomized structure learning algorithm for learning probabilistic circuits by recursively stacking
+random projections in a divide-and-conquer manner similar to what is done in \textproc{LearnSPN}.
+Albeit our contributions are preliminary, we found that our approach is extremely fast and reaches
+competitive performance in binary benchmark datasets.
 
 \subsection{\textproc{LearnRP}}
+
+A random projection (RP) naturally induces a clustering of data: given a rule $f$, two clusters are
+formed from the partitions induced by $f$'s hyperplane. We use this simple yet extremely fast
+clustering method to replace clustering techniques in \textproc{LearnSPN}. We justify this move
+from a theoretical and practical aspect. From a theoretical perspective, every sum node created
+this way defines a latent variable corresponding to a hyperplane, giving some interpretability
+(akin to decisiont trees) to the model. From a more practical point of view, we point to the work
+of \citet{vergari15}, showing that binary partitions (both row-wise and column-wise) favor a deeper
+architecture and produce smaller models. We further strengthen this last point by restricting the
+learned structure to a vtree, effectively constructing smooth and structure decomposable PCs.
+
+\begin{algorithm}[t]
+  \caption{\textproc{LearnRP}}\label{alg:learnrp}
+  \begin{algorithmic}[1]
+    \Require Dataset $\set{D}$, variables $\set{X}$, vtree $\vtree$ and $k$ projection tryouts
+    \Ensure A smooth and structure decomposable probabilistic circuit
+    \IIf{$|\set{X}|=1$}{\textbf{return} an input node learned from $\set{D}$}\label{alg:learnrp:line:input}
+    \NIElse
+      \State Sample $k$ projections and call $f$ the one which minimizes the avg. diameter of $\set{D}$
+      \State $\set{S}_1\gets\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x})=1\}$,
+        $\set{S}_2=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x})=0\}$
+      \State Let $v$ the root of $\vtree$
+      \State $\Child^{(1)}_1\gets\Call{LearnRP}{\set{S}_1,\Sc(v^\gets),v^\gets,k}$
+      \State $\Child^{(1)}_2\gets\Call{LearnRP}{\set{S}_1,\Sc(v^\to),v^\to,k}$
+      \State $\Child^{(2)}_1\gets\Call{LearnRP}{\set{S}_2,\Sc(v^\gets),v^\gets,k}$
+      \State $\Child^{(2)}_2\gets\Call{LearnRP}{\set{S}_2,\Sc(v^\to),v^\to,k}$
+      \State Construct products $\Prod_1\gets\Child^{(1)}_1\cdot\Child^{(1)}_2$ and $\Prod_2\gets\Child^{(2)}_1\cdot\Child^{(2)}_2$
+      \State \textbf{return} sum $\frac{\set{S}_1}{\set{D}}\cdot\Prod_1+\frac{\set{S}_2}{\set{D}}\cdot\Prod_2$
+    \EndNIElse
+  \end{algorithmic}
+\end{algorithm}
+
+Determinism can be enforced if, for every input node (line \ref{alg:learnrp:line:input} in
+\Cref{alg:learnrp}) its support is truncated to the cell induced by all random projections above
+it. For the discrete case, we might attribute zero mass to assignments outside its cell,
+normalizing the distribution with the remaining mass. However, this is not so trivial in the
+general case (i.e.\ in the continuous) as the projections are oblique and the resulting truncated
+distributions must have tractable marginalization.
+
+When the domain is discrete, the vtree can be learned by pairwise mutual information as discussed
+in \Cref{subsection:learnpsdd}; when in the continuous, we can replace mutual information for
+Pearson's correlation or any other similar metric.
 
 \subsection{Experiments}

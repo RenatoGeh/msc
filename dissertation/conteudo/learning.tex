@@ -20,15 +20,19 @@ divide-and-conquer (\divclass{}, \Cref{sec:divconq}), incremental methods (\incr
 \label{sec:divconq}
 
 Arguably the most popular approach to learning the structure of probabilistic circuits are
-algorithms that follow a \emph{divide-and-conquer} scheme. This class of PC learning algorithms,
-which here we denote by \divclass{}, are characterized by recursive calls over (usually mutually
-exclusive) subsets of data in true divide-and-conquer fashion. This kind of procedure is more
-clearly visualized by \textproc{LearnSPN}, the first, most well-known, and perhaps most archetypal
-of its class.
+algorithms that follow a \emph{divide-and-conquer} scheme\footnote{The algorithms we shall see in
+this class are sometimes classified as \emph{constraint-based} \citep{spirtes95} learners, as they
+learn the model by identifying independences within data. Although this is true for the examples
+here mentioned, the two taxonomies are not equivalent. In fact, we describe a random
+divide-and-conquer structure learning approach in \Cref{sec:data} that does not (directly) rely on
+statistical tests.}. This class of PC learning algorithms, which here we denote by \divclass{}, are
+characterized by recursive calls over (usually mutually exclusive) subsets of data in true
+divide-and-conquer fashion. This kind of procedure is more clearly visualized by
+\textproc{LearnSPN}, the first, most well-known, and perhaps most archetypal of its class.
 
 Before we start however, we must first address how we denote data. Data is commonly represented as
 a matrix where rows are assignments (of all variables), and columns are the values that each variable
-takes at each assignment. Let $\set{D}\in\mathbb{R}^{n \times m}$ a matrix with $n$ rows and $m$
+takes at each assignment. Let $\set{D}\in\mathbb{R}^{n \times m}$ be a matrix with $n$ rows and $m$
 columns. We use $\set{D}_{i,j}$ to access an element of $\set{D}$ at the $i$-th row, $j$-th column
 of matrix $\set{D}$. We denote by $\set{D}_{\set{i},\set{j}}$, where $\set{i}\subseteq
 \left[1..n\right]$ and $\set{j}\subseteq\left[1..m\right]$ are sets of indices, a submatrix from
@@ -120,9 +124,9 @@ $j$-th column and $\set{D}_{i,:}$ is the $i$-th row.
     \end{subfigure}
     \caption{}
   \end{subfigure}
-  \caption{\textproc{LearnSPN} assigns either rows (a) or columns (b) for sum and product nodes
-    respectively. For sums, their edge weights are set proportionally to the assignments. For
-    product children, scopes are defined by which columns are assigned to them.}
+  \caption{\textproc{LearnSPN} assigns either rows \uncaption{(a)} or columns \uncaption{(b)} for
+    sum and product nodes respectively. For sums, their edge weights are set proportionally to the
+    assignments. For product children, scopes are defined by which columns are assigned to them.}
   \label{fig:learnspn}
 \end{figure}
 
@@ -242,10 +246,11 @@ connected component heuristic, and the equivalent product node from this decompo
     \end{tikzpicture}
     \caption{}
   \end{subfigure}
-  \caption{The pairwise (in)dependence graph where each node is a variable. In (a) we show the full
-    graph, computing independence tests for each pair of variables in $\bigo(m^2)$. However, it
-    suffices to compute for only the connected components (b), saving up pairwise computation time
-    for reachable nodes.  The resulting product node and scope partitioning is shown in (c).}
+  \caption{The pairwise (in)dependence graph where each node is a variable. In \uncaption{(a)} we
+    show the full graph, computing independence tests for each pair of variables in $\bigo(m^2)$.
+    However, it suffices to compute for only the connected components \uncaption{(b)}, saving up
+    pairwise computation time for reachable nodes.  The resulting product node and scope
+    partitioning is shown in \uncaption{(c)}.}
   \label{fig:indepgraph}
 \end{figure}
 
@@ -312,7 +317,7 @@ the latent variable interpretation of sum nodes.
     \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
     \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
     \State Create a single-node PC: $\mathcal{C}\gets\textproc{LearnMarkov}(\set{D},\set{X})$
-    \State Let $\mathcal{M}$ a memoization function associating a node with a dataset and scope
+    \State Let $\mathcal{M}$ be a memoization function associating a node with a dataset and scope
     \State Call $\mathcal{C}'$ a copy of $\mathcal{C}$
     \While{improving $\mathcal{C}$ yields better likelihood}
       \State Pick worse node $\Node$ from $\mathcal{C}'$
@@ -547,14 +552,14 @@ computing all pairwise correlations.
     }
     \caption{}
   \end{subfigure}
-  \caption{The fully connected correlation graph (a) with weights as the pairwise correlation
-    measurements for each pair of variables; the maximum spanning tree for determining
-    decompositions (b); and the mixture of decompositions (c). Colors in (b) match their
-    partitionings in (c).}
+  \caption{The fully connected correlation graph \uncaption{(a)} with weights as the pairwise
+    correlation measurements for each pair of variables; the maximum spanning tree for determining
+    decompositions \uncaption{(b)}; and the mixture of decompositions \uncaption{(c)}. Colors in
+    \uncaption{(b)} match their partitionings in \uncaption{(c)}.}
   \label{fig:prometheus}
 \end{figure}
 
-Let $\mathcal{G}$ the independence graph for scope $\set{X}=\{X_1,X_2,\ldots,X_m\}$. Remember that
+Let $\mathcal{G}$ be the independence graph for scope $\set{X}=\{X_1,X_2,\ldots,X_m\}$. Remember that
 $\mathcal{G}$'s vertices are $\set{X}$ and each (undirected) edge $\overline{X_i X_j}$ coming from
 $X_i$ to $X_j$ means that $X_i\notindep X_j$. Previously, we constructed $\mathcal{G}$ by comparing
 the output of an independence test (such as the G-test) against a threshold (e.g.\ a sufficiently
@@ -562,7 +567,7 @@ low $p$-value). Instead, suppose $\mathcal{G}$ is fully connected and that we at
 corresponding to a correlation metric of $X_i$ against $X_j$ for each edge (e.g.\ Pearson's
 correlation coefficient). The \emph{maximum spanning tree} (MST) of $\mathcal{G}$, here denoted by
 $\mathcal{T}$, defines a graph where the removal of any edge in $\mathcal{T}$ partitions the
-component into two subcomponents. Let $e_i$ the $i$-th lowest (weight) valued edge;
+component into two subcomponents. Let $e_i$ be the $i$-th lowest (weight) valued edge;
 \textproc{Prometheus} obtains a set of decompositions by iteratively removing edges from $e_1$ to
 $e_{|\set{X}|-1}$. In other words, the algorithm constructs a product node for each decomposition,
 assigning the scope of each child as the scope of each component at each edge removal. These
@@ -590,11 +595,11 @@ resulting mixture of decompositions.
           \State Add $\Prod_j$ as a child of $\Sum$
         \EndFor
       \EndFor
-      \State Let $\mathcal{H}$ a hash table (initially empty) associating scopes to sum nodes
+      \State Let $\mathcal{H}$ be a hash table (initially empty) associating scopes to sum nodes
       \For{each $\Prod\in\Ch(\Sum)$}
         \For{each scope $\set{S}$ associated with $\Prod$}
           \If{$\set{S}\not\in\mathcal{H}$}
-            \State Let $\set{x}$ the dataset associated with $\Prod$
+            \State Let $\set{x}$ be the dataset associated with $\Prod$
             \State $\Node\gets\textproc{Prometheus}(\set{x}_{:,\set{S}},\set{S})$
             \State Add $\Node$ as a child of $\Prod$
             \State $\mathcal{H}_\set{S}\gets\Node$
@@ -689,11 +694,13 @@ the MST.
 
 Learning algorithms from the \divclass{} class heavily rely on recursively constructing a
 probabilistic circuit in a top-down fashion. This facilitates learning, as we need only to greedily
-optimize at a local level. We now draw our attention to incremental algorithms that iteratively
-grow an initial circuit. These usually require a search over possible candidate nodes to be
-extended, and as such involve evaluating the entire circuit to determine best scores. In this
-section, we look at two examples of \incrclass{} class learning algorithms: \textproc{LearnPSDD}
-and \textproc{Strudel}.
+optimize at a local level. We now focus our attention to incremental\footnote{Despite the ambiguous
+name, we draw no connection to \emph{online learning}.} algorithms that iteratively grow an initial
+circuit. These usually require a search over possible candidate nodes to be extended, and as such
+involve evaluating the entire circuit to determine best scores. For this reason, these are also
+sometimes classified as \emph{search-and-score} methods \citep{teyssier05}. In this section, we
+look at two examples of \incrclass{} class learning algorithms: \textproc{LearnPSDD} and
+\textproc{Strudel}.
 
 \subsection{\textproc{LearnPSDD}}
 \label{subsection:learnpsdd}
@@ -837,8 +844,8 @@ joining sets of variables up to full scope.
   \label{fig:topdownvtree}
 \end{figure}
 
-\paragraph{Top-down vtree learning.} Let $\mathcal{G}$ a fully connected weighted graph where
-variables are nodes. For each edge $\edge{X}{Y}$, attribute its weight as $\mutualinf(X,Y)$.
+\paragraph{Top-down vtree learning.} Let $\mathcal{G}$ be a fully connected weighted graph where
+variables are nodes. For each edge $\edge{XY}$, attribute its weight as $\mutualinf(X,Y)$.
 Learning the vtree top-down amounts to partitioning $\mathcal{G}$ such that the cut-set that
 divides the two partitions $\set{X}$ and $\set{Y}$ is minimal with respect to $\pairmi$.
 \citet{liang17} further argue that balanced vtrees produce smaller PCs, and so they reduce learning
@@ -847,7 +854,7 @@ to a balanced min-cut bipartition problem. Although this is known to be NP-compl
 \citep{karypsis98}. In a nutshell, the vtree construction goes as follows: find a balanced min-cut
 bipartition $(\set{X}, \set{Y})$ in $\mathcal{G}$ minimizing the $\pairmi$ of the edges; add a
 vtree inner node representing this bipartition and connect it to the two vtrees produced by the
-recursive calls over $\set{X}$ and $\set{Y}$; if $\set{X}=\{X\}$ (resp. $|\set{Y}|=\{Y\}$), produce
+recursive calls over $\set{X}$ and $\set{Y}$; if $\set{X}=\{X\}$ (resp. $\set{Y}=\{Y\}$), produce
 a leaf node $X$ (resp. $Y$). \Cref{fig:topdownvtree} shows four iterations of this procedure.
 
 \paragraph{Bottom-up vtree learning.} Again, take $\mathcal{G}$ as the fully connected weighted
@@ -1027,11 +1034,11 @@ matching, which can be solved, in our case, in $\bigo(m^4)$, where $m$ is the nu
   \end{tikzpicture}
   }
   \caption{Snapshots from running the vtree bottom-up learning strategy with pairwise mutual
-    information. Snapshots show pairings of two vtrees, with edges between partitions joined into
-    a single edge whose weight is the average pairwise mutual information of all
-    collapsed edges. In black are edges that correspond to the matchings that maximize the average
-    pairwise mutual information. The algorithm finishes when all vtrees have been joined together
-    into a single tree.}
+    information. Snapshots show pairings of two vtrees, with edges between partitions joined into a
+    single edge whose weight is the average pairwise mutual information of all collapsed edges. In
+    black are edges that correspond to the matchings that maximize the average pairwise mutual
+    information. The algorithm finishes when all vtrees have been joined together into a single
+    tree.}
   \label{fig:bottomupvtree}
 \end{figure}
 
@@ -1219,14 +1226,14 @@ the circuit until there is no more improvement or reaches an iteration step or t
     \Ensure A smooth, structure decomposable and deterministic PC learned from $\set{D}$
     \While{there is score improvement or has not reached the iteration/time limit}
       \State $s_{\Sum}\gets -\infty$
-      \State Let $(\Sum^\ast,\Prod^\ast)$ the best \textproc{Split} candidate seen so far, initially empty
+      \State Let $(\Sum^\ast,\Prod^\ast)$ be the best \textproc{Split} candidate seen so far, initially empty
       \For{each candidate $(\Sum,\Prod)$ of all possible \textproc{Split} candidates}
         \State $\mathcal{C}'\gets\textproc{Split}(\mathcal{C},\Sum,\Prod,\vtree,m)$
         \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
         \IIf{$s'>s_{\Sum}$}{$s_{\Sum}\gets s'$ and $\Sum^\ast,\Prod^\ast\gets\Sum,\Prod$}
       \EndFor
       \State $s_{\Child}\gets -\infty$
-      \State Let $\Child^\ast$ the best \textproc{Clone} candidate seen so far, initially empty
+      \State Let $\Child^\ast$ be the best \textproc{Clone} candidate seen so far, initially empty
       \For{each candidate $\Child$ of all possible \textproc{Clone} candidates}
         \State $\mathcal{C}'\gets\textproc{Clone}(\mathcal{C},\Child,\vtree,m)$
         \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
@@ -1306,7 +1313,7 @@ searching for good transformation candidates.
 
 We first address how to construct the initial circuit from data. \citeauthor{dang20} suggests doing
 so by compiling both a vtree and linear sized PC (in the number of variables) from a Chow-Liu Tree
-(CLT, \cite{chow68}). Let $\mathcal{T}$ a CLT over variables $\set{X}=\{X_1,\ldots,X_m\}$. A vtree
+(CLT, \cite{chow68}). Let $\mathcal{T}$ be a CLT over variables $\set{X}=\{X_1,\ldots,X_m\}$. A vtree
 $\vtree$ is extracted from $\mathcal{T}$ by traversing $\mathcal{T}$ top-down. For each node
 $X_i\in\mathcal{T}$, if $X_i$ is a leaf node in $\mathcal{T}$, then create a vtree leaf node of
 $X_i$; otherwise create an inner vtree node $v$, attach a vtree leaf node of $X_i$ as $v^\gets$ and
@@ -1433,7 +1440,7 @@ structure depends on the recursive calls of each CLT node.
 \end{figure}
 
 \textproc{Strudel} compiles an initial circuit by looking at the vtree bottom-up and caching
-subcircuits. Let $v$ a vtree
+subcircuits. Let $v$ be a vtree
 node and $Y\in\mathcal{T}$ a CLT node with conditional probability $p(Y|X)$, where $X$ is the
 parent of $Y$. If $v$ is a leaf node in $\vtree$ and $v$'s variable is also a leaf node in
 $\mathcal{T}$, two sum nodes $\Sum_0$ and $\Sum_1$ over literal nodes $\neg Y$ and $Y$ are created,
@@ -1450,7 +1457,7 @@ are the same variable, say $Z$, then $X$ and $Y$ are independent when $Z$ is giv
 divergent connection in $\mathcal{T}$) and thus cannot be merged together into a single sum because
 of the context-specific independence set by $Z$ \citep{boutilier96}. This is visualized in the
 \inode[fill=boxpink!50]{\newProdNode} nodes; in this situation, $A$ and $B$ are siblings coming
-from $C$, and so $A\indep B|C$ (redundant sum nodes are added for standardization).
+from $C$, and so $A\indep B\,|\,C$ (redundant sum nodes are added for standardization).
 When the prior situation is not true, then not only $X$ is the only variable in $\set{X}$, but $X$
 must also be the parent of $Y$ and so we must model $p(\set{Y}|X)$. This is the case for
 \inode[fill=boxblue!50]{\newProdNode}, where $C$ is the parent of $B$ and so we have to be join the
@@ -1465,28 +1472,28 @@ shown more formally in \Cref{alg:strudelinit}.
     \Ensure A smooth, structure decomposable and deterministic initial PC and vtree
     \State $\mathcal{T}\gets\textproc{LearnCLT}(\set{D},\set{X})$
     \State $\vtree\gets\textproc{CompileVtree}(\mathcal{T})$
-    \State Let $\mathcal{M}$ a hash table for caching circuits, initially empty
+    \State Let $\mathcal{M}$ be a hash table for caching circuits, initially empty
     \For{each vtree node $v\in\vtree$ in reverse topological order}
       \If{$v$ is a leaf node}
-        \State Let $X\in\mathcal{T}$ the variable represented by $v$, and $Y$ its parent
+        \State Let $X\in\mathcal{T}$ be the variable represented by $v$, and $Y$ its parent
         \If{$X$ is a leaf node in $\mathcal{T}$}
           \State $\Sum_j\gets\sum_{i\in\Val(X)}p(X=i|Y=j)\cdot\liv X=i\riv$ for each $j\in\Val(Y)$
-          \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\Sum_j|\forall j\in\Val(Y)\}$
+          \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\Sum_j\,|\,\forall j\in\Val(Y)\}$
         \Else
-          \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\liv X=i\riv|i\in\Val(X)\}$
+          \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\liv X=i\riv\,|\,i\in\Val(X)\}$
         \EndIf
       \Else
         \State Attribute $\set{X}\gets\Sc(v^\gets)$ and $\set{Y}\gets\Sc(v^\to)$
-        \State Let $X\in\set{X}$ and $Y\in\set{Y}$
+        \State Let $X\in\set{X}$ and $Y\in\set{Y}$ subsets of each scope
         \State Attribute $\Nodes^\gets\gets\mathcal{M}(v^\gets)$ and $\Nodes^\to\gets\mathcal{M}(v^\to)$
         \State $k\gets|\Val(X)|$
-        \State Construct product nodes $\Prods=\{\Nodes_i^\gets\times\Nodes_i^\to|\forall i\in\left[k\right]\}$
+        \State Construct product nodes $\Prods=\{\Nodes_i^\gets\cdot\Nodes_i^\to\,|\,\forall i\in\left[k\right]\}$
         \If{$\Pa(X)=\Pa(Y)$}
           \State Create sum nodes $\Sum_i$ each with only a single child $\Prod_i\in\Prods$, for each $i\in\left[k\right]$
           \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\Sum_1,\ldots,\Sum_k\}$
         \Else
           \State $\Sum_j\gets\sum_{i\in\Val(X)}p(\set{Y}|X=j)\cdot\liv X=i\riv$, for each $j\in\Val(Y)$
-          \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\Sum_j|\forall j\in\Val(Y)\}$
+          \State $\mathcal{M}(v)\gets\mathcal{M}(v)\cup\{\Sum_j\,|\,\forall j\in\Val(Y)\}$
         \EndIf
       \EndIf
     \EndFor
@@ -1687,7 +1694,7 @@ blow-up, this number is often restricted to only two children per partition.
   \begin{algorithmic}[1]
     \Require A region graph $\mathcal{G}$, parameters $s$ for sums and $l$ for inputs
     \Ensure A smooth and decomposable probabilistic circuit
-    \State Let $\mathcal{M}$ a mapping of region nodes to PC nodes
+    \State Let $\mathcal{M}$ be a mapping of region nodes to PC nodes
     \For{each node $\Node$ in $\mathcal{G}$ except the root in reverse topological order}
       \If{$\Node$ is a region}
         \If{$\Node$ is a leaf node in $\mathcal{G}$}
@@ -1700,7 +1707,7 @@ blow-up, this number is often restricted to only two children per partition.
           \EndFor
         \EndIf
       \ElsIf{$\Node$ is a partition}
-        \State Let $\Ch(\Node)=\{\textsf{R}_1,\ldots,\textsf{R}_k\}$ regions and $q=\prod_{i=1}^k
+        \State Let $\Ch(\Node)=\{\textsf{R}_1,\ldots,\textsf{R}_k\}$ be regions and $q=\prod_{i=1}^k
           |\mathcal{M}(\textsf{R}_i)|$
         \State Construct $\Prods=\{\Prod_1,\ldots,\Prod_q\}$ product nodes
         \For{every product $\Prod\in\Prods$}
@@ -2219,7 +2226,7 @@ partitions are replaced with product nodes.
   \begin{algorithmic}[1]
     \Require Region $\Region$, data $\set{D}$, variables $\set{X}$, min. \# of assignments per
       partition $\delta$, \# of conjunctions of literals $k$, length of conjunctions $t$
-    \State Let $\set{A}$ a set of logical constraints initially empty
+    \State Let $\set{A}$ be a set of logical constraints initially empty
     \State Copy all data from $\set{D}$ to $\set{S}$
     \State Sample a subset $\set{Y}$ of size $t$ from $\set{X}$\label{alg:xpcs-expand:line:sample}
     \While{$|\set{A}|<k$}
@@ -2288,11 +2295,11 @@ shrink considerably at each depth.
     \State Start with a region graph $\mathcal{G}$ with a single region node as root
     \While{there are candidate region nodes of type $\mathcal{S}$}
       \State Select a random region $\Region$ of type $\mathcal{S}$
-      \State Let $\set{Q}$ the subdata associated with $\Region$
+      \State Let $\set{Q}$ be the subdata associated with $\Region$
       \State \Call{ExpandXPC}{$\Region$, $\set{Q}$, $\Sc(\Region)$, $\delta$, $k$, $t$}
     \EndWhile
     \For{each node $\Node\in\mathcal{G}$ in reverse topological order}
-      \State Let $\set{D}_{\Node}$ the data associated with $\Node$
+      \State Let $\set{D}_{\Node}$ be the data associated with $\Node$
       \If{$\Node$ is a leaf region node of type $\mathcal{Q}$}
         \State Replace $\Node$ with a product of Bernoullis according to $\set{D}$
       \ElsIf{$\Node$ is a leaf region node of type $\mathcal{S}$}
