@@ -11,84 +11,152 @@ queries (as far as we know) are enabled from each constraint.
 \section{Distributions as Computational Graphs}
 \label{sec:pc}
 
-Probabilistic circuits are directed acyclic graphs usually recursively defined in terms of their
-computational units. In its simplest form a PC is a single unit with no outgoing edges whose value
-corresponds to the result of a function. These are often called \emph{input} nodes, and can take
-any form as long as its value is tractably computable. More concretely, input nodes typically
-represent probability density (or mass) functions, although they also support inputs as joint
-probability density functions of complex non-parametric models as well. To simplify notation, from
-here on out we shall use the term distribution and probability density (resp. mass) function
-interchangeably and argue that the input node represents a probability distribution.
+Probabilistic circuits are annotated computational graphs usually recursively defined in terms of
+their computational units. We start with a broad definition of probabilistic circuits.
+
+\begin{definition}[Probabilistic circuit]
+  A \emph{probabilistic circuit} $\mathcal{C}$ is a rooted connected annotated DAG whose nodes
+  compute tractable operations of their children, usually either convex combinations, known as
+  \emph{sum} nodes, or \emph{products}. Nodes with no outgoing edges, i.e.\ \emph{input} nodes, are
+  real-valued nonnegative functions with tractable evaluation and marginalization. Computing a
+  value from $\mathcal{C}$ amounts to a bottom-up pass from input nodes to root. \label{def:pc}
+\end{definition}
+
+In its simplest form, a PC is a single input node representing any tractable unnormalized
+probability density. More concretely, inputs are typically parametric univariate density (or mass)
+functions, although joint probability density functions of complex non-parametric models are
+supported as well. To simplify notation, from here on out we shall use the term distribution to
+mean a probability density (or mass) function and argue that input nodes represent probability
+distributions. The semantics of this shall be clear given the context.
+
+Let $\Leaf_p$ a PC input node representing a distribution $p$ and an assignment $\set{x}$ of random
+variables $\set{X}$; we use the notation $\Leaf_p(\set{X}=\set{x})$ to mean $p(\set{X}=\set{x})$,
+often omitting $p$ when its explicit form is not needed and $\set{X}$ when meaning is clear from
+context. We say that the scope of $\Leaf_p$, denoted by $\Sc(\Leaf_p)$, is the set of all random
+variables that come into play in the probability distribution $p$. When $\set{x}$ captures the
+entire scope of a node, it is said to be a \emph{complete assignment}, or a \emph{partial
+assignment} otherwise. When we say that an input node must be \emph{tractable}, we mean that it
+must \emph{at worst} be able to compute the \emph{probability evidence} and \emph{marginal
+probability} of any assignment $\set{x}$ in polynomial time. We define probability of evidence as a
+complete assignment $\set{x}$'s likelihood according to the probabilistic circuit, while the
+marginal probability is the marginalization of a partial assignment's remaining random variables
+$\set{Y}$: $\int_{\set{y}}p(\set{x},\set{y})\dif\set{y}$. The value, be it the probability of
+evidence or marginal probability, of an input node is the same of the distribution it represents
+under a given evidence. We abuse notation and say that $\Leaf_p(\set{x})=\int_{\set{y}}p(\set{x},
+\set{y})\dif\set{y}$ is the marginal of partial assignment $\set{x}$. \Cref{eg:gaussians} shows an
+instance of a Gaussian distribution as a PC.
+
 \begin{example}[sidebyside,lefthand width=0.6\textwidth]{Gaussians as probabilistic circuits}{gaussians} %
-  Let $\Leaf_p$ be an input node and $p(X)=\gaussian(X;\mu,\sigma^2)$ a univariate Gaussian
-  distribution. Computing any query on $\Leaf_p$ is straightforward: any query on
-  $\Leaf_p$ directly translates to $p$. As an example, suppose $\mu=0$ and $\sigma^2=1$ and
-  we wish to compute $\Leaf_p(x=0.8)$. The probability of this input shall then be
+  Let $\mathcal{C}$ a probabilistic circuit with a single (input) node $\Leaf$. We associate
+  $\Leaf$ with a univariate Gaussian distribution $p(X)=\gaussian(X;\mu,\sigma^2)$, meaning that
+  any query on $\Leaf$ directly translates to $p$. As an example, suppose $\mu=0$ and $\sigma^2=1$
+  and we wish to compute $\Leaf(x=0.8;\mu,\sigma^2)$. The probability of this input shall then be
   \begin{equation*}
-    \Leaf_p(x=0.8)=\gaussian(x=0.8;\mu=0,\sigma^2=1)=0.29.
+    \Leaf(x=0.8;\mu,\sigma^2)=\gaussian(x=0.8;\mu=0,\sigma^2=1)=0.29.
+  \end{equation*}
+  Likewise, the marginal probability of a random variable $Y$ not in $\Sc(L)=\{X\}$ for the
+  probabilistic circuit $\mathcal{C}$ rooted at $\Leaf$ is the marginal of $p$
+  \begin{equation*}
+    \Leaf(y;\mu,\sigma^2)=\int_x\Leaf(x,y;\mu,\sigma^2)\dif{}x=1.0.
   \end{equation*}
   \tcblower
-  \begin{center}
-    \begin{tikzpicture}
-      \pgfplotsset{
-        every axis/.append style={
-          axis line style={->},
-          tick label style={font={\scriptsize\bfseries}},
-          x tick label style={color=white,above right},
-          y tick label style={color=white,above right},
-          grid style={black,dashed},
-        }
+  \centering
+  \begin{tikzpicture}
+    \pgfplotsset{
+      every axis/.append style={
+        axis line style={->},
+        tick label style={font={\scriptsize\bfseries}},
+        x tick label style={color=white,above right},
+        y tick label style={color=white,above right},
+        grid style={black,dashed},
       }
-      \begin{axis}[
-        no markers, domain=-5:5, samples=35,
-        height=2.75cm, width=\columnwidth,
-        xtick={0.8}, ytick={0.29},
-        xticklabels={\colorbox{boxblue}{\textbf{0.8}}},
-        yticklabels={\colorbox{boxgreen}{\textbf{0.29}}},
-        axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
-        every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
-        every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
-        enlargelimits=false, clip=false, axis on top,
-        grid = major
-      ]
-        \addplot[very thick,boxteal] {gauss(0,1)};
-      \end{axis}
-    \end{tikzpicture}
+    }
+    \begin{axis}[
+      no markers, domain=-5:5, samples=35,
+      height=2.75cm, width=\columnwidth,
+      xtick={0.8}, ytick={0.29},
+      xticklabels={\colorbox{boxblue}{\textbf{0.8}}},
+      yticklabels={\colorbox{boxgreen}{\textbf{0.29}}},
+      axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
+      every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
+      every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
+      enlargelimits=false, clip=false, axis on top,
+      grid = major
+    ]
+      \addplot[very thick,boxteal] {gauss(0,1)};
+    \end{axis}
+  \end{tikzpicture}
 
-    \begin{tikzpicture}
-      \node (x) at (0, 0) {$x$};
-      \newGaussNode{g}{$(x) + (1,0)$};
-      \node (px) at ($(g) + (1.25,0)$) {$p(x)$};
-      \draw[boxdgray,edge] (x) -- (g);
-      \draw[boxdgray,edge] (g) -- (px);
+  \begin{tikzpicture}
+    \node (x) at (0, 0) {$x$};
+    \newGaussNode{g}{$(x) + (1,0)$};
+    \node (px) at ($(g) + (1.25,0)$) {$p(x)$};
+    \draw[boxdgray,edge] (x) -- (g);
+    \draw[boxdgray,edge] (g) -- (px);
 
-      \newGaussNode[label=below:$X$]{gv}{$(g) - (0,1.0)$};
-      \node (xv) at ($(gv) - (1.25,0)$) {\colorbox{boxblue}{\color{white}$\mathbf{.80}$}};
-      \node (pxv) at ($(gv) + (1.25,0)$) {\colorbox{boxgreen}{\color{white}$\mathbf{.29}$}};
-      \draw[boxdgray,edge] (xv) -- (gv);
-      \draw[boxdgray,edge] (gv) -- (pxv);
-    \end{tikzpicture}
-  \end{center}
+    \newGaussNode[label=below:$X$]{gv}{$(g) - (0,1.0)$};
+    \node (xv) at ($(gv) - (1.25,0)$) {\colorbox{boxblue}{\color{white}$\mathbf{.80}$}};
+    \node (pxv) at ($(gv) + (1.25,0)$) {\colorbox{boxgreen}{\color{white}$\mathbf{.29}$}};
+    \draw[boxdgray,edge] (xv) -- (gv);
+    \draw[boxdgray,edge] (gv) -- (pxv);
+  \end{tikzpicture}
+
+  \begin{tikzpicture}
+    \pgfplotsset{
+      every axis/.append style={
+        axis line style={->},
+        tick label style={},
+        grid style={black}
+      }
+    }
+    \begin{axis}[
+      no markers, domain=-5:5, samples=35,
+      xtick={-5}, ytick={0},
+      xticklabels={}, yticklabels = {},
+      height=2.75cm, width=\columnwidth,
+      axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
+      every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
+      every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
+      enlargelimits=false, clip=false, axis on top,
+      grid=major
+    ]
+      \path[name path=axis] (axis cs:0,0) -- (axis cs:5,0);
+      \addplot[very thick,boxteal,name path=g] {gauss(0,1)};
+      \addplot[boxteal!80] fill between [of=g and axis];
+      \node at (2.5,0.3) {\colorbox{boxblue}{\color{white}\scriptsize\textbf{1.0}}};
+    \end{axis}
+  \end{tikzpicture}
 \end{example}
-Let $\Leaf_p$ be a PC input node and denote $p$ as its inherent probability distribution. By
-definition, any query $f:\mathcal{X}\to \mathcal{Y}$ which is tractable on $p$ is tractable on
-$\Leaf_p$. We shall denote $\Leaf_p(\set{X})=p(\set{X})$, and often omit $p$ when its explicit form
-is not needed. Evidently, a single input node lacks the expressivity for modeling complex models, otherwise we
-would have just used the input distribution as a standalone model. The expressiveness of PCs comes
-from recursively combining distributions into complex functions. This can be done through
-computational units that either compute convex combinations or products of their children. Let us
-first look at convex combinations, known in the literature as \emph{sum} nodes.
 
-Let $\Sum$ be a PC sum node, and denote by $\Ch(\Sum)$ the children nodes of $\Sum$. For every edge
-$\edge{\Sum\Child}$ coming out of $\Sum$ and going to $\Child$, we attribute a weight $w_{\Sum,
-\Child}>0$, such that $\sum_{\Child\in\Ch(\Sum)} w_{\Sum,\Child} = 1$. A sum node semantically
+An inner node indicates an operation to be computed from the value of its children. The subject of
+which operations yield which benefits in terms of inference is an interesting question which we
+briefly touch in \Cref{rem:optract}, but otherwise remains out of the scope of this work. In this
+dissertation, we restrict ourselves to the study of \emph{sums} and \emph{products}. We first
+address sums, which appear as convex combinations in probabilistic circuits.
+
+Let $\Sum$ be a PC sum node, and denote by $\Ch(\Sum)$ the child nodes of $\Sum$. For every edge
+$\edge{\Sum\Child}$ coming out of $\Sum$ and going into $\Child$, we attribute a weight $w_{\Sum,
+\Child}\geq 0$, such that $\sum_{\Child\in\Ch(\Sum)} w_{\Sum,\Child} = 1$. A sum node semantically
 defines a mixture model over its children, essentially acting as a latent variable over the
 component distributions \citep{poon11,peharz16}. Its value is the weighted sum of its children
-$p_{\Sum}(\set{X}=\set{x})=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\cdot
-p_{\Child}(\set{X}=\set{x})$. To simplify notation, we shall use $\Node(\set{X}=\set{x})$ as an
-alias for $p_{\Node}(\set{X}=\set{x})$, that is, the probability function given by $\Node$'s
-induced distribution. We often omit the variable assignment $\set{X}=\set{x}$ to $\set{x}$ if the
-notation is unambiguous.
+$p_{\Sum}(\set{x})=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\cdot p_{\Child}(\set{x})$. Again, to
+simplify notation we shall use $\Node(\set{x})$ as an alias for $p_{\Node}(\set{x})$, that is, the
+probability distribution given by a node $\Node$'s induced distribution.
+
+The scope of an inner node $\Node$ is the set of all variables that appear in the descendants of
+$\Node$, or more formally $\Sc(\Node)=\bigcup_{\Child\in\Ch(\Node)}\Sc(\Child)$.  This can be
+inductively computed by first evaluating the scope of inputs and then computing parent nodes in a
+bottom-up approach. The notion of scope is essential to many properties in PCs, the first of which
+we shall now introduce.
+
+\begin{definition}[Smoothness]
+  A probabilistic circuit $\mathcal{C}$ is said to be \emph{smooth} if for every sum node $\Sum$ in
+  $\mathcal{C}$, $\Sc(\Child_1)=\Sc(\Child_2)$ for $\Child_1,\Child_2\in\Ch(\Sum)$.
+\end{definition}
+
+Essentially, a smooth probabilistic circuit guarantees that every child in a sum node $\Sum$ has
+the same scope as their siblings and consequently their parent $\Sum$ as well. \Cref{eg:mixgauss}
+shows a case of a Gaussian mixture model as a smooth PC.
 
 \newcommand\mone{1}%
 \newcommand\sone{0.65}%
@@ -101,7 +169,8 @@ notation is unambiguous.
   the probability of $X=x$ for a GMM $\mathcal{G}$ with three components
   $\gaussian_1(\mu_1=\mone,\sigma^2_1=\sone)$, $\gaussian_2(\mu_2=\mtwo, \sigma^2_1=\stwo)$ and
   $\gaussian_3(\mu_3=\mthr,\sigma^2_3=\sthr)$, and suppose we have weights set to
-  $\phi=(0.4,0.25,0.35)$. Computing the probability of $G$ amounts to the weighted summation
+  $\phi=(0.4,0.25,0.35)$. Computing the probability of $x$ according to $G$ amounts to the weighted
+  summation
   \begin{align*}
     \mathcal{G}(X=x)=&0.4\cdot\gaussian_1(x;\mu_1,\sigma^2_2)+0.25\cdot\gaussian_2(x;\mu_2,\sigma^2_2)+\\
                      &0.35\cdot\gaussian_3(x;\mu_3,\sigma^2_3),
@@ -194,14 +263,30 @@ notation is unambiguous.
 \end{example}
 
 So far, the only nonlinearities present in PCs come from the internal computations of input nodes.
-In fact, a PC that only contains sums inputs can always be reduced to a sum node rooted PC with a
-single layer, i.e. a mixture model (see \Cref{thm:summix}). Adding \emph{product nodes} as another
-form of nonlinearity increases expressivity sufficiently for PCs to be capable of representing any
-(discrete) probability distribution \citep{darwiche03,martens14,peharz15}. More importantly,
-products semantically act as factorizations of their children, indicating an independence
-relationship between variables from different children. In practice, product nodes are simply
-products of their childrens' distribution: if $\Prod$ is a PC product node, then its value is given
-by $\Prod(\set{X}=\set{x})=\prod_{\Child\in\Ch(\Prod)}\Child(\set{X}=\set{x})$.
+In fact, a PC that only contains sums and inputs can always be reduced to a mixture model (see
+\Cref{thm:summix}). Adding \emph{product nodes} as another form of nonlinearity increases
+expressivity sufficiently for PCs to be capable of representing any discrete probability
+distribution \citep{darwiche03,martens14,peharz15}. More importantly, products semantically act as
+factorizations of their children, indicating a conditional independence relationship between
+variables from different children given the value of a latent variable. In practice, product nodes
+are simply products of their children: if $\Prod$ is a PC product node, then its value is given by
+$\Prod(\set{x})=\prod_{\Child\in\Ch(\Prod)} \Child(\set{x})$. We now introduce
+\emph{decomposability}, a structural constraint on products.
+
+\begin{definition}[Decomposability]
+  A probabilistic circuit $\mathcal{C}$ is said to be \emph{decomposable} if for every product node
+  $\Prod$ in $\mathcal{C}$, $\Sc(\Child_1)\cap\Sc(\Child_2)=\emptyset$ for $\Child_1,\Child_2\in
+  \Ch(\Prod)$.
+\end{definition}
+
+When a PC is both \emph{smooth} and \emph{decomposable}, then the circuit is said to be
+\emph{valid}, which means it correctly computes the probability of any evidence. Although
+smoothness and decomposability are sufficient for validity, they are not necessary. In fact,
+\emph{consistency} is a weaker constraint on products that, coupled with smoothness, confers
+validity \citep{poon11}. Although there exist valid PCs that are neither smooth nor decomposable
+(or consistent), these two properties are often adopted during learning due to their intuitive and
+uncomplicated syntax. In fact, all PCs shown throughout this dissertation shall be \emph{at least}
+smooth and decomposable, with these two constraints always assumed to hold.
 
 \newcommand\xmone{2}%
 \newcommand\xsone{0.5}%
@@ -386,25 +471,54 @@ by $\Prod(\set{X}=\set{x})=\prod_{\Child\in\Ch(\Prod)}\Child(\set{X}=\set{x})$.
   \end{center}
 \end{example}
 
-Now that we have introduced the three most important computational units in PCs, we are finally
-ready to formally define probabilistic circuits.
+We now formally address how to compute two inference queries that, up until now, were only
+informally touched on: probability of evidence and marginal probability. Given a probabilistic
+circuit $\mathcal{C}$ whose root is $\Node$, we shall use $\mathcal{C}$ and its root $\Node$
+interchangeably when there is no need for a distinction. We refer to the probability of evidence by
+the shorthand \evi{}, computable by a bottom-up evaluation of each node as shown in \Cref{alg:evi}.
+Likewise, marginals are denoted by \mar{}, and are computed bottom-up just like in \evi{} with the
+exception of inputs, where we marginalize over the unseen variables, as shown in \Cref{alg:mar}. In
+both cases, the computation is done in linear time on the number of edges of the circuit.
 
-\begin{definition}[Probabilistic circuit]
-  A \emph{probabilistic circuit} $\mathcal{C}$ is a rooted connected DAG whose nodes compute any
-  tractable operation of their children, usually either convex combinations, known as \emph{sum}
-  nodes, or \emph{products}. Nodes with no outgoing edges, i.e. \emph{input} nodes, are tractable
-  nonnegative functions whose integrals exist and equal to one. Computing a value from
-  $\mathcal{C}$ amounts to a bottom-up feedforward pass from input nodes to root. \label{def:pc}
-\end{definition}
+The conditional probability is another query 
 
-While we assume that \emph{tractable} operation or function is acceptable, we are usually
-interested in $\bigo(1)$ time computable operations, and often assume the same of input functions
-to simplify analysis. Further, in this dissertation we are only interested in convex combinations
-and products, and as such only these operations are considered. When a probabilistic circuit
-$\mathcal{C}$ contains no consecutive sums or products (i.e. for every sum all of its children are
-either inputs or products and respectively for products) then it is said to be a \emph{standard}
-form circuit. Any PC can be transformed into a \emph{standardized} circuit, a process we call
-\emph{standardization} (see \Cref{thm:standard}).
+\begin{algorithm}[t]
+  \caption{\evi}\label{alg:evi}
+  \begin{algorithmic}[1]
+    \Require A probabilistic circuit $\mathcal{C}$ and complete assignment $\set{x}$
+    \Ensure Probability $\mathcal{C}(\set{x})$
+    \State Let $v$ be a hash function mapping a node to its probability
+    \For{each $\Node$ in reverse topological order}
+      \IIf{$\Node$ is an input}{$v_{\Node}\gets\Node(\set{x})$}
+      \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
+      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
+    \EndFor%
+    \State \textbf{return} $v_{\normalfont{R}}$, where $\textsf{R}$ is $\mathcal{C}$'s root
+  \end{algorithmic}
+\end{algorithm}
+\begin{algorithm}[t]
+  \caption{\mar}\label{alg:mar}
+  \begin{algorithmic}[1]
+    \Require A probabilistic circuit $\mathcal{C}$ and partial assignment $\set{x}$
+    \Ensure Probability $\int\mathcal{C}(\set{x},\set{y})\dif\set{y}$
+    \State Let $v$ be a hash function mapping a node to its probability
+    \For{each $\Node$ in reverse topological order}
+      \IIf{$\Node$ is an input}{$v_{\Node}\gets\int\Node(\set{x},\set{y})\dif\set{y}$}
+      \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
+      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
+    \EndFor%
+    \State \textbf{return} $v_{\normalfont{R}}$, where $\textsf{R}$ is $\mathcal{C}$'s root
+  \end{algorithmic}
+\end{algorithm}
+
+Before we address
+querying in PCs, we must first discuss some important concepts that often come up in PC literature.
+Mainly, we are interested in defining two notions here: induced subcircuits and variable trees.
+
+probabilistic circuit $\mathcal{C}$ contains no consecutive sums or products (i.e. for every sum
+all of its children are either inputs or products and respectively for products) then it is said to
+be a \emph{standard} form circuit. Any PC can be transformed into a \emph{standardized} circuit, a
+process we call \emph{standardization} (see \Cref{thm:standard}).
 
 \begin{remark}[breakable]{On operators and tractability}{optract}
   Throughout this work we consider only products and convex combinations (apart from the implicit
@@ -441,11 +555,6 @@ form circuit. Any PC can be transformed into a \emph{standardized} circuit, a pr
   Other works include PCs with quotients \citep{sharir18a}, transformations \citep{pevny20a}, max
   \citep{melibari16a}, and einsum \citep{peharz20b} operations.
 \end{remark}
-
-Before we address the key components that make PCs interesting tractable
-probabilistic models, we must first discuss some important concepts that often come up in PC
-literature. Mainly, we are interested in defining two notions here: the scope of a unit and induced
-subcircuits.
 
 In simple terms, the scope of a computational unit $\Node$ of a PC is merely the set of all
 variables that appear in the descendants of $\Node$. More formally, denote by $\Sc(\Node)$
@@ -787,35 +896,6 @@ $\mathcal{C}$ is \emph{complete} if for every variable $X\in\Sc(\mathcal{C})$, $
 value to $X$; otherwise it is said to be a \emph{partial} assignment. \Cref{alg:evi} and
 \Cref{alg:mar} show the exact algorithmic procedures to extract \evi{} and \mar{} queries from
 $\mathcal{C}$. For \con{}, it suffices to run two \mar{}s.
-
-\begin{algorithm}[t]
-  \caption{\evi}\label{alg:evi}
-  \begin{algorithmic}[1]
-    \Require A probabilistic circuit $\mathcal{C}$ and complete assignment $\set{x}$
-    \Ensure Probability $\mathcal{C}(\set{x})$
-    \State Let $v$ be a hash function mapping a node to its probability
-    \For{each $\Node$ in reverse topological order}
-      \IIf{$\Node$ is an input}{$v_{\Node}\gets\Node(\set{x})$}
-      \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
-      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
-    \EndFor%
-    \State \textbf{return} $v_{\normalfont{R}}$, where $\textsf{R}$ is $\mathcal{C}$'s root
-  \end{algorithmic}
-\end{algorithm}
-\begin{algorithm}[t]
-  \caption{\mar}\label{alg:mar}
-  \begin{algorithmic}[1]
-    \Require A probabilistic circuit $\mathcal{C}$ and partial assignment $\set{x}$
-    \Ensure Probability $\int\mathcal{C}(\set{x},\set{y})\dif\set{y}$
-    \State Let $v$ be a hash function mapping a node to its probability
-    \For{each $\Node$ in reverse topological order}
-      \IIf{$\Node$ is an input}{$v_{\Node}\gets\int\Node(\set{x},\set{y})\dif\set{y}$}
-      \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
-      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
-    \EndFor%
-    \State \textbf{return} $v_{\normalfont{R}}$, where $\textsf{R}$ is $\mathcal{C}$'s root
-  \end{algorithmic}
-\end{algorithm}
 
 Because \evi{}, \mar{} and \con{} are the most basic forms of querying in PCs, we shall refer to
 these as \emph{base queries}. Although smoothness and decomposability are sufficient conditions for

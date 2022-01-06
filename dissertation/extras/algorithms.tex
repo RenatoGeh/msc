@@ -10,6 +10,11 @@
 
 \algblockdefx[NIELSE]{NIElse}{EndNIElse}{\textbf{else}}
 
+% Remove extra space on EndFor endings
+\makeatletter
+\patchcmd{\ALG@doentity}{\item[]\nointerlineskip}{}{}{}
+\makeatother
+
 \makeatletter
 % EndNIElse
 \ifthenelse{\equal{\ALG@noend}{t}}%
