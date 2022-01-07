@@ -4,9 +4,9 @@
 As we briefly mentioned in the last chapter, Probabilistic Circuits (PCs) are conceptualized as
 computational graphs under special conditions. In this chapter, \Cref{sec:pc} to be more precise,
 we formally define PCs and give an intuition on their syntax, viewing other probabilistic models
-through the lenses of the PC framework. In \Cref{sec:const}, we describe the special structural
-constraints that give PCs their inference power over other generative models and state which
-queries (as far as we know) are enabled from each constraint.
+through the lenses of the PC framework, formalizing the many structural constraints that give
+sufficient conditions for tractable inference. In \Cref{sec:pckb}, we address PCs as knowledge
+bases, representing logic formulae through circuits.
 
 \section{Distributions as Computational Graphs}
 \label{sec:pc}
@@ -34,17 +34,19 @@ variables $\set{X}$; we use the notation $\Leaf_p(\set{X}=\set{x})$ to mean $p(\
 often omitting $p$ when its explicit form is not needed and $\set{X}$ when meaning is clear from
 context. We say that the scope of $\Leaf_p$, denoted by $\Sc(\Leaf_p)$, is the set of all random
 variables that come into play in the probability distribution $p$. When $\set{x}$ captures the
-entire scope of a node, it is said to be a \emph{complete assignment}, or a \emph{partial
-assignment} otherwise. When we say that an input node must be \emph{tractable}, we mean that it
-must \emph{at worst} be able to compute the \emph{probability evidence} and \emph{marginal
-probability} of any assignment $\set{x}$ in polynomial time. We define probability of evidence as a
-complete assignment $\set{x}$'s likelihood according to the probabilistic circuit, while the
-marginal probability is the marginalization of a partial assignment's remaining random variables
-$\set{Y}$: $\int_{\set{y}}p(\set{x},\set{y})\dif\set{y}$. The value, be it the probability of
-evidence or marginal probability, of an input node is the same of the distribution it represents
-under a given evidence. We abuse notation and say that $\Leaf_p(\set{x})=\int_{\set{y}}p(\set{x},
-\set{y})\dif\set{y}$ is the marginal of partial assignment $\set{x}$. \Cref{eg:gaussians} shows an
-instance of a Gaussian distribution as a PC.
+entire scope of a node, i.e.\ $\set{x}$ assigns a value to every variable $X\in\Sc(\Node)$, it is
+said to be a \emph{complete assignment}, or a \emph{partial assignment} otherwise. When we say that
+an input node must be \emph{tractable}, we mean that it must \emph{at worst} be able to compute the
+\emph{probability evidence} and \emph{marginal probability} of any assignment $\set{x}$ in
+polynomial time. We define probability of evidence as a complete assignment $\set{x}$'s likelihood
+according to the probabilistic circuit, while the marginal probability is the marginalization of a
+partial assignment's remaining random variables $\set{Y}$:
+$\int_{\set{y}}p(\set{x},\set{y})\dif\set{y}$. The value, be it the probability of evidence or
+marginal probability, of an input node is the same of the distribution it represents under a given
+evidence. We abuse notation and say that $\Leaf_p(\set{x})=\int_{\set{y}}p(\set{x},
+\set{y})\dif\set{y}$ is the marginal of partial assignment $\set{x}$. To facilitate analysis, we
+assume that evaluating any query on an input node is node in $\bigo(1)$. \Cref{eg:gaussians} shows
+an instance of a Gaussian distribution as a PC.
 
 \begin{example}[sidebyside,lefthand width=0.6\textwidth]{Gaussians as probabilistic circuits}{gaussians} %
   Let $\mathcal{C}$ a probabilistic circuit with a single (input) node $\Leaf$. We associate
@@ -141,22 +143,18 @@ defines a mixture model over its children, essentially acting as a latent variab
 component distributions \citep{poon11,peharz16}. Its value is the weighted sum of its children
 $p_{\Sum}(\set{x})=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\cdot p_{\Child}(\set{x})$. Again, to
 simplify notation we shall use $\Node(\set{x})$ as an alias for $p_{\Node}(\set{x})$, that is, the
-probability distribution given by a node $\Node$'s induced distribution.
+probability distribution given by a node $\Node$'s induced distribution. \Cref{eg:mixgauss} shows a
+case of a Gaussian mixture model as a PC.
 
-The scope of an inner node $\Node$ is the set of all variables that appear in the descendants of
-$\Node$, or more formally $\Sc(\Node)=\bigcup_{\Child\in\Ch(\Node)}\Sc(\Child)$.  This can be
-inductively computed by first evaluating the scope of inputs and then computing parent nodes in a
-bottom-up approach. The notion of scope is essential to many properties in PCs, the first of which
-we shall now introduce.
-
-\begin{definition}[Smoothness]
-  A probabilistic circuit $\mathcal{C}$ is said to be \emph{smooth} if for every sum node $\Sum$ in
-  $\mathcal{C}$, $\Sc(\Child_1)=\Sc(\Child_2)$ for $\Child_1,\Child_2\in\Ch(\Sum)$.
-\end{definition}
-
-Essentially, a smooth probabilistic circuit guarantees that every child in a sum node $\Sum$ has
-the same scope as their siblings and consequently their parent $\Sum$ as well. \Cref{eg:mixgauss}
-shows a case of a Gaussian mixture model as a smooth PC.
+So far, the only nonlinearities present in PCs come from the internal computations of input nodes.
+In fact, a PC that only contains sums and inputs can always be reduced to a mixture model (see
+\Cref{thm:summix}). Adding \emph{product nodes} as another form of nonlinearity increases
+expressivity sufficiently for PCs to be capable of representing any discrete probability
+distribution \citep{darwiche03,martens14,peharz15}. More importantly, products semantically act as
+factorizations of their children, indicating a conditional independence relationship between
+variables from different children given the value of a latent variable. In practice, product nodes
+are simply products of their children: if $\Prod$ is a PC product node, then its value is given by
+$\Prod(\set{x})=\prod_{\Child\in\Ch(\Prod)} \Child(\set{x})$.
 
 \newcommand\mone{1}%
 \newcommand\sone{0.65}%
@@ -262,16 +260,23 @@ shows a case of a Gaussian mixture model as a smooth PC.
   \end{center}
 \end{example}
 
-So far, the only nonlinearities present in PCs come from the internal computations of input nodes.
-In fact, a PC that only contains sums and inputs can always be reduced to a mixture model (see
-\Cref{thm:summix}). Adding \emph{product nodes} as another form of nonlinearity increases
-expressivity sufficiently for PCs to be capable of representing any discrete probability
-distribution \citep{darwiche03,martens14,peharz15}. More importantly, products semantically act as
-factorizations of their children, indicating a conditional independence relationship between
-variables from different children given the value of a latent variable. In practice, product nodes
-are simply products of their children: if $\Prod$ is a PC product node, then its value is given by
-$\Prod(\set{x})=\prod_{\Child\in\Ch(\Prod)} \Child(\set{x})$. We now introduce
-\emph{decomposability}, a structural constraint on products.
+The scope of an inner node $\Node$ is the set of all variables that appear in the descendants of
+$\Node$, or more formally $\Sc(\Node)=\bigcup_{\Child\in\Ch(\Node)}\Sc(\Child)$. This can be
+inductively computed by first evaluating the scope of inputs and then computing parent nodes in a
+bottom-up approach. As an example, take the circuit from \Cref{eg:factors}. The scope of input
+nodes \inode[fill=boxteal]{\newGaussNode} and \inode[fill=boxorange!80]{\newGaussNode} are
+$\Sc(\inode[fill=boxteal]{\newGaussNode})=\Sc(\inode[fill=boxorange!80]{\newGaussNode})=\{X\}$,
+while $\Sc(\inode[fill=boxpink!50]{\newGaussNode})=\Sc(\inode[fill=boxgoldenrod!70]{\newGaussNode})
+=\{Y\}$. Consequentially, their parent sum nodes will have the same scope as their children
+$\Sc(\inode[fill=boxred!70]{\newSumNode})=\{X\}$ and $\Sc(\inode[fill=boxpurple!60]{\newSumNode})=
+\{Y\}$, yet the root node's scope is $\Sc(\inode[fill=boxgreen]{\newProdNode})=\{X,Y\}$, since its
+childrens' scopes are distinct. The notion of scope is essential to many properties in PCs, the
+first two of which we shall now introduce.
+
+\begin{definition}[Smoothness]
+  A probabilistic circuit $\mathcal{C}$ is said to be \emph{smooth} if for every sum node $\Sum$ in
+  $\mathcal{C}$, $\Sc(\Child_1)=\Sc(\Child_2)$ for $\Child_1,\Child_2\in\Ch(\Sum)$.
+\end{definition}
 
 \begin{definition}[Decomposability]
   A probabilistic circuit $\mathcal{C}$ is said to be \emph{decomposable} if for every product node
@@ -286,7 +291,7 @@ smoothness and decomposability are sufficient for validity, they are not necessa
 validity \citep{poon11}. Although there exist valid PCs that are neither smooth nor decomposable
 (or consistent), these two properties are often adopted during learning due to their intuitive and
 uncomplicated syntax. In fact, all PCs shown throughout this dissertation shall be \emph{at least}
-smooth and decomposable, with these two constraints always assumed to hold.
+smooth and decomposable unless explicitly stated otherwise.
 
 \newcommand\xmone{2}%
 \newcommand\xsone{0.5}%
@@ -472,20 +477,38 @@ smooth and decomposable, with these two constraints always assumed to hold.
 \end{example}
 
 We now formally address how to compute two inference queries that, up until now, were only
-informally touched on: probability of evidence and marginal probability. Given a probabilistic
-circuit $\mathcal{C}$ whose root is $\Node$, we shall use $\mathcal{C}$ and its root $\Node$
-interchangeably when there is no need for a distinction. We refer to the probability of evidence by
-the shorthand \evi{}, computable by a bottom-up evaluation of each node as shown in \Cref{alg:evi}.
-Likewise, marginals are denoted by \mar{}, and are computed bottom-up just like in \evi{} with the
-exception of inputs, where we marginalize over the unseen variables, as shown in \Cref{alg:mar}. In
-both cases, the computation is done in linear time on the number of edges of the circuit.
+informally touched on: namely the probability of evidence and marginal probability. Given a
+probabilistic circuit $\mathcal{C}$ whose root is $\Node$, we shall use $\mathcal{C}$ and its root
+$\Node$ interchangeably when there is no need for a distinction. We refer to the probability of
+evidence by the shorthand \evi{}, computable by a bottom-up evaluation of each node as shown in
+\Cref{alg:evi}. Likewise, marginals are denoted by \mar{}, and are computed bottom-up just like in
+\evi{} with the exception of inputs, where we marginalize over the unseen variables, as shown in
+\Cref{alg:mar}. In both cases, the evaluations are correct and linear time computable on the size
+of the circuit -- recall that queries on inputs are assumed to be computed in constant time -- as
+formally stated by the following result.
 
-The conditional probability is another query 
+\begin{restatable}[\cite{poon11,pclec,vergari21}]{theorem}{linevi}
+  \label{thm:linevi}
+  Let $\mathcal{C}$ be a \emph{smooth} and \emph{decomposable} PC. Any one of \evi{}, \mar{} or
+  \con{} can be computed in linear time (in the size of $\mathcal{C}$).
+\end{restatable}
+
+The size of a probabilistic circuit is the number of nodes and edges of its computational graph. We
+use $|\mathcal{C}|$ to denote the size of a probabilistic circuit $\mathcal{C}$. Prediction tasks
+often involve computing the \emph{conditional probability} $p(\set{Y}|\set{X})$, here denoted by
+\con{}, of query variables $\set{Y}$ given evidence variables $\set{X}$. With \mar{} available to
+us, querying for \con{} reduces to a simple two-pass evaluation over the circuit: the first
+computes the numerator as the marginal $p(\set{Y},\set{X})$, and the second the denominator
+marginal $p(\set{X})$. Importantly, \evi{} and \con{} are both special cases of \mar{} in the sense
+that they are marginalizations over different intervals (see proof of \Cref{thm:linevi} on
+\cpageref{proof:linevi}). More specifically, \evi{} is a marginalization over an empty set and
+\con{} is simply the quotient between two marginalization passes. Algorithmically, this means that
+the only distinction between these three queries is on what to do on the input nodes.
 
 \begin{algorithm}[t]
   \caption{\evi}\label{alg:evi}
   \begin{algorithmic}[1]
-    \Require A probabilistic circuit $\mathcal{C}$ and complete assignment $\set{x}$
+    \Require A smooth and decomposable PC $\mathcal{C}$ and complete assignment $\set{x}$
     \Ensure Probability $\mathcal{C}(\set{x})$
     \State Let $v$ be a hash function mapping a node to its probability
     \For{each $\Node$ in reverse topological order}
@@ -499,306 +522,18 @@ The conditional probability is another query
 \begin{algorithm}[t]
   \caption{\mar}\label{alg:mar}
   \begin{algorithmic}[1]
-    \Require A probabilistic circuit $\mathcal{C}$ and partial assignment $\set{x}$
-    \Ensure Probability $\int\mathcal{C}(\set{x},\set{y})\dif\set{y}$
+    \Require A smooth and decomposable PC $\mathcal{C}$ and partial assignment $\set{x}$
+    \Ensure Probability $\int_\set{y}\mathcal{C}(\set{x},\set{y})\dif\set{y}$\Comment{Call
+    $\set{Y}$ the remaining variables not in $\set{X}$}
     \State Let $v$ be a hash function mapping a node to its probability
     \For{each $\Node$ in reverse topological order}
-      \IIf{$\Node$ is an input}{$v_{\Node}\gets\int\Node(\set{x},\set{y})\dif\set{y}$}
+    \IIf{$\Node$ is an input}{$v_{\Node}\gets\int_\set{y}\Node(\set{x},\set{y})\dif\set{y}$}
       \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
       \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
     \EndFor%
     \State \textbf{return} $v_{\normalfont{R}}$, where $\textsf{R}$ is $\mathcal{C}$'s root
   \end{algorithmic}
 \end{algorithm}
-
-Before we address
-querying in PCs, we must first discuss some important concepts that often come up in PC literature.
-Mainly, we are interested in defining two notions here: induced subcircuits and variable trees.
-
-probabilistic circuit $\mathcal{C}$ contains no consecutive sums or products (i.e. for every sum
-all of its children are either inputs or products and respectively for products) then it is said to
-be a \emph{standard} form circuit. Any PC can be transformed into a \emph{standardized} circuit, a
-process we call \emph{standardization} (see \Cref{thm:standard}).
-
-\begin{remark}[breakable]{On operators and tractability}{optract}
-  Throughout this work we consider only products and convex combinations (apart from the implicit
-  operations contained within input nodes) as potential computational units. The question of whether
-  any other operator could be used to gain expressivity without loss of tractability is without a
-  doubt an interesting research question, and one that is actively being pursued. However, this is
-  certainly out of the scope of this dissertation, and so we restrict discussion on this topic and
-  only give a brief comment on operator tractability here, pointing to existing literature in this
-  area of research.
-
-  \citet{friesen16} formalize the notion of replacing sums and products in PCs with any pair of
-  operators in a commutative semiring, giving results on the conditions for marginalization to be
-  tractable. They provide examples of common semirings and to which known formalisms they
-  correspond to. One such example are PCs under the Boolean semiring $(\{0,1\},\vee,\wedge,0,1)$
-  for logical inference, which are equivalent to Negation Normal Form (NNF, \cite{barwise82}) and
-  constitute an instance of Logic Circuits (LCs), of which Sentential Decision Diagrams (SDDs,
-  \cite{darwiche11}) and Binary Decision Diagrams (BDDs, \cite{akers78}) are a part of. Another
-  less common semiring in PCs is the real min-sum semiring $(\mathbb{R}_{\infty}, \min,+,\infty,0)$
-  for nonconvex optimization \citep{friesen15}.
-
-  Recently, \citet{vergari21} extensively covered tractability conditions and complexity bounds for
-  convex combinations, products, $\exp$ (and more generally powers in both naturals and reals),
-  quotients and logarithms, even giving results for complex information-theoretic queries, such as
-  entropies and divergences. Notably, they analyze whether structural constraints (and thus, in a
-  sense, tractability) under these conditions are preserved.
-
-  Up to now, we have only considered summations as nonnegative weighted sums. Indeed, in most
-  literature the sum node is defined as a convex combination. However, negative weights have
-  appeared in Logistic Circuits \citep{liang19} for discriminative modeling; and in Probabilistic
-  Generating Circuits \citep{zhang21}, a class of tractable probabilistic models that subsume PCs.
-  \citet{maua17a} and \citet{mattei20b} extend (nonnegative) weights in sum nodes with probability
-  intervals, effectively inducing a credal set \citep{cozman00} for measuring imprecision.
-
-  Other works include PCs with quotients \citep{sharir18a}, transformations \citep{pevny20a}, max
-  \citep{melibari16a}, and einsum \citep{peharz20b} operations.
-\end{remark}
-
-In simple terms, the scope of a computational unit $\Node$ of a PC is merely the set of all
-variables that appear in the descendants of $\Node$. More formally, denote by $\Sc(\Node)$
-the set of all variables that appear in $\Node$.  We inductively compute the scope of circuit by a
-bottom-up approach: the scope of an input node $\Leaf_p$ is the set of variables that appear in
-$p$'s distribution\footnote{Although we previously defined input nodes as mere functions, here we
-are explicitly associating a random variable to a \emph{probability} function. Indeed, if we
-are being rigorous, we should define input nodes as a pair of random variable and function. To save
-space we instead assume, as previously stated, that the function is seen as both the probability
-(density) function as well as the distribution itself, and thus its scope is the scope of its
-distribution, i.e. the random variables that come into play in a probability distribution.}, and
-the scope of any other node is the union of all of its childrens' scopes.  The notion of scope is
-essential to the structural constraints seen in \Cref{sec:const}.
-
-As an example, take the circuit from \Cref{eg:factors}. The scope of input nodes
-\inode[fill=boxteal]{\newGaussNode} and \inode[fill=boxorange!80]{\newGaussNode} are
-$\Sc(\inode[fill=boxteal]{\newGaussNode})=\Sc(\inode[fill=boxorange!80]{\newGaussNode})=\{X\}$,
-while $\Sc(\inode[fill=boxpink!50]{\newGaussNode})=\Sc(\inode[fill=boxgoldenrod!70]{\newGaussNode})
-=\{Y\}$. Consequentially, their parent sum nodes will have the same scope as their children
-$\Sc(\inode[fill=boxred!70]{\newSumNode})=\{X\}$ and $\Sc(\inode[fill=boxpurple!60]{\newSumNode})=
-\{Y\}$, yet the root node's scope is $\Sc(\inode[fill=boxgreen]{\newProdNode})=\{X,Y\}$, since its
-childrens' scopes are distinct. The size of a probabilistic circuit is the number of nodes and
-edges of its computational graph. We use $|\mathcal{C}|$ to denote the size of a probabilistic
-circuit $\mathcal{C}$.
-
-Let $\mathcal{C}$ be a probabilistic circuit and node $\Node\in\mathcal{C}$. We say that
-$\mathcal{S}_{\Node}$ is a subcircuit of $\mathcal{C}$ rooted at $\Node$ if $\mathcal{S}_{\Node}$'s
-root is $\Node$, all nodes and edges in $\mathcal{S}_{\Node}$ are also in $\mathcal{C}$ and
-$\mathcal{S}$ is also a probabilistic circuit. We now introduce the concept of induced subcircuits
-\citep{chan06,dennis15,peharz14}.
-
-\begin{definition}[Induced subcircuit]\label{def:inducedsub}
-  Let $\mathcal{C}$ be a probabilistic circuit. An induced subcircuit $\mathcal{S}$ of $\mathcal{C}$
-  is a subcircuit of $\mathcal{C}$ rooted at $\mathcal{C}$'s root such that all edges coming out of
-  product nodes in $\mathcal{C}$ are also in $\mathcal{S}$, and of all edges coming out of sum
-  nodes in $\mathcal{C}$, only one is in $\mathcal{S}$.
-\end{definition}
-
-\begin{figure}[t]
-  \begin{subfigure}[t]{0.245\textwidth}
-    \begin{center}
-      \resizebox{\textwidth}{!}{
-      \begin{tikzpicture}
-        \newSumNode[fill=boxgreen]{r}{0,0};
-        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
-        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
-        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
-        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
-        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
-        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
-        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
-        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
-        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
-        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
-        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
-        \draw[edge] (r) edge (p1);
-        \draw[edge] (r) edge (p2);
-        \draw[edge] (r) edge (p3);
-        \draw[edge] (p1) edge (s1);
-        \draw[edge] (p1) edge (s3);
-        \draw[edge] (p2) edge (s2);
-        \draw[edge] (p2) edge (s3);
-        \draw[edge] (p3) edge (s2);
-        \draw[edge] (p3) edge (s4);
-        \draw[edge] (s1) edge (g1);
-        \draw[edge] (s1) edge (g2);
-        \draw[edge] (s2) edge (g1);
-        \draw[edge] (s2) edge (g2);
-        \draw[edge] (s3) edge (g3);
-        \draw[edge] (s3) edge (g4);
-        \draw[edge] (s4) edge (g3);
-        \draw[edge] (s4) edge (g4);
-      \end{tikzpicture}
-      }
-    \end{center}
-    \caption{}
-    \label{fig:pc}
-  \end{subfigure}
-  \begin{subfigure}[t]{0.245\textwidth}
-    \begin{center}
-      \resizebox{\textwidth}{!}{
-      \begin{tikzpicture}
-        \newSumNode[fill=boxgreen]{r}{0,0};
-        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
-        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
-        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
-        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
-        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
-        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
-        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
-        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
-        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
-        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
-        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
-        \draw[thick,red,edge] (r) edge (p1);
-        \draw[boxgray,edge] (r) edge (p2);
-        \draw[boxgray,edge] (r) edge (p3);
-        \draw[thick,red,edge] (p1) edge (s1);
-        \draw[thick,red,edge] (p1) edge (s3);
-        \draw[boxgray,edge] (p2) edge (s2);
-        \draw[boxgray,edge] (p2) edge (s3);
-        \draw[boxgray,edge] (p3) edge (s2);
-        \draw[boxgray,edge] (p3) edge (s4);
-        \draw[thick,red,edge] (s1) edge (g1);
-        \draw[boxgray,edge] (s1) edge (g2);
-        \draw[boxgray,edge] (s2) edge (g1);
-        \draw[boxgray,edge] (s2) edge (g2);
-        \draw[thick,red,edge] (s3) edge (g3);
-        \draw[boxgray,edge] (s3) edge (g4);
-        \draw[boxgray,edge] (s4) edge (g3);
-        \draw[boxgray,edge] (s4) edge (g4);
-      \end{tikzpicture}
-      }
-    \end{center}
-  \end{subfigure}\begin{subfigure}[t]{0.245\textwidth}
-    \begin{center}
-      \resizebox{\textwidth}{!}{
-      \begin{tikzpicture}
-        \newSumNode[fill=boxgreen]{r}{0,0};
-        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
-        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
-        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
-        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
-        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
-        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
-        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
-        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
-        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
-        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
-        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
-        \draw[boxgray,edge] (r) edge (p1);
-        \draw[thick,blue,edge] (r) edge (p2);
-        \draw[boxgray,edge] (r) edge (p3);
-        \draw[boxgray,edge] (p1) edge (s1);
-        \draw[boxgray,edge] (p1) edge (s3);
-        \draw[thick,blue,edge] (p2) edge (s2);
-        \draw[thick,blue,edge] (p2) edge (s3);
-        \draw[boxgray,edge] (p3) edge (s2);
-        \draw[boxgray,edge] (p3) edge (s4);
-        \draw[boxgray,edge] (s1) edge (g1);
-        \draw[boxgray,edge] (s1) edge (g2);
-        \draw[boxgray,edge] (s2) edge (g1);
-        \draw[thick,blue,edge] (s2) edge (g2);
-        \draw[boxgray,edge] (s3) edge (g3);
-        \draw[thick,blue,edge] (s3) edge (g4);
-        \draw[boxgray,edge] (s4) edge (g3);
-        \draw[boxgray,edge] (s4) edge (g4);
-      \end{tikzpicture}
-      }
-    \end{center}
-    \caption{}
-    \label{fig:subcircs}
-  \end{subfigure}\begin{subfigure}[t]{0.245\textwidth}
-    \begin{center}
-      \resizebox{\textwidth}{!}{
-      \begin{tikzpicture}
-        \newSumNode[fill=boxgreen]{r}{0,0};
-        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
-        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
-        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
-        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
-        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
-        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
-        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
-        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
-        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
-        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
-        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
-        \draw[boxgray,edge] (r) edge (p1);
-        \draw[boxgray,edge] (r) edge (p2);
-        \draw[thick,green!20!black,edge] (r) edge (p3);
-        \draw[boxgray,edge] (p1) edge (s1);
-        \draw[boxgray,edge] (p1) edge (s3);
-        \draw[boxgray,edge] (p2) edge (s2);
-        \draw[boxgray,edge] (p2) edge (s3);
-        \draw[thick,green!20!black,edge] (p3) edge (s2);
-        \draw[thick,green!20!black,edge] (p3) edge (s4);
-        \draw[boxgray,edge] (s1) edge (g1);
-        \draw[boxgray,edge] (s1) edge (g2);
-        \draw[thick,green!20!black,edge] (s2) edge (g1);
-        \draw[boxgray,edge] (s2) edge (g2);
-        \draw[boxgray,edge] (s3) edge (g3);
-        \draw[boxgray,edge] (s3) edge (g4);
-        \draw[boxgray,edge] (s4) edge (g3);
-        \draw[thick,green!20!black,edge] (s4) edge (g4);
-      \end{tikzpicture}
-      }
-    \end{center}
-  \end{subfigure}
-  \caption{A probabilistic circuit \uncaption{(a)} and 3 of the 12 possible induced subcircuits
-    \uncaption{(b)}.}
-  \label{fig:induced}
-\end{figure}
-
-Examples of induced subcircuits are visualized in \Cref{fig:induced}. When the induced subcircuit
-is a tree, as is the case in \Cref{fig:induced}, they are referred to as induced tree
-\citep{zhao15,zhao16b}.
-
-So far, by \Cref{def:pc} a PC does not yet necessarily represent a probability distribution with
-tractable (marginal) inference. In the next section, we formally define sufficient conditions for
-tractability in the form of structural constraints that we have only previously mentioned in
-passing.
-
-\section{Deciding What to Constraint}
-\label{sec:const}
-
-In this section we are interested in studying how the structural constraints in PCs enable
-different inference tasks. We shall first cover the more basic queries, namely \emph{probability of
-evidence} (\evi), \emph{marginal probability} (\mar), \emph{conditional probability} (\con) and
-\emph{maximum a posteriori probability} (\map). After that we briefly address more complex queries
-such as mutual information, entropies and \emph{expectation} (\expc).
-
-\subsection{Basic Queries}
-\label{subsection:basicqueries}
-
-The most basic inference task we are interested in computing is the probability of evidence. To
-unlock this, we must introduce two structural constraints known as \emph{smoothness} and
-\emph{decomposability}.
-
-\begin{definition}[Smoothness]
-  A probabilistic circuit $\mathcal{C}$ is said to be \emph{smooth} if for every sum node $\Sum$ in
-  $\mathcal{C}$, $\Sc(\Child_1)=\Sc(\Child_2)$ for $\Child_1,\Child_2\in\Ch(\Sum)$.
-\end{definition}
-
-\begin{definition}[Decomposability]
-  A probabilistic circuit $\mathcal{C}$ is said to be \emph{decomposable} if for every product node
-  $\Prod$ in $\mathcal{C}$, $\Sc(\Child_1)\cap\Sc(\Child_2)=\emptyset$ for $\Child_1,\Child_2\in
-  \Ch(\Prod)$.
-\end{definition}
-
-When a PC is \emph{decomposable}, all of its induced subcircuits are induced trees. For any
-\emph{smooth} and \emph{decomposable} PC, computing \evi{} is done in linear time in the number of
-edges. In fact this is true for \mar{} and \con{} as well. To compute marginals, it is sufficient
-to compute the corresponding marginals with respect to each input node and proceed to propagate
-values bottom-up. For conditionals, we simply compute two passes: one where we marginalize the
-conditional variables and the other any other variables that are not present in our query. These
-procedures are formalized in the theorem below.
-
-\begin{restatable}[\cite{poon11,pclec,vergari21}]{theorem}{linevi}
-  \label{thm:linevi}
-  Let $\mathcal{C}$ be a \emph{smooth} and \emph{decomposable} PC. Any one of \evi{}, \mar{} or \con{}
-  can be computed in linear time (in the number of edges of $\mathcal{C}$).
-\end{restatable}
-
 \begin{figure}[t]
   \begin{subfigure}[t]{0.31\textwidth}
     \begin{center}
@@ -887,39 +622,35 @@ procedures are formalized in the theorem below.
     \uncaption{(b)}, and smooth and decomposable \uncaption{(c)} circuits.}
 \end{figure}
 
-Importantly, \evi{} and \con{} are both special cases of \mar{} in the sense that they are
-marginalizations over different intervals (see \cpageref{proof:linevi}). More specifically, \evi{} is a
-marginalization over an empty set and \con{} is simply the quotient between two marginalization
-passes.  Algorithmically, this means that the only distinction between these three queries is on
-what to do on the input nodes. We say that a variable assignment $\set{x}$ for circuit
-$\mathcal{C}$ is \emph{complete} if for every variable $X\in\Sc(\mathcal{C})$, $\set{x}$ assigns a
-value to $X$; otherwise it is said to be a \emph{partial} assignment. \Cref{alg:evi} and
-\Cref{alg:mar} show the exact algorithmic procedures to extract \evi{} and \mar{} queries from
-$\mathcal{C}$. For \con{}, it suffices to run two \mar{}s.
+Before we continue to more complex queries on probabilistic circuits, we must first discuss some
+important concepts that often come up in PC literature. Mainly, we are interested in defining two
+notions here: \emph{standard circuits} and \emph{induced subcircuits}. A probabilistic circuit
+$\mathcal{C}$ that contains no consecutive sums or products (i.e. for every sum all of its children
+are either inputs or products, and for products their children are either inputs or sums) is said
+to be in \emph{standard} form circuit. Any PC can be transformed into a \emph{standard} circuit in
+a process we call \emph{standardization} (see \Cref{thm:standard}).
 
-Because \evi{}, \mar{} and \con{} are the most basic forms of querying in PCs, we shall refer to
-these as \emph{base queries}. Although smoothness and decomposability are sufficient conditions for
-tractable base queries, they are not necessary conditions. As a matter of fact, decomposability can
-be replaced with a third weaker constraint known as \emph{consistency}. Denote by $\Desc(\Node)$
-the set of all descendants of $\Node$.
+Let $\mathcal{C}$ be a probabilistic circuit and node $\Node\in\mathcal{C}$. We say that
+$\mathcal{C}_{\Node}$ is a subcircuit of $\mathcal{C}$ rooted at $\Node$ if $\mathcal{C}_{\Node}$'s
+root is $\Node$, all nodes and edges in $\mathcal{C}_{\Node}$ are also in $\mathcal{C}$ and
+$\mathcal{C}_{\Node}$ is also a probabilistic circuit. We now introduce the concept of induced
+subcircuits \citep{chan06,dennis15,peharz14}.
 
-\begin{definition}[Consistency]
-  A probabilistic circuit $\mathcal{C}$ is said to be \emph{consistent} if for any product node
-  $\Prod$ in $\mathcal{C}$, it holds that for every two children $\Child_1,\Child_2\in\Ch(\Prod)$
-  there does not exist two input nodes $\Leaf_p^1\in\Desc(\Child_1)$ and
-  $\Leaf_q^2\in\Desc(\Child_2)$ whose scope is the same and $p(\set{x})\neq q(\set{x})$ for any
-  $\set{x}\in\sspace{X}$.
+\begin{definition}[Induced subcircuit]\label{def:inducedsub}
+  Let $\mathcal{C}$ be a probabilistic circuit. An induced subcircuit $\mathcal{S}$ of $\mathcal{C}$
+  is a subcircuit of $\mathcal{C}$ rooted at $\mathcal{C}$'s root such that all edges coming out of
+  product nodes in $\mathcal{C}$ are also in $\mathcal{S}$, and of all edges coming out of sum
+  nodes in $\mathcal{C}$, only one is in $\mathcal{S}$.
 \end{definition}
 
-In \citet{peharz15}, the authors show that although smooth and consistent PCs are more succinct
-\citep{darwiche02} compared to smooth and decomposable circuits, the gain is only mild, further
-proving that any smooth and consistent PC can be polynomially translated to a decomposable
-equivalent. In practice, because constructing decomposable circuits (and verifying decomposability)
-is much easier compared to doing the same with consistency, we instead focus on smooth and
-decomposable PCs.
+Examples of induced subcircuits are visualized in \Cref{fig:induced}. When the induced subcircuit
+is a tree, as is the case in \Cref{fig:induced}, they are referred to as induced tree
+\citep{zhao15,zhao16b}.
 
 Suppose we wish to compute the most probable assignment of a variable, say for classification or
-image reconstruction. To do so, we must compute the conditional query
+image reconstruction. To do so, we must compute the most probable assignment of query variables
+$\set{y}$ (for instance, the labels to be predicted in classification) conditioned on the given
+evidence $\set{x}$ (for example, pixel values from an image to be classified), or more formally
 \begin{equation}
   \max_{\set{y}}p(\set{y}|\set{x})=\max_{\set{y}}\frac{p(\set{y},\set{x})}{p(\set{x})}=
   \frac{\max_{\set{y}}p(\set{y},\set{x})}{p(\set{x})},
@@ -929,10 +660,10 @@ often called the \emph{maximum a posteriori} (\map) probability. For this disser
 only consider the case of full \map{}, as computing partial \map{} is provably hard in most PCs
 \citep{peharz16,decampos11}.  Unless explicitly stated, \map{} shall mean full \map{}, i.e. when
 $\set{x}\cup\set{y}$ forms a complete assignment of the scope. Full \map{} also goes by the name of
-\emph{most probable explanation} (MPE) in literature.  Although at first it seems like \map{} is no
-harder than computing a \con{}, it turns out that for smooth and decomposable PCs, \map{} is
-unfortunately intractable \citep{conaty17,mei18}. To unlock access to \map{} we must make the
-circuit \emph{deterministic}.
+\emph{most probable explanation} (MPE) in literature.  Although at first it may seem like \map{} is
+no harder than computing a \con{}, it turns out that for smooth and decomposable PCs, \map{} is
+unfortunately intractable \citep{conaty17,mei18}. Similar to smoothness and decomposability, a
+sufficient condition to unlocking access to \map{} is \emph{determinism}.
 
 \begin{definition}[Determinism]
   A probabilistic circuit $\mathcal{C}$ is said to be \emph{deterministic} if for every sum node
@@ -940,17 +671,175 @@ circuit \emph{deterministic}.
   assignment.
 \end{definition}
 
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.245\textwidth}
+    \begin{center}
+      \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen]{r}{0,0};
+        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
+        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
+        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
+        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
+        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
+        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
+        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
+        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
+        \draw[edge] (r) edge (p1);
+        \draw[edge] (r) edge (p2);
+        \draw[edge] (r) edge (p3);
+        \draw[edge] (p1) edge (s1);
+        \draw[edge] (p1) edge (s3);
+        \draw[edge] (p2) edge (s2);
+        \draw[edge] (p2) edge (s3);
+        \draw[edge] (p3) edge (s2);
+        \draw[edge] (p3) edge (s4);
+        \draw[edge] (s1) edge (g1);
+        \draw[edge] (s1) edge (g2);
+        \draw[edge] (s2) edge (g1);
+        \draw[edge] (s2) edge (g2);
+        \draw[edge] (s3) edge (g3);
+        \draw[edge] (s3) edge (g4);
+        \draw[edge] (s4) edge (g3);
+        \draw[edge] (s4) edge (g4);
+      \end{tikzpicture}
+      }
+    \end{center}
+    \caption{}
+    \label{fig:pc}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.245\textwidth}
+    \begin{center}
+      \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen]{r}{0,0};
+        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
+        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
+        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
+        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
+        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
+        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
+        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
+        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
+        \draw[thick,red,edge] (r) edge (p1);
+        \draw[boxgray,edge] (r) edge (p2);
+        \draw[boxgray,edge] (r) edge (p3);
+        \draw[thick,red,edge] (p1) edge (s1);
+        \draw[thick,red,edge] (p1) edge (s3);
+        \draw[boxgray,edge] (p2) edge (s2);
+        \draw[boxgray,edge] (p2) edge (s3);
+        \draw[boxgray,edge] (p3) edge (s2);
+        \draw[boxgray,edge] (p3) edge (s4);
+        \draw[thick,red,edge] (s1) edge (g1);
+        \draw[boxgray,edge] (s1) edge (g2);
+        \draw[boxgray,edge] (s2) edge (g1);
+        \draw[boxgray,edge] (s2) edge (g2);
+        \draw[thick,red,edge] (s3) edge (g3);
+        \draw[boxgray,edge] (s3) edge (g4);
+        \draw[boxgray,edge] (s4) edge (g3);
+        \draw[boxgray,edge] (s4) edge (g4);
+      \end{tikzpicture}
+      }
+    \end{center}
+    \caption{}
+  \end{subfigure}\begin{subfigure}[t]{0.245\textwidth}
+    \begin{center}
+      \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen]{r}{0,0};
+        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
+        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
+        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
+        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
+        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
+        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
+        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
+        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
+        \draw[boxgray,edge] (r) edge (p1);
+        \draw[thick,blue,edge] (r) edge (p2);
+        \draw[boxgray,edge] (r) edge (p3);
+        \draw[boxgray,edge] (p1) edge (s1);
+        \draw[boxgray,edge] (p1) edge (s3);
+        \draw[thick,blue,edge] (p2) edge (s2);
+        \draw[thick,blue,edge] (p2) edge (s3);
+        \draw[boxgray,edge] (p3) edge (s2);
+        \draw[boxgray,edge] (p3) edge (s4);
+        \draw[boxgray,edge] (s1) edge (g1);
+        \draw[boxgray,edge] (s1) edge (g2);
+        \draw[boxgray,edge] (s2) edge (g1);
+        \draw[thick,blue,edge] (s2) edge (g2);
+        \draw[boxgray,edge] (s3) edge (g3);
+        \draw[thick,blue,edge] (s3) edge (g4);
+        \draw[boxgray,edge] (s4) edge (g3);
+        \draw[boxgray,edge] (s4) edge (g4);
+      \end{tikzpicture}
+      }
+    \end{center}
+    \caption{}
+    \label{fig:subcircs}
+  \end{subfigure}\begin{subfigure}[t]{0.245\textwidth}
+    \begin{center}
+      \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen]{r}{0,0};
+        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
+        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
+        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
+        \newSumNode[fill=boxpurple!60]{s1}{$(p2) + (-2.0,-1)$};
+        \newSumNode[fill=boxpurple!60]{s2}{$(p2) + (-0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s3}{$(p2) + (0.66,-1)$};
+        \newSumNode[fill=boxpurple!60]{s4}{$(p2) + (2.0,-1)$};
+        \newGaussNode[fill=boxteal]{g1}{$(s1) + (0,-1)$};
+        \newGaussNode[fill=boxorange!80]{g2}{$(s2) + (0,-1)$};
+        \newGaussNode[fill=boxpink!50]{g3}{$(s3) + (0,-1)$};
+        \newGaussNode[fill=boxgoldenrod!70]{g4}{$(s4) + (0,-1)$};
+        \draw[boxgray,edge] (r) edge (p1);
+        \draw[boxgray,edge] (r) edge (p2);
+        \draw[thick,green!20!black,edge] (r) edge (p3);
+        \draw[boxgray,edge] (p1) edge (s1);
+        \draw[boxgray,edge] (p1) edge (s3);
+        \draw[boxgray,edge] (p2) edge (s2);
+        \draw[boxgray,edge] (p2) edge (s3);
+        \draw[thick,green!20!black,edge] (p3) edge (s2);
+        \draw[thick,green!20!black,edge] (p3) edge (s4);
+        \draw[boxgray,edge] (s1) edge (g1);
+        \draw[boxgray,edge] (s1) edge (g2);
+        \draw[thick,green!20!black,edge] (s2) edge (g1);
+        \draw[boxgray,edge] (s2) edge (g2);
+        \draw[boxgray,edge] (s3) edge (g3);
+        \draw[boxgray,edge] (s3) edge (g4);
+        \draw[boxgray,edge] (s4) edge (g3);
+        \draw[thick,green!20!black,edge] (s4) edge (g4);
+      \end{tikzpicture}
+      }
+    \end{center}
+    \caption{}
+  \end{subfigure}
+  \caption{A probabilistic circuit \uncaption{(a)} and 3 of its 12 possible induced subcircuits
+    \uncaption{(b-d)}.}
+  \label{fig:induced}
+\end{figure}
+
 At this point, we must introduce a graphical notation for \emph{indicator} nodes. An indicator node
-is an input node whose function is the characteristic function $f(x)=\liv x=k\riv$, i.e. a
-degenerate function with all of its mass on $k$ and zero anywhere else. A special case is when $X$
-is binary and $k=1$, in which case we say the input node is a literal node, denoting by the usual
+is an input node whose function is the indicator function $f(x)=\liv x=k\riv$, i.e. a degenerate
+distribution with all of its mass on $k$ and zero anywhere else. A special case is when $X$ is
+binary and $k=1$, in which case we say the input node is a literal node, denoting by the usual
 propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, we shall use
 \inode{\newLeafNode} for indicators and the textual propositional notation for literals.
 
 \begin{algorithm}[t]
   \caption{\map}\label{alg:map}
   \begin{algorithmic}[1]
-    \Require A probabilistic circuit $\mathcal{C}$ and evidence assignment $\set{x}$
+    \Require A smooth, decomposable and deterministic PC $\mathcal{C}$ and evidence assignment $\set{x}$
     \Ensure Probability $\max_{\set{y}}\mathcal{C}(\set{y}|\set{x})$
     \State Let $v$ be a hash function mapping a node to its probability
     \For{each $\Node$ in reverse topological order}
@@ -965,7 +854,7 @@ propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, w
 \begin{algorithm}[t]
   \caption{\textsf{ARG}\map}\label{alg:argmap}
   \begin{algorithmic}[1]
-    \Require A probabilistic circuit $\mathcal{C}$ and evidence assignment $\set{x}$
+    \Require A smooth, decomposable and deterministic PC $\mathcal{C}$ and evidence assignment $\set{x}$
     \Ensure The most probable state $\argmax_{\set{y}}\mathcal{C}(\set{y}|\set{x})$
     \State Compute $\max_{\set{y}}\mathcal{C}(\set{y}|\set{x})$ and store values in $v$
     \State $\Nodes\gets\textproc{MaxInducedTree}(\mathcal{C}, v)$
@@ -977,16 +866,14 @@ propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, w
   \end{algorithmic}
 \end{algorithm}
 
-With determinism, we now have access to \map{}.
-
 \begin{restatable}[\cite{peharz16}]{theorem}{det}
   \label{thm:det}
   Let $\mathcal{C}$ be a smooth, decomposable and \emph{deterministic} PC. \map{} is computable in
-  linear time (in the number of edges of $\mathcal{C}$).
+  linear time (in the size of $\mathcal{C}$).
 \end{restatable}
 
 When a PC is smooth, decomposable and deterministic, the \map{} is easily computable by simply
-replacing sum nodes with a max operation and performing a feedforward \evi{} pass. This is commonly
+replacing sum nodes with a max operation and performing a bottom-up \evi{} pass. This is commonly
 called the Max-Product algorithm, shown more formally in \Cref{alg:map}. To find the states that
 maximize \Cref{eq:map} in a given circuit $\mathcal{C}$, we first compute the \map{} probabilities
 through the usual bottom-up pass, and then find the maximum (in terms of probability) induced tree
@@ -1067,8 +954,6 @@ proof on its validity).
   \end{center}
 \end{example}
 
-\subsection{Complex Queries}
-
 Although base queries cover most of the needs of the usual data scientist, more complex tasks
 involving information-theoretic measures, logical queries or distributional divergences are also
 (tractably) computable under the right conditions. Particularly, we are interested in a key
@@ -1120,6 +1005,7 @@ computational graph without adhering to the left-right convention in favor of re
       \draw (r) -- (ab); \draw (r) -- (cd);
       \draw (ab) -- (a); \draw (ab) -- (b);
       \draw (cd) -- (c); \draw (cd) -- (d);
+      \node at ($(b) + (0,-0.5)$) {};
     \end{tikzpicture}
     }
     \caption{}
@@ -1222,8 +1108,9 @@ vtree. The variable order of a vtree is the sequence of leaf nodes (i.e.\ variab
 to right. \Cref{fig:vtree} shows a balanced vtree with order $(A,B,C,D)$.
 
 Now that we understand what a vtree is, we can properly introduce \emph{structure decomposability},
-a stronger variant of decomposability. We say that a PC is 2-standard if it is standard and all of
-its product nodes have exactly two children.
+a stronger variant of decomposability. We say that a PC is \emph{2-standard} if it is standard and
+all of its product nodes have exactly two children. Further, we call the $i$-th layer of a PC or a
+vtree as the set of all nodes that are at depth $i$ from the root down.
 
 \begin{definition}[Structure decomposability]
   \label{def:sdec}%
@@ -1232,8 +1119,16 @@ its product nodes have exactly two children.
   layer of $\mathcal{C}$ respects every $i$-th inner node layer of $\vtree$.
 \end{definition}
 
+Although we assume a 2-standard PC in \Cref{def:sdec}, this assumption was only for convenience,
+and does not imply in a loss of expressivity; as a matter of fact, any PC can be 2-standardized
+(see \Cref{thm:2standard}). Intuitively, structure decomposability merely states that every two
+product nodes whose scopes are the same must partition their scopes (between their two children)
+exactly the same (and according to their corresponding vtree node). Semantically speaking, a
+vtree's inner node $v$ defines a context-specific independence relationship between $\Sc(v^\gets)$
+and $\Sc(v^\to)$ under the distribution encoded by its PC.
+
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Hidden Markov models as probabilistic circuits}{hmm}
-  Say we wish to model a temporal structured dependence between three latent binary variables, for
+  Say we wish to model a sequential structured dependence between three latent binary variables, for
   example the presence of a subject $X_1$, verb $X_2$ and object $X_3$ in a natural language
   phrase. Each observation $Y_i$ is a fragment (of $X_i$) taken from a complete sentence
   $\set{y}=(y_1,y_2,y_3)$. The first-order Hidden Markov Model (HMM) (on the right) models the
@@ -1245,9 +1140,9 @@ its product nodes have exactly two children.
   conditional distribution model (possibly another PC) for each assignment (here two) of $X_i$,
   meaning that if $p(Y_i|X_i=0)>0$, then $p(Y_i|X_i=1)=0$ and vice-versa. Root weights are exactly
   $p(X_1)$, and each $p(X_i|X_{i-1})$ translates into the other matched color sum weights. Further,
-  every product (except for the redundant \inode[fill=boxgray!80]{\newProdNode} nodes) follows the
-  partitionings imposed by the vtree. This means that this PC is not only smooth, but structure
-  decomposable and deterministic.
+  every product follows the partitionings imposed by the vtree, with
+  \inode[fill=boxgray!80]{\newProdNode} decomposing into $(\emptyset,\{Y_3\})$. This means that
+  this PC is not only smooth, but structure decomposable and deterministic.
   \tcblower
   \begin{center}
     \begin{tikzpicture}
@@ -1300,8 +1195,8 @@ its product nodes have exactly two children.
     Equivalent PC
 
     \begin{tikzpicture}
-      \newVtreeNode{r}{0,0}{1};
-      \newVtreeNode{l}{$(r) + (-0.75,-1)$}{2};
+      \newVtreeNode[fill=boxred!70]{r}{0,0}{1};
+      \newVtreeNode[fill=boxbrown!60]{l}{$(r) + (-0.75,-1)$}{2};
       \newVtreeNode[fill=boxorange!80]{x1}{$(r) + (0.75,-1)$}{$Y_1$};
       \newVtreeNode[fill=boxpink!50]{x2}{$(l) + (-0.75,-1)$}{$Y_2$};
       \newVtreeNode[fill=boxgoldenrod!70]{x3}{$(l) + (0.75,-1)$}{$Y_3$};
@@ -1313,15 +1208,6 @@ its product nodes have exactly two children.
     Vtree
   \end{center}
 \end{example}
-
-Although we assume a \emph{2-standard} PC in \Cref{def:sdec}, its assumption was only for
-convenience, and does not imply in a loss of expressivity. As a matter of fact, any PC can be
-2-standardized, i.e.\ to standardize the circuit such that every product node only has two children
-(see \Cref{thm:2standard}). Intuitively, structure decomposability merely states that every two
-product nodes whose scopes are the same must partition their scopes (between their two children)
-exactly the same (and according to their corresponding vtree node). Semantically speaking, a
-vtree's inner node $v$ defines an independence relationship between $\Sc(v^\gets)$ and $\Sc(v^\to)$
-under the distribution encoded by its PC.
 
 \Cref{fig:vtreeresp} shows a vtree $\vtree$ and two probabilistic circuits, say
 $\mathcal{C}_1$ for the one in the middle and $\mathcal{C}_2$ for the one on the right. Notice how
@@ -1336,33 +1222,154 @@ $(\{A,B,C\},\{D\}))$. In fact, it is not structure decomposable, as it does not 
 
 Despite our structure decomposability definition relying on a vtree, there is at least one
 alternative definition that defines it in terms of \emph{circuit compatibility}. Essentially, a
-circuit $\mathcal{C}_1$ is \emph{compatible} with $\mathcal{C}_2$ if they can be 2-standardized and
-rearranged such that any two products with same scope, one from $\mathcal{C}_1$ and the other
-$\mathcal{C}_2$, partition the scope the same way \citep{vergari21}. A structure decomposable PC is
-then defined as a PC that is compatible with a copy of itself. In summary, the two definitions of
-structure decomposability are equivalent, except compatibility implicitly assumes an arrangement of
-product scopes that is analogous to a vtree.
+circuit $\mathcal{C}_1$ is \emph{compatible} with $\mathcal{C}_2$ if they can be 2-standardized (in
+polynomial time) in such a way that any two products with same scope, one from $\mathcal{C}_1$ and
+the other $\mathcal{C}_2$, partition the scope into the same decompositions \citep{vergari21}. A
+structure decomposable PC is then defined as a PC that is compatible with a copy of itself. In
+summary, the two definitions of structure decomposability are equivalent, except compatibility
+implicitly assumes an arrangement of product scopes that is analogous to a vtree.
+
+\begin{example}[sidebyside,lefthand width=0.55\textwidth]{Density estimation trees as probabilistic circuits}{det}
+  A density estimation tree is a decision tree for the task of density estimation \citep{ram11}.
+  Briefly, a decision tree $\mathcal{T}$ partitions the data space (usually $\mathbb{R}^d$) into
+  cells by laying out hyperplanes usually orthogonal to the axes, creating a latent variable for
+  each node that essentially determines in which edge an observation should fall into. The density
+  function of a tree $\mathcal{T}$ given a dataset $\set{D}$ of dimension $d$ is defined as the
+  piecewise function
+  \begin{equation*}
+    p_\mathcal{T}(\set{x})=\sum_{\Leaf\in\operatorname{Leaves}(\mathcal{T})}\frac{1}{\operatorname{Vol}(\Leaf)}\cdot\frac{\left|\set{D}\in\Leaf\right|}{|\set{D}|}\cdot\liv\set{x}\in\Leaf\riv,
+  \end{equation*}
+  where $\left|\set{D}\in\Leaf\right|$ indicates the number of assignments $\set{x}$ in the
+  training dataset $\set{D}$ which fall inside the cell determined by leaf $\Leaf$, and
+  $\operatorname{Vol}(\Leaf)$ retuns the volume of the $d$-dimensional cell $\Leaf$. The top figure
+  on the right shows a two-dimensional data space being partitioned, with the corresponding
+  decision tree below it. Each node in the tree is a (hyper)plane partitioning data, with every
+  edge determining which cell the observation falls into.
+
+  Equivalently, a sum node in a PC that determines the on-off state of a latent variable
+  partitioning the data space configures the same semantics as a density estimation tree. Instead
+  of delegating an observation's probability to the tree's leaves, a PC spreads out this density to
+  both weights in sum nodes and density in input nodes. Let $\mathcal{C}$ be a PC whose nodes are all
+  sum nodes which encode such latent partitions and whose input nodes are truncated to follow these
+  latent variables (i.e.\ their support is only over the space determined by the partitionings);
+  collapse all layers (and weights) into a shallow PC with a single sum layer. Its value is then
+  \begin{equation*}
+    p_\mathcal{C}(\set{x})=\sum_{\Leaf\in\operatorname{Inputs}(\mathcal{C})}w_{\Leaf}\cdot\Leaf(\set{x})\cdot\liv\set{x}\in\Leaf\riv.
+  \end{equation*}
+  \tcblower
+  \centering
+  \begin{tikzpicture}
+    \fill[boxpink!30] (0,0) rectangle (2,2.5);
+    \fill[boxgoldenrod!40] (2,0) rectangle (3.5,2.5);
+    \draw[very thick,boxblue,dashed] (3.5,0) -- node[left,pos=0.9] {\color{boxblue}$\set{A}$} (3.5,5);
+    \draw[very thick,boxgreen,dashed] (0,2.5) -- node[right,pos=1] {\color{boxgreen}$\set{B}$} (3.5,2.5);
+    \draw[very thick,boxpurple!80,dashed] (2,0) -- node[above,pos=1] {\color{boxpurple}$\set{C}$} (2,2.5);
+    \node at (1,1.25) {$\Leaf_1$};
+    \node at (2.75,1.25) {$\Leaf_2$};
+    \node[circle,inner sep=0pt,minimum size=3pt,fill=black,label=above right:{$\set{x}$}] at (1.5,1.9) {};
+    \draw[very thick] (0,0) rectangle (5, 5);
+
+    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxblue!80] (a) at (3,-1) {$\set{A}$};
+    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxgreen!80] (b) at ($(a) + (-1,-1.5)$) {$\set{B}$};
+    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxpurple!60] (c) at ($(b) + (1,-1.5)$) {$\set{C}$};
+    \node[draw,fill=boxpink!30] (l1) at ($(c) + (-1,-1.5)$) {$L_1$};
+    \node[draw,fill=boxgoldenrod!40] (l2) at ($(c) + (1,-1.5)$) {$L_2$};
+    \draw (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}>\set{A}$} ($(a) + (1,-1.5)$);
+    \draw (a) -- node[above left,pos=0.5] {$\set{x}\leq\set{A}$} (b);
+    \draw[edge,boxdgray] (a) edge[bend left=15] (b);
+    \draw (b) -- node[below,pos=1] {$\vdots$} node[above left,pos=0.5] {$\set{x}\leq\set{B}$} ($(b) + (-1,-1.5)$);
+    \draw (b) -- node[above right,pos=0.5] {$\set{x}>\set{B}$} (c);
+    \draw[edge,boxdgray] (b) edge[bend right=15] (c);
+    \draw (c) -- node[above left,pos=0.5] {$\set{x}\leq\set{C}$} (l1);
+    \draw (c) -- node[above right,pos=0.5] {$\set{x}>\set{C}$} (l2);
+    \draw[edge,boxdgray] (c) edge[bend left=15] (l1);
+
+    \newSumNode[fill=boxblue!80,label=above left:{$\set{A}$}]{a}{$(a) + (0,-6.0)$};
+    \newSumNode[fill=boxgreen!80,label=above left:{$\set{B}$}]{b}{$(a) + (-1,-1.5)$};
+    \newSumNode[fill=boxpurple!60,label=above right:{$\set{C}$}]{c}{$(b) + (1,-1.5)$};
+    \newGaussNode[fill=boxpink!30,label=below:{$\Leaf_1\cdot\liv\set{x}\in\Leaf_1\riv$}]{l1}{$(c) + (-1.5,-1.5)$};
+    \newGaussNode[fill=boxgoldenrod!40,label=below:{$\Leaf_2\cdot\liv\set{x}\in\Leaf_2\riv$}]{l2}{$(c) + (1,-1.5)$};
+    \draw[edge] (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}>\set{A}$} ($(a) + (1,-1.5)$);
+    \draw[edge] (a) -- node[above left,pos=0.5] {$\set{x}\leq\set{A}$} (b);
+    \draw[edge,boxdgray] (a) edge[bend left=15] (b);
+    \draw[edge] (b) -- node[below,pos=1] {$\vdots$} node[above left,pos=0.5] {$\set{x}\leq\set{B}$} ($(b) + (-1,-1.5)$);
+    \draw[edge] (b) -- node[above right,pos=0.5] {$\set{x}>\set{B}$} (c);
+    \draw[edge,boxdgray] (b) edge[bend right=15] (c);
+    \draw[edge] (c) -- node[above left,pos=0.5] {$\set{x}\leq\set{C}$} (l1);
+    \draw[edge] (c) -- node[above right,pos=0.5] {$\set{x}>\set{C}$} (l2);
+    \draw[edge,boxdgray] (c) edge[bend left=15] (l1);
+
+    \newSumNode[fill=boxteal]{r}{$(a) + (-0.5,-6.5)$};
+    \newGaussNode[fill=boxpink!30,label=below:{$\Leaf_1\cdot\liv\set{x}\in\Leaf_1\riv$}]{l1}{$(r) + (-1.5,-1.5)$};
+    \newGaussNode[fill=boxgoldenrod!40,label=below:{$\Leaf_2\cdot\liv\set{x}\in\Leaf_2\riv$}]{l2}{$(r) + (1.5,-1.5)$};
+    \node at ($(r) + (0,-1.5)$) {$\cdots$};
+    \draw[edge] (r) -- node[above left,pos=0.5] {$w_{\Leaf_1}$} (l1);
+    \draw[edge] (r) -- node[above right,pos=0.5] {$w_{\Leaf_2}$} (l2);
+  \end{tikzpicture}
+\end{example}
 
 The notion of a vtree (or compatibility for that matter) is key to more complex queries. For
 instance, given two probabilistic circuits $\mathcal{C}_1$ and $\mathcal{C}_2$, computing cross
-entropy between the two is $\bigo(|\mathcal{C}_1||\mathcal{C}_2|)$ as long as both have the same
-vtree and at least the circuit that needs to be log-computable is also deterministic. Likewise,
-computing the Kullback-Leibler (KL) divergence between $\mathcal{C}_1$ and $\mathcal{C}_2$ requires
-that the two share the same vtree and both be deterministic. Mutual Information (MI), in turn,
-calls for the circuit to be smooth, structure decomposable and an even stronger version of
-determinism known as \emph{marginal determinism} where sums can only have one nonnegative valued
-child for any \emph{partial} assignment at a time. In fact, when a PC is smooth, decomposable and
-marginal deterministic, marginal \map{}, i.e. \map{} over partial assignments becomes linear time
-computable. For a more detailed insight on the tractability of these (and other) queries, as well
-as proofs on these results, we point to the comprehensive study of \citet{vergari21}.
+entropy between the two is $\bigo\left(|\mathcal{C}_1||\mathcal{C}_2|\right)$ as long as both have
+the same vtree and the circuit that needs to come inside the $\log$ is also deterministic.
+Likewise, computing the Kullback-Leibler (KL) divergence between $\mathcal{C}_1$ and
+$\mathcal{C}_2$ requires that the two share the same vtree and both be deterministic. Mutual
+Information (MI), in turn, calls for the circuit to be smooth, structure decomposable and an even
+stronger version of determinism known as \emph{marginal determinism} where sums can only have one
+nonnegative valued child for any \emph{partial} assignment at a time. In fact, when a PC is smooth,
+decomposable and marginal deterministic, marginal \map{}, i.e. \map{} over partial assignments
+becomes linear time computable. For a more detailed insight on the tractability of these (and
+other) queries, as well as proofs on these results, we point to the comprehensive study of
+\citet{vergari21}.
 
 A particularly interesting class of queries that becomes tractable when circuits are structure
-decomposable is expectation (\expc{}). One notable example from this class is computing the
-probability of logical events. This leads us to logic circuits, a parallel version of probabilistic
-circuits for logical reasoning.
+decomposable is the expectation (\expc{}) of a circuit with respect to another, defined as
+\begin{equation*}
+  \mathbb{E}_\mathcal{C}\left[\mathcal{S}\right]=\int_{\set{x}}\mathcal{C}(\set{x})\mathcal{S}(\set{x})\dif\set{x}.
+\end{equation*}
+One notable example from this class is computing the probability of logical events, which in terms
+of a \expc{} query amounts to computing the probability of $\mathcal{C}$ when circuit $\mathcal{S}$
+represents a given logical query. This leads us to logic circuits, a parallel version of
+probabilistic circuits for logical reasoning which we shall see next.
+
+\begin{remark}[breakable]{On operators and tractability}{optract}
+  Throughout this work we consider only products and convex combinations (apart from the implicit
+  operations contained within input nodes) as potential computational units. The question of whether
+  any other operator could be used to gain expressivity without loss of tractability is without a
+  doubt an interesting research question, and one that is actively being pursued. However, this is
+  certainly out of the scope of this dissertation, and so we restrict discussion on this topic and
+  only give a brief comment on operator tractability here, pointing to existing literature in this
+  area of research.
+
+  \citet{friesen16} formalize the notion of replacing sums and products in PCs with any pair of
+  operators in a commutative semiring, giving results on the conditions for marginalization to be
+  tractable. They provide examples of common semirings and to which known formalisms they
+  correspond to. One such example are PCs under the Boolean semiring $(\{0,1\},\vee,\wedge,0,1)$
+  for logical inference, which are equivalent to Negation Normal Form (NNF, \cite{barwise82}) and
+  constitute an instance of Logic Circuits (LCs), of which Sentential Decision Diagrams (SDDs,
+  \cite{darwiche11}) and Binary Decision Diagrams (BDDs, \cite{akers78}) are a part of. Another
+  less common semiring in PCs is the real min-sum semiring $(\mathbb{R}_{\infty}, \min,+,\infty,0)$
+  for nonconvex optimization \citep{friesen15}.
+
+  Recently, \citet{vergari21} extensively covered tractability conditions and complexity bounds for
+  convex combinations, products, $\exp$ (and more generally powers in both naturals and reals),
+  quotients and logarithms, even giving results for complex information-theoretic queries, such as
+  entropies and divergences. Notably, they analyze whether structural constraints (and thus, in a
+  sense, tractability) under these conditions are preserved.
+
+  Up to now, we have only considered summations as nonnegative weighted sums. Indeed, in most
+  literature the sum node is defined as a convex combination. However, negative weights have
+  appeared in Logistic Circuits \citep{liang19} for discriminative modeling; and in Probabilistic
+  Generating Circuits \citep{zhang21}, a class of tractable probabilistic models that subsume PCs.
+  \citet{maua17a} and \citet{mattei20b} extend (nonnegative) weights in sum nodes with probability
+  intervals, effectively inducing a credal set \citep{cozman00} for measuring imprecision.
+
+  Other works include PCs with quotients \citep{sharir18a}, transformations \citep{pevny20a}, max
+  \citep{melibari16a}, and einsum \citep{peharz20b} operations.
+\end{remark}
 
 \section{Probabilistic Circuits as Knowledge Bases}
-\label{section:pckb}
+\label{sec:pckb}
 
 We superficially mentioned in \Cref{rem:optract} that PCs under a Boolean semiring with
 conjunctions and disjunctions as operators are known as Logic Circuits (LCs). In this section, we
@@ -1557,15 +1564,16 @@ decomposable and deterministic LCs, known as Sentential Decision Diagrams (SDDs,
 different vtrees. The one on the left respects a balanced vtree and the one on the right a
 right-linear vtree.
 
-Logic circuits have appeared in literature under the name of Negated Normal Form (NNF)
+Logic circuits have appeared in computer science literature under many names, more closely to the
+knowledge compilation community under the title of Negated Normal Form (NNF)
 \citep{darwiche01b,darwiche99}, a superset of other propositional compilation languages such as
 Binary Decision Diagrams (BDDs, \cite{bryant86}), Propositional DAGs (PDAGs, \cite{wachter06}),
 Sentential Decision Diagrams (SDDs, \cite{darwiche11}), DNFs and CNFs. Although no structural
-constraint is required for correctly evaluating satistifiability in logic circuits, the same
-properties defined in past sections have come up in LCs to enable other more complex queries like
-equivalence, implicates, sentential entailment and model counting, as well as transformations such
-as closed conditionings, forgetting, conjunctions and disjunctions \citep{darwiche02}. The
-succinctness (i.e. expressive efficiency) of LCs are also impacted by these structural restrictions
+constraint is required for model verification in logic circuits, the same properties defined in the
+past section have come up in LCs to enable other more complex queries like equivalence,
+implication, sentential entailment and model counting, as well as transformations such as closed
+conditionings, forgetting, conjunctions and disjunctions \citep{darwiche02}. The succinctness (i.e.
+expressive efficiency) of LCs are also impacted by these structural restrictions
 \citep{gogic95,papadimitriou94,darwiche02}.  See \citet{darwiche02} and \citet{darwiche20} for more
 on logic circuits.
 
@@ -1592,7 +1600,7 @@ on logic circuits.
     \end{tikzpicture}
   \end{center}
   In their usual notation, inner nodes are variables and leaves are constants $\bot$ and $\top$.
-  Evaluating an assignment $\set{x}\subseteq\{0,1\}^n$ is equivalent to a path from the root to a
+  Evaluating an assignment $\set{x}\in\{0,1\}^n$ is equivalent to a path from the root to a
   leaf where each variable $X$ determines a decision to go through the dashed line when $x=0$ or
   solid line when $x=1$. If the path ends at a $\top$, the function returns 1, otherwise it must
   end at a $\bot$ and therefore returns 0. The BDD above encodes the following logic formula
@@ -1600,7 +1608,8 @@ on logic circuits.
     \phi(A,B,C)=(A\vee\neg B)\wedge(\neg B\vee C),
   \end{equation*}
   also shown as a truth table on the right, together with a logic circuit that encodes the same
-  truth table and its vtree.
+  truth table and its vtree. Conjunctions take the role of products, with each conjunction node
+  determining a vtree node's scope partition.
   \tcblower
   \small%
   \begin{center}
@@ -1682,7 +1691,7 @@ structure decomposable and deterministic probabilistic circuit $\mathcal{C}$ ove
 We can construct an identically structured logic circuit (up to input nodes) $\mathcal{L}$ with
 same vtree as $\mathcal{C}$ whose underlying Boolean function encodes $\phi(\set{x})=
 \left\liv\mathcal{C}(\set{x})>0\right\riv$. Since sums act exactly like disjunctions and products
-like conjunctions under the Boolean semiring, products in $\mathcal{L}$ are replaced with
+like conjunctions under the Boolean semiring, products in $\mathcal{C}$ are replaced with
 conjunctions in $\mathcal{L}$, and sums with disjunctions. Input nodes from $\mathcal{C}$ are
 replaced with a literal node if the function is degenerate, or with a disjunction over positive and
 negative literals otherwise. This makes sure $\mathcal{L}$ acts as the support of $\mathcal{C}$, as
@@ -1696,8 +1705,8 @@ $\mathcal{C}$, with $\Child_p(\set{x})$ and $\Child_s(\set{x})$ the probabilitie
 prime and sub respectively. The corresponding sum node $\Sum_{\mathcal{C}}$ in $\mathcal{C}$ then
 only attributes a weight (i.e.\ probability) to each positive element as usual
 \begin{equation*}
-  \Sum_\mathcal{C}(\set{x})=\sum_{\Child\in\Ch(\Sum_\mathcal{C})}w_{\Sum_\mathcal{C},\Child}\cdot
-  \Child_p(\set{x})\cdot\Child_s(\set{x}).
+  \Sum_\mathcal{C}(\set{x},\set{y})=\sum_{\Child\in\Ch(\Sum_\mathcal{C})}w_{\Sum_\mathcal{C},\Child}\cdot
+  \Child_p(\set{x})\cdot\Child_s(\set{y}).
 \end{equation*}
 When a deterministic sum (resp. disjunction) node has the above form, then this composition of a
 weighted sum (resp. disjunction) is known in PC and LC literature as a \emph{partition}.
@@ -1791,7 +1800,7 @@ to a distribution. This kind of query is enabled by the following result.
   \begin{algorithmic}[1]
     \Require A smooth, structure decomposable PC $\mathcal{C}$ and LC $\mathcal{L}$ both with vtree
       $\vtree$
-    \Ensure The expectation $\mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]=\int\mathcal{C}(\set{x})
+      \Ensure The expectation $\mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]=\int_\set{x}\mathcal{C}(\set{x})
       \mathcal{L}(\set{x})\dif\set{x}$
     \State Let $v$ be a hash function mapping a pair of nodes to an expectation
     \For{each pair of nodes $(\Node_\mathcal{C},\Node_\mathcal{L})$ in reverse topological order}\label{alg:expc:line:top}
@@ -1979,81 +1988,3 @@ primes, and subs with subs; for sums, each combination of PC child with LC child
 Now that we have addressed the (arguably) most important aspects of probabilistic circuits, we are
 now ready to understand how to build them in a principled way.
 
-\begin{example}[sidebyside,lefthand width=0.55\textwidth]{Density estimation trees as probabilistic circuits}{det}
-  A density estimation tree is a decision tree for the task of density estimation \citep{ram11}.
-  Briefly, a decision tree $\mathcal{T}$ partitions the data space (usually $\mathbb{R}^d$) into
-  cells by laying out hyperplanes usually orthogonal to the axes, creating a latent variable for
-  each node that essentially determines in which edge an observation should fall into. The density
-  function of a tree $\mathcal{T}$ given a dataset $\set{D}$ of dimension $d$ is defined as the
-  piecewise function
-  \begin{equation*}
-    p_\mathcal{T}(\set{x})=\sum_{\Leaf\in\operatorname{Leaves}(\mathcal{T})}\frac{1}{\operatorname{Vol}(\Leaf)}\cdot\frac{\left|\set{D}\in\Leaf\right|}{|\set{D}|}\cdot\liv\set{x}\in\Leaf\riv,
-  \end{equation*}
-  where $\left|\set{D}\in\Leaf\right|$ indicates the number of assignments $\set{x}$ in the
-  training dataset $\set{D}$ which fall inside the cell determined by leaf $\Leaf$, and
-  $\operatorname{Vol}(\Leaf)$ retuns the volume of the $d$-dimensional cell $\Leaf$. The top figure
-  on the right shows a two-dimensional data space being partitioned, with the corresponding
-  decision tree below it. Each node in the tree is a (hyper)plane partitioning data, with every
-  edge determining which cell the observation falls into.
-
-  Equivalently, a sum node in a PC that determines the on-off state of a latent variable
-  partitioning the data space configures the same semantics as a density estimation tree. Instead
-  of delegating an observation's probability to the tree's leaves, a PC spreads out this density to
-  both weights in sum nodes and density in input nodes. Let $\mathcal{C}$ be a PC whose nodes are all
-  sum nodes which encode such latent partitions and whose input nodes are truncated to follow these
-  latent variables (i.e.\ their support is only over the space determined by the partitionings);
-  collapse all layers (and weights) into a shallow PC with a single sum layer. Its value is then
-  \begin{equation*}
-    p_\mathcal{C}(\set{x})=\sum_{\Leaf\in\operatorname{Inputs}(\mathcal{C})}w_{\Leaf}\cdot\Leaf(\set{x})\cdot\liv\set{x}\in\Leaf\riv.
-  \end{equation*}
-  \tcblower
-  \centering
-  \begin{tikzpicture}
-    \fill[boxpink!30] (0,0) rectangle (2,2.5);
-    \fill[boxgoldenrod!40] (2,0) rectangle (3.5,2.5);
-    \draw[very thick,boxblue,dashed] (3.5,0) -- node[left,pos=0.9] {\color{boxblue}$\set{A}$} (3.5,5);
-    \draw[very thick,boxgreen,dashed] (0,2.5) -- node[right,pos=1] {\color{boxgreen}$\set{B}$} (3.5,2.5);
-    \draw[very thick,boxpurple!80,dashed] (2,0) -- node[above,pos=1] {\color{boxpurple}$\set{C}$} (2,2.5);
-    \node at (1,1.25) {$\Leaf_1$};
-    \node at (2.75,1.25) {$\Leaf_2$};
-    \node[circle,inner sep=0pt,minimum size=3pt,fill=black,label=above right:{$\set{x}$}] at (1.5,1.9) {};
-    \draw[very thick] (0,0) rectangle (5, 5);
-
-    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxblue!80] (a) at (3,-1) {$\set{A}$};
-    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxgreen!80] (b) at ($(a) + (-1,-1.5)$) {$\set{B}$};
-    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxpurple!60] (c) at ($(b) + (1,-1.5)$) {$\set{C}$};
-    \node[draw,fill=boxpink!30] (l1) at ($(c) + (-1,-1.5)$) {$L_1$};
-    \node[draw,fill=boxgoldenrod!40] (l2) at ($(c) + (1,-1.5)$) {$L_2$};
-    \draw (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}>\set{A}$} ($(a) + (1,-1.5)$);
-    \draw (a) -- node[above left,pos=0.5] {$\set{x}\leq\set{A}$} (b);
-    \draw[edge,boxdgray] (a) edge[bend left=15] (b);
-    \draw (b) -- node[below,pos=1] {$\vdots$} node[above left,pos=0.5] {$\set{x}\leq\set{B}$} ($(b) + (-1,-1.5)$);
-    \draw (b) -- node[above right,pos=0.5] {$\set{x}>\set{B}$} (c);
-    \draw[edge,boxdgray] (b) edge[bend right=15] (c);
-    \draw (c) -- node[above left,pos=0.5] {$\set{x}\leq\set{C}$} (l1);
-    \draw (c) -- node[above right,pos=0.5] {$\set{x}>\set{C}$} (l2);
-    \draw[edge,boxdgray] (c) edge[bend left=15] (l1);
-
-    \newSumNode[fill=boxblue!80,label=above left:{$\set{A}$}]{a}{$(a) + (0,-6.0)$};
-    \newSumNode[fill=boxgreen!80,label=above left:{$\set{B}$}]{b}{$(a) + (-1,-1.5)$};
-    \newSumNode[fill=boxpurple!60,label=above right:{$\set{C}$}]{c}{$(b) + (1,-1.5)$};
-    \newGaussNode[fill=boxpink!30,label=below:{$\Leaf_1\cdot\liv\set{x}\in\Leaf_1\riv$}]{l1}{$(c) + (-1.5,-1.5)$};
-    \newGaussNode[fill=boxgoldenrod!40,label=below:{$\Leaf_2\cdot\liv\set{x}\in\Leaf_2\riv$}]{l2}{$(c) + (1,-1.5)$};
-    \draw[edge] (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}>\set{A}$} ($(a) + (1,-1.5)$);
-    \draw[edge] (a) -- node[above left,pos=0.5] {$\set{x}\leq\set{A}$} (b);
-    \draw[edge,boxdgray] (a) edge[bend left=15] (b);
-    \draw[edge] (b) -- node[below,pos=1] {$\vdots$} node[above left,pos=0.5] {$\set{x}\leq\set{B}$} ($(b) + (-1,-1.5)$);
-    \draw[edge] (b) -- node[above right,pos=0.5] {$\set{x}>\set{B}$} (c);
-    \draw[edge,boxdgray] (b) edge[bend right=15] (c);
-    \draw[edge] (c) -- node[above left,pos=0.5] {$\set{x}\leq\set{C}$} (l1);
-    \draw[edge] (c) -- node[above right,pos=0.5] {$\set{x}>\set{C}$} (l2);
-    \draw[edge,boxdgray] (c) edge[bend left=15] (l1);
-
-    \newSumNode[fill=boxteal]{r}{$(a) + (-0.5,-6.5)$};
-    \newGaussNode[fill=boxpink!30,label=below:{$\Leaf_1\cdot\liv\set{x}\in\Leaf_1\riv$}]{l1}{$(r) + (-1.5,-1.5)$};
-    \newGaussNode[fill=boxgoldenrod!40,label=below:{$\Leaf_2\cdot\liv\set{x}\in\Leaf_2\riv$}]{l2}{$(r) + (1.5,-1.5)$};
-    \node at ($(r) + (0,-1.5)$) {$\cdots$};
-    \draw[edge] (r) -- node[above left,pos=0.5] {$w_{\Leaf_1}$} (l1);
-    \draw[edge] (r) -- node[above right,pos=0.5] {$w_{\Leaf_2}$} (l2);
-  \end{tikzpicture}
-\end{example}
