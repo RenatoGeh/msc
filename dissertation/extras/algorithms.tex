@@ -10,6 +10,8 @@
 
 \algblockdefx[NIELSE]{NIElse}{EndNIElse}{\textbf{else}}
 
+\algblockdefx[NIELSEIF]{NIElseIf}{EndNIElseIf}[1]{\textbf{else if} #1}
+
 % Remove extra space on EndFor endings
 \makeatletter
 \patchcmd{\ALG@doentity}{\item[]\nointerlineskip}{}{}{}
@@ -19,6 +21,10 @@
 % EndNIElse
 \ifthenelse{\equal{\ALG@noend}{t}}%
   {\algtext*{EndNIElse}}
+  {}%
+% EndNIElseIf
+\ifthenelse{\equal{\ALG@noend}{t}}%
+  {\algtext*{EndNIElseIf}}
   {}%
 
 % List of Algorithms
