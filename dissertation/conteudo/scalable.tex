@@ -1074,6 +1074,37 @@ separates instance according to the median value of that variable. The process i
 induction of decision trees, except that in this case the rules discriminate against a target
 variable \citep{breiman01}.
 
+\begin{algorithm}[t]
+  \caption{\textproc{SplitSID}}\label{alg:splitsid}
+  \begin{algorithmic}[1]
+    \Require Dataset $\set{D}\subset\mathbb{R}^m$
+    \Ensure A partition $\set{S}_1,\set{S}_2$ of $\set{D}$
+    \State Let $n$ be the number of examples in $\set{D}$
+    \State Sample a random unit direction $\set{w}$
+    \State Sort $\set{b}=\set{a}\cdot\set{x}$ for $\set{x}\in\set{D}$ s.t.\ $b_1\leq b_2\leq\dotsb\leq b_n$
+    \For{each $i\in\left[n-1\right]$}
+      \State $\mu_1 = \frac{1}{i}\sum_{j=1}^i b_i$, \; $\mu_2 = \frac{1}{n-i}\sum_{j=i+1}^n b_i$
+      \State $c_i = \sum_{j=1}^i (b_j - \mu_1)^2 + \sum_{j+1}^n (b_j - \mu_2)^2$
+    \EndFor
+    \State Find $i$ that minimizes $c_i$ and set $\theta = (b_i + b_{i+1})/2$
+    \State $\set{S}_1 \gets \{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge\set{a}\cdot\set{x}\leq\theta\}$
+    \State \textbf{return} $(\set{S}_1,\set{D} \setminus \set{S}_1)$
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+  \caption{\textproc{SplitMax}}\label{alg:splitmax}
+  \begin{algorithmic}[1]
+    \Require Dataset $\set{D} \subset \mathbb{R}^m$ and constant $r$
+    \Ensure A partition $(\set{S}_1,\set{S}_2)$ of $\set{D}$
+    \State Sample a random unit direction $\set{a}$
+    \State Pick any $\set{x}\in\set{D}$ and let $\set{y}$ be $\set{x}$'s farthest point in $\set{D}$
+    \State Sample $\delta$ uniformly in $[-c,c]$, where ${c=r\cdot\operatorname{dist}(\set{x},\set{y})/\sqrt{m}}$
+    \State $\set{S}_1\gets\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge\set{a}\cdot\set{x}\leq\operatorname{median}(\{\set{z}\cdot\set{a}\,|\,\set{z}\in\set{D}\})+\delta\}$
+    \State \textbf{return} $(\set{S}_1,\set{D}\setminus\set{S}_1)$
+  \end{algorithmic}
+\end{algorithm}
+
 The statistical properties of estimates obtained from the instances at the leaves of a $k$-d tree
 depend on the rate at which the diameter of the partitions are reduced once we move down the tree.
 For a space of dimension $m$, a $k$-d tree induced by the process described might require $m$
@@ -1084,43 +1115,15 @@ dimension} of the dataset $\set{D}\subset\mathbb{R}^m$, given by the smallest in
 the intersection of $\set{D}$ and any ball of radius $r$ centered at $\set{x}\in\set{D}$ can be
 covered by at most $2^d$ balls of radius $\frac{r}{2}$ \citep{dhesi10}.
 
-\begin{algorithm}[t]
-  \caption{\textproc{SplitSID}}\label{alg:splitsid}
-  \begin{algorithmic}[1]
-    \Require Dataset $\set{D}\subset\mathbb{R}^m$
-    \Ensure A partition $\set{S}_1,\set{S}_2$ of $\set{D}$
-    \State Let $n$ be the number of examples in $\set{D}$
-    \State Sample a random unit direction $\set{w}$
-    \State Sort $\set{a}=\set{w}\cdot\set{x}$ for $\set{x}\in\set{D}$ s.t.\ $a_1\leq a_2\leq\dotsb\leq a_n$
-    \For{each $i\in\left[n-1\right]$}
-      \State $\mu_1 = \frac{1}{i}\sum_{j=1}^i a_i$, \; $\mu_2 = \frac{1}{n-i}\sum_{j=i+1}^n a_i$
-      \State $c_i = \sum_{j=1}^i (a_j - \mu_1)^2 + \sum_{j+1}^n (a_j - \mu_2)^2$
-    \EndFor
-    \State Find $i$ that minimizes $c_i$ and set $\theta = (a_i + a_{i+1})/2$
-    \State $\set{S}_1 \gets \{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge\set{w}\cdot\set{x}\leq\theta\}$
-    \State \textbf{return} $(\set{S}_1,\set{D} \setminus \set{S}_1)$
-  \end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}[t]
-  \caption{\textproc{SplitMax}}\label{alg:splitmax}
-  \begin{algorithmic}[1]
-    \Require Dataset $\set{D} \subset \mathbb{R}^m$ and constant $r$
-    \Ensure A partition $(\set{S}_1,\set{S}_2)$ of $\set{D}$
-    \State Sample a random unit direction $\set{w}$
-    \State Pick any $\set{x}\in\set{D}$ and let $\set{y}$ be $\set{x}$'s farthest point in $\set{D}$
-    \State Sample $\delta$ uniformly in $[-c,c]$, where ${c=r\cdot\operatorname{dist}(\set{x},\set{y})/\sqrt{m}}$
-    \State $\set{S}_1\gets\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge\set{w}\cdot\set{x}\leq\operatorname{median}(\{\set{z}\cdot\set{w}\,|\,\set{z}\in\set{D}\})+\delta\}$
-    \State \textbf{return} $(\set{S}_1,\set{D}\setminus\set{S}_1)$
-  \end{algorithmic}
-\end{algorithm}
-
 Random Projection Trees (RPTrees) are a special type of $k$-d trees that split along a random
 direction of the space. Two such splitting rules are given by \Cref{alg:splitsid,alg:splitmax},
 where in the latter $\operatorname{dist}(\set{x},\set{y})$ refers to the Euclidean distance. The
 intuition behind either rule is to generate a random hyperplane (unit direction) and then find a
-threshold projection value that roughly divides dataset $\set{D}$ into two approximately equally
-sized subsets. \Cref{alg:splitsid} attempts at finding such a threshold by minimizing the average
+threshold projection value that roughly divides dataset $\set{D}$ into two approximately equal
+sized subsets. More concretely, we wish to find a mapping $f:\set{x}\mapsto\left\liv\sum_{i=1}^d
+x_i\cdot a_i>\theta\right\riv$ that discriminates an assignment $\set{x}$ to one or the other side
+of a hyperplane described as the random unit vector $\set{a}=\left(a_1,\ldots,a_d\right)$.
+\Cref{alg:splitsid} attempts at finding the projection threshold $\theta$ by minimizing the average
 squared interpoint distance (SID), while \Cref{alg:splitmax} uses a random noise proportional to
 the average diameter of $\set{D}$. As discussed by \citet{dasgupta08b} and by \citet{dasgupta08a},
 either optimizing or randomizing the threshold leads to better separation of data than simply
@@ -1207,7 +1210,7 @@ leads to improved statistical properties that are connected to that notion of lo
 dimensionality \citep{dasgupta08b,dhesi10}. Inspired by these findings, we propose a fast
 randomized structure learning algorithm for learning probabilistic circuits by recursively stacking
 random projections in a divide-and-conquer manner similar to what is done in \textproc{LearnSPN}.
-Albeit our contributions are preliminary, we found that our approach is extremely fast and reaches
+Albeit our contributions are minor, we found that our approach is extremely fast and reaches
 competitive performance in binary benchmark datasets.
 
 \subsection{\textproc{LearnRP}}
@@ -1217,7 +1220,7 @@ formed from the partitions induced by $f$'s hyperplane. We use this simple yet e
 clustering method to replace clustering techniques in \textproc{LearnSPN}. We justify this move
 from a theoretical and practical aspect. From a theoretical perspective, every sum node created
 this way defines a latent variable corresponding to a hyperplane, giving some interpretability
-(akin to decisiont trees) to the model. From a more practical point of view, we point to the work
+(akin to decision trees) to the model. From a more practical point of view, we point to the work
 of \citet{vergari15}, showing that binary partitions (both row-wise and column-wise) favor a deeper
 architecture and produce smaller models. We further strengthen this last point by restricting the
 learned structure to a vtree, effectively constructing smooth and structure decomposable PCs.
@@ -1232,26 +1235,130 @@ learned structure to a vtree, effectively constructing smooth and structure deco
       \State Sample $k$ projections and call $f$ the one which minimizes the avg. diameter of $\set{D}$
       \State $\set{S}_1\gets\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x})=1\}$,
         $\set{S}_2=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x})=0\}$
-      \State Let $v$ the root of $\vtree$
+        \State Let $v$ the root of $\vtree$ \label{alg:learnrp:line:vtree}
       \State $\Child^{(1)}_1\gets\Call{LearnRP}{\set{S}_1,\Sc(v^\gets),v^\gets,k}$
       \State $\Child^{(1)}_2\gets\Call{LearnRP}{\set{S}_1,\Sc(v^\to),v^\to,k}$
       \State $\Child^{(2)}_1\gets\Call{LearnRP}{\set{S}_2,\Sc(v^\gets),v^\gets,k}$
       \State $\Child^{(2)}_2\gets\Call{LearnRP}{\set{S}_2,\Sc(v^\to),v^\to,k}$
-      \State Construct products $\Prod_1\gets\Child^{(1)}_1\cdot\Child^{(1)}_2$ and $\Prod_2\gets\Child^{(2)}_1\cdot\Child^{(2)}_2$
+      \State Construct products $\Prod_1\gets\Child^{(1)}_1\cdot\Child^{(1)}_2$ and
+        $\Prod_2\gets\Child^{(2)}_1\cdot\Child^{(2)}_2$\label{alg:learnrp:line:prod}
       \State \textbf{return} sum $\frac{\set{S}_1}{\set{D}}\cdot\Prod_1+\frac{\set{S}_2}{\set{D}}\cdot\Prod_2$
     \EndNIElse
   \end{algorithmic}
 \end{algorithm}
 
-Determinism can be enforced if, for every input node (line \ref{alg:learnrp:line:input} in
-\Cref{alg:learnrp}) its support is truncated to the cell induced by all random projections above
-it. For the discrete case, we might attribute zero mass to assignments outside its cell,
-normalizing the distribution with the remaining mass. However, this is not so trivial in the
-general case (i.e.\ in the continuous) as the projections are oblique and the resulting truncated
-distributions must have tractable marginalization.
-
-When the domain is discrete, the vtree can be learned by pairwise mutual information as discussed
-in \Cref{subsection:learnpsdd}; when in the continuous, we can replace mutual information for
-Pearson's correlation or any other similar metric.
+Of note is the fact that DETs are deterministic by nature, as the leaves of the binary tree are
+constrained to the corresponding cells, meaning that only one path from leaf to root is active at a
+time. Here, determinism could be enforced if, for every input node (line
+\ref{alg:learnrp:line:input} in \Cref{alg:learnrp}) its support is truncated to the cell induced by
+all random projections above it, similar to what is done when representing DETs as PCs. For the
+discrete case, we might attribute zero mass to assignments outside its cell, normalizing the
+distribution with the remaining mass. However, apart from the fact that doing so is not so trivial
+in the general case (i.e.\ in the continuous) as the projections are oblique and the resulting
+truncated distributions must have tractable marginalization, this process also violates
+decomposability: by truncating inputs, we are essentially turning the previously univariate inputs
+from line \ref{alg:learnrp:line:input} into multivariate distributions covering the entire scope,
+making products learned in line \ref{alg:learnrp:line:prod} nondecomposable. This comes from the
+fact that each hyperplane is a function $f(\set{x})=\left\liv\sum_{i=1}^d x_i\cdot
+a_i>\theta\right\riv$ with $\Sc(f)=\Sc(v)$, where $v$ is the vtree node of line
+\ref{alg:learnrp:line:vtree}. Further, because each variable $X\in\Sc(v)$ contributes (linearly) to
+$f$, marginalization in this multivariate distribution is not as straightforward. We therefore
+choose not to constraint inputs.
 
 \subsection{Experiments}
+
+For binary data, we evaluate \textproc{LearnRP} on the 20 well-known binary datasets for density
+estimation \citep{lowd10,haaren12}\footnote{Taken from
+\url{https://github.com/UCLA-StarAI/Density-Estimation-Datasets}.} and compare against reported
+results from \textproc{LearnSPN} \citep{gens13}, \textproc{Strudel}, \textproc{LearnPSDD} (both
+from the benchmarks reported in \cite{dang20}), \textproc{Prometheus} \citep{jaini18a} and
+\textproc{XPC} \citep{dimauro21}. To measure performance in the continuous, we compare
+\textproc{LearnRP} against the performance of \textproc{Prometheus}, deep Boltzmann machines (SRBMs,
+\cite{salakhutdinov09}), an offline version of \citeauthor{hsu17}'s online structure learning with
+Gaussian leaves (oSLRAU, \cite{hsu17}), Gaussian mixture models with Bayesian moment matching
+(GBMMs, \cite{jaini16}) and infinite sum-product trees (iSPTs, \cite{trapp16}) all of which are
+reported in \citet{jaini18a}.
+
+\begin{table}[t]
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{c|cccc||c|cccc}
+    \hline
+    \textbf{Dataset} & \textbf{Vars} & \textbf{Train} & \textbf{Test} & \textbf{Domain} &
+    \textbf{Dataset} & \textbf{Vars} & \textbf{Train} & \textbf{Test} & \textbf{Domain}\\
+    \hline
+    \textsc{accidents } & 111  & 12758   & 2551   & $\{0,1\}$ & \textsc{nltcs     } & 16  & 16181    & 3236    & $\{0,1\}$ \\
+    \textsc{ad        } & 1556 & 2461    & 491    & $\{0,1\}$ & \textsc{plants    } & 69  & 17412    & 3482    & $\{0,1\}$ \\
+    \textsc{audio     } & 100  & 15000   & 3000   & $\{0,1\}$ & \textsc{pumsb-star} & 163 & 12262    & 2452    & $\{0,1\}$ \\
+    \textsc{bbc       } & 1058 & 1670    & 330    & $\{0,1\}$ & \textsc{eachmovie } & 500 & 4524     & 591     & $\{0,1\}$ \\
+    \textsc{netflix   } & 100  & 15000   & 3000   & $\{0,1\}$ & \textsc{retail    } & 135 & 22041    & 4408    & $\{0,1\}$ \\
+    \textsc{book      } & 500  & 8700    & 1739   & $\{0,1\}$ & \textsc{abalone   } & 8   & 3760     & 417     & $\mathbb{R}$ \\
+    \textsc{20-newsgrp} & 910  & 11293   & 3764   & $\{0,1\}$ & \textsc{ca        } & 22  & 7373     & 819     & $\mathbb{R}$ \\
+    \textsc{reuters-52} & 889  & 6532    & 1540   & $\{0,1\}$ & \textsc{quake     } & 4   & 1961     & 217     & $\mathbb{R}$ \\
+    \textsc{webkb     } & 839  & 2803    & 838    & $\{0,1\}$ & \textsc{sensorless} & 48  & 52659    & 5850    & $\mathbb{R}$ \\
+    \textsc{dna       } & 180  & 1600    & 1186   & $\{0,1\}$ & \textsc{banknote  } & 4   & 1235     & 137     & $\mathbb{R}$ \\
+    \textsc{jester    } & 100  & 9000    & 4116   & $\{0,1\}$ & \textsc{flowsize  } & 3   & 1358674  & 150963  & $\mathbb{R}$ \\
+    \textsc{kdd       } & 65   & 180092  & 34955  & $\{0,1\}$ & \textsc{kinematics} & 8   & 7373     & 819     & $\mathbb{R}$ \\
+    \textsc{kosarek   } & 190  & 33375   & 6675   & $\{0,1\}$ & \textsc{iris      } & 4   & 90       & 10      & $\mathbb{R}$ \\
+    \textsc{msnbc     } & 17   & 291326  & 58265  & $\{0,1\}$ & \textsc{oldfaith  } & 2   & 245      & 27      & $\mathbb{R}$ \\
+    \textsc{msweb     } & 294  & 29441   & 5000   & $\{0,1\}$ & \textsc{chemdiabet} & 3   & 131      & 14      & $\mathbb{R}$ \\
+    \hline
+  \end{tabular}
+  }
+  \caption{Details for all binary and continuous benchmark datasets.}
+  \label{tab:details}
+\end{table}
+
+When evaluating the performance of \textproc{LearnRP}, we did not see a significant difference
+between \textproc{SplitSID} and \textproc{SplitMax}, and so we only report figures for the latter.
+When the domain is discrete, the vtree was learned by the top-down pairwise mutual information
+algorithm discussed in \Cref{subsection:learnpsdd}; when in the continuous, we replace mutual
+information for Pearson's correlation. We use Gaussian mixture models as input nodes and fine-tune
+the parameters of the resulting structure by standard batch EM. Experiments were carried out on a
+single computer with a 12-core Intel i7 3.7GHz processor and 64GB RAM. \textproc{LearnRP} was
+implemented in Julia\footnote{The source code can be found at
+\url{https://github.com/RenatoGeh/RPCircuits.jl}.}, separately from \textproc{Strudel}'s and
+\textproc{LearnPSDD}'s implementations found in the Juice package \citep{dang21}. For fairness,
+when comparing runtimes for speed benchmarking we reran the reported results of \textproc{Strudel}
+and \textproc{LearnPSDD} in the same machine used for \textproc{LearnRP}, setting the number of
+iterations to 1000 for both \incrclass{} algorithms. Similarly, we compare runtimes of a Rust
+implementation\footnote{Source code found at \url{https://gitlab.com/marcheing/spn-rs}.} of
+\textproc{LearnSPN} on the same machine.
+
+\Cref{tab:details} shows detailed information on every dataset evaluated. \Cref{tab:binary} shows benchmark results for binary data, \Cref{tab:cont} for continuous data
+
+\begin{sidewaystable}
+  \resizebox{\textheight}{!}{
+  \begin{tabular}{c|ccccc|cccc}
+    \hline
+    \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
+    \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} & \textbf{\textproc{Prometheus}} &
+    \textbf{\textproc{LearnRP}-10} & \textbf{\textproc{LearnRP}-20} &
+    \textbf{\textproc{LearnRP}-30} & \textbf{\textproc{LearnRP}-F}\\
+    \hline
+    \textsc{accidents } & -30.03  & -28.73  & -30.16  & -31.02  & -27.91  & -30.18  & -29.66  & -29.17  & -28.71    \\
+    \textsc{ad        } & -19.73  & -16.38  & -31.78  & -15.50  & -23.96  & -22.51  & -20.87  & -20.37  & -19.09    \\
+    \textsc{audio     } & -40.50  & -41.50  & -39.94  & -40.91  & -39.80  & -41.05  & -40.66  & -40.68  & -40.16    \\
+    \textsc{bbc       } & -250.68 & -254.41 & -253.19 & -248.34 & -248.50 & -259.17 & -260.32 & -254.09 & -255.16   \\
+    \textsc{netflix   } & -57.02  & -58.69  & -55.71  & -57.58  & -56.47  & -59.91  & -60.06  & -57.60  & -56.97    \\
+    \textsc{book      } & -35.88  & -34.99  & -34.97  & -34.75  & -34.40  & -36.15  & -34.45  & -33.95  & -33.51    \\
+    \textsc{20-newsgrp} & -155.92 & -154.47 & -155.97 & -153.75 & -154.17 & -158.10 & -156.74 & -154.35 & -152.94   \\
+    \textsc{reuters-52} & -85.06  & -86.22  & -89.61  & -84.70  & -84.59  & -91.61  & -87.73  & -86.62  & -85.56    \\
+    \textsc{webkb     } & -158.20 & -155.33 & -161.09 & -153.67 & -155.21 & -156.40 & -155.70 & -156.40 & -154.33   \\
+    \textsc{dna       } & -82.52  & -86.22  & -88.01  & -86.61  & -84.45  & -86.55  & -85.30  & -85.61  & -85.12    \\
+    \textsc{jester    } & -75.98  & -55.03  & -51.29  & -53.43  & -52.80  & -53.67  & -53.28  & -53.13  & -52.97    \\
+    \textsc{kdd       } & -2.18   & -2.13   & -2.11   & -2.15   & -2.12   & -2.20   & -2.19   & -2.15   & -2.13     \\
+    \textsc{kosarek   } & -10.98  & -10.68  & -10.52  & -10.77  & -10.59  & -10.97  & -10.86  & -10.85  & -10.61    \\
+    \textsc{msnbc     } & -6.11   & -6.04   & -6.04   & -6.18   & -6.04   & -6.39   & -6.42   & -6.39   & -6.34     \\
+    \textsc{msweb     } & -10.25  & -9.71   & -9.89   & -9.93   & -9.86   & -10.23  & -10.17  & -10.10  & -9.89     \\
+    \textsc{nltcs     } & -6.11   & -6.06   & -5.99   & -6.05   & -6.01   & -6.30   & -6.29   & -6.37   & -6.22     \\
+    \textsc{plants    } & -12.97  & -12.98  & -13.02  & -14.19  & -12.81  & -14.76  & -14.33  & -14.26  & -13.80    \\
+    \textsc{pumsb-star} & -24.78  & -24.12  & -26.12  & -26.06  & -22.75  & -27.14  & -26.78  & -26.75  & -26.45    \\
+    \textsc{eachmovie } & -52.48  & -53.67  & -58.01  & -54.82  & -51.49  & -52.68  & -52.34  & -51.43  & -51.46    \\
+    \textsc{retail    } & -11.04  & -10.81  & -10.72  & -10.94  & -10.87  & -11.08  & -10.98  & -10.95  & -10.83    \\
+    \hline
+  \end{tabular}
+  }
+  \caption{Performance of \textproc{LearnRP} against state-of-the-art competitors in twenty binary
+  datasets for density estimation.}
+  \label{tab:binary}
+\end{sidewaystable}
