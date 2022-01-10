@@ -8,7 +8,8 @@ algorithms for probabilistic circuits. We approach the problem of learning scala
 distinct points of view. In \Cref{sec:logical}, we are interested in PCs whose support encodes a
 given logical constraint as certain knowledge; we show how both the probabilistic issue of data
 fitness, as well as the logical question of whether the circuit successfully compiles a knowledge
-base can be accomplished by aggregating PC samples into ensembles of models. In \Cref{sec:data}, we look at PCs solely from the perspective of data fitness; we exploit the connection between PCs and
+base can be accomplished by aggregating PC samples into ensembles of models. In \Cref{sec:data}, we
+look at PCs solely from the perspective of data fitness; we exploit the connection between PCs and
 generative random forests \citep{correia20,ho95} and revisit a well-known technique based on random
 projections for constructing random trees \citep{dasgupta08a,dasgupta08b}, presenting a simple and
 fast yet effective way of learning PCs.
@@ -987,7 +988,7 @@ focused on the discriminative side of DTs, with much of the effort put onto clas
 than generative tasks such as density estimation. Here, we explore the generative side of DTs,
 often referred as density estimation trees (DETs, \cite{ram11,hang19,smyth95}), within the framework
 of PCs, taking inspiration from known algorithms for building DTs and DETs, and transplanting them
-to PCs.
+to PCs. 
 
 As shortly discussed in \Cref{eg:det}, a DET can be represented as a smooth and deterministic PC
 with only sums and input nodes, the latter's supports restricted to the data cells induced by the
@@ -1277,7 +1278,12 @@ from the benchmarks reported in \cite{dang20}), \textproc{Prometheus} \citep{jai
 \cite{salakhutdinov09}), an offline version of \citeauthor{hsu17}'s online structure learning with
 Gaussian leaves (oSLRAU, \cite{hsu17}), Gaussian mixture models with Bayesian moment matching
 (GBMMs, \cite{jaini16}) and infinite sum-product trees (iSPTs, \cite{trapp16}) all of which are
-reported in \citet{jaini18a}.
+reported in \citet{jaini18a}. We used the same 10 continuous datasets as
+\citet{jaini18a}\footnote{Which we compiled to \url{https://github.com/RenatoGeh/CDEBD}.}, which
+although are reported as coming from the UCI Machine Learning Repository \citep{dua17} and Bilkent
+University's Function Approximation Repository \citep{guvenir00}, are numerically distinct from the
+ones found in these repositories. \Cref{tab:details} shows detailed information of every dataset
+evaluated.
 
 \begin{table}[t]
   \resizebox{\textwidth}{!}{
@@ -1314,17 +1320,52 @@ When the domain is discrete, the vtree was learned by the top-down pairwise mutu
 algorithm discussed in \Cref{subsection:learnpsdd}; when in the continuous, we replace mutual
 information for Pearson's correlation. We use Gaussian mixture models as input nodes and fine-tune
 the parameters of the resulting structure by standard batch EM. Experiments were carried out on a
-single computer with a 12-core Intel i7 3.7GHz processor and 64GB RAM. \textproc{LearnRP} was
-implemented in Julia\footnote{The source code can be found at
+single computer with a 12-core Intel i7 3.7GHz processor and 64GB RAM.
+
+\textproc{LearnRP} was implemented in Julia\footnote{The source code can be found at
 \url{https://github.com/RenatoGeh/RPCircuits.jl}.}, separately from \textproc{Strudel}'s and
 \textproc{LearnPSDD}'s implementations found in the Juice package \citep{dang21}. For fairness,
-when comparing runtimes for speed benchmarking we reran the reported results of \textproc{Strudel}
-and \textproc{LearnPSDD} in the same machine used for \textproc{LearnRP}, setting the number of
-iterations to 1000 for both \incrclass{} algorithms. Similarly, we compare runtimes of a Rust
-implementation\footnote{Source code found at \url{https://gitlab.com/marcheing/spn-rs}.} of
-\textproc{LearnSPN} on the same machine.
+when comparing runtimes for speed benchmarking we reran the same or similar setups as originally
+reported for \textproc{XPC}, \textproc{Strudel} and \textproc{LearnPSDD} in the same machine used
+for \textproc{LearnRP}, setting the number of iterations to 1000 for the two last \incrclass{}
+algorithms. Similarly, we compare runtimes of a Rust implementation\footnote{Source code found at
+\url{https://gitlab.com/marcheing/spn-rs}.} of \textproc{LearnSPN} on the same machine; we use
+$k$-means for learning sums and G-test for products, setting $k=2$ for a shorter learning time. We
+do not report running times for the original \textproc{Prometheus} code since, as far as we know,
+the source was not made public and no working implementation was found.
 
-\Cref{tab:details} shows detailed information on every dataset evaluated. \Cref{tab:binary} shows benchmark results for binary data, \Cref{tab:cont} for continuous data
+\Cref{tab:binary} shows benchmark results for binary data. For fairness, we report results for best
+ensembles of \textproc{XPC}, \textproc{Strudel} and \textproc{LearnPSDD} so that all models
+compared are smooth and structure decomposable (with the exception of \textproc{LearnSPN} and
+\textproc{Prometheus} which are only decomposable) but nondeterministic. Columns
+\textproc{LearnRP}-10, \textproc{LearnRP}-20, \textproc{LearnRP}-30 and \textproc{LearnRP}-F
+correspond to runs of \textproc{LearnRP} where we optimize the learned structure with 10, 20, 30
+and 100 iterations of batch EM with a batch size of 500 instances. After this, for
+\textproc{LearnRP}-F, we proceed to run 30 iterations of full EM, a regularization technique
+suggested in \citet{liu21}. \Cref{tab:bintime} shows how much time each learning algorithm took to
+learn a \emph{single} circuit for each dataset.
+
+\begin{table}[t]
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{c|cccc|cccc}
+    \hline
+    \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
+    \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} & \textbf{\textproc{LearnRP}-F} &
+    \textbf{\textproc{LearnRP}-10} & \textbf{\textproc{LearnRP}-20} &
+    \textbf{\textproc{LearnRP}-30}\\
+    \hline
+    \textsc{nltcs}     & 7m & 3m & 6m & 17s & & 4s & 8s & 12s\\
+    \textsc{plants}    & 50m & 41m & 26m & 1m3s & & 52s & 1m47s & 2m32s\\
+    \textsc{audio}     & 2h & 33m & 51m & 1m58s & & 1m25s & 2m45s & 4m11s\\
+    \textsc{jester}    & 52m & 24m & 37m & 1m20s & & 1m20s & 2m37s & 3m54s\\
+    \textsc{netflix}   & 1h & 14m & 33m & 2m8s & & 1m40s & 3m22s & 4m48s\\
+    \textsc{accidents} & 47m & 20m & 41m & 1m47s & & 1m30s & 2m45s & 4m10s\\
+    \textsc{book}      & >3h & 8m & 1h & 2m26s & & 7m24s & 15m17s & 21m55s\\
+    \textsc{dna}       & >3h & >3h & >3h & 17s & & 1m27s & 2m47s & 3m13s\\
+    \hline
+  \end{tabular}
+  }
+\end{table}
 
 \begin{sidewaystable}
   \resizebox{\textheight}{!}{
@@ -1332,32 +1373,57 @@ implementation\footnote{Source code found at \url{https://gitlab.com/marcheing/s
     \hline
     \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
     \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} & \textbf{\textproc{Prometheus}} &
-    \textbf{\textproc{LearnRP}-10} & \textbf{\textproc{LearnRP}-20} &
-    \textbf{\textproc{LearnRP}-30} & \textbf{\textproc{LearnRP}-F}\\
+    \textbf{\textproc{LearnRP}-F} & \textbf{\textproc{LearnRP}-10} &
+    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-30}\\
     \hline
-    \textsc{accidents } & -30.03  & -28.73  & -30.16  & -31.02  & -27.91  & -30.18  & -29.66  & -29.17  & -28.71    \\
-    \textsc{ad        } & -19.73  & -16.38  & -31.78  & -15.50  & -23.96  & -22.51  & -20.87  & -20.37  & -19.09    \\
-    \textsc{audio     } & -40.50  & -41.50  & -39.94  & -40.91  & -39.80  & -41.05  & -40.66  & -40.68  & -40.16    \\
-    \textsc{bbc       } & -250.68 & -254.41 & -253.19 & -248.34 & -248.50 & -259.17 & -260.32 & -254.09 & -255.16   \\
-    \textsc{netflix   } & -57.02  & -58.69  & -55.71  & -57.58  & -56.47  & -59.91  & -60.06  & -57.60  & -56.97    \\
-    \textsc{book      } & -35.88  & -34.99  & -34.97  & -34.75  & -34.40  & -36.15  & -34.45  & -33.95  & -33.51    \\
-    \textsc{20-newsgrp} & -155.92 & -154.47 & -155.97 & -153.75 & -154.17 & -158.10 & -156.74 & -154.35 & -152.94   \\
-    \textsc{reuters-52} & -85.06  & -86.22  & -89.61  & -84.70  & -84.59  & -91.61  & -87.73  & -86.62  & -85.56    \\
-    \textsc{webkb     } & -158.20 & -155.33 & -161.09 & -153.67 & -155.21 & -156.40 & -155.70 & -156.40 & -154.33   \\
-    \textsc{dna       } & -82.52  & -86.22  & -88.01  & -86.61  & -84.45  & -86.55  & -85.30  & -85.61  & -85.12    \\
-    \textsc{jester    } & -75.98  & -55.03  & -51.29  & -53.43  & -52.80  & -53.67  & -53.28  & -53.13  & -52.97    \\
-    \textsc{kdd       } & -2.18   & -2.13   & -2.11   & -2.15   & -2.12   & -2.20   & -2.19   & -2.15   & -2.13     \\
-    \textsc{kosarek   } & -10.98  & -10.68  & -10.52  & -10.77  & -10.59  & -10.97  & -10.86  & -10.85  & -10.61    \\
-    \textsc{msnbc     } & -6.11   & -6.04   & -6.04   & -6.18   & -6.04   & -6.39   & -6.42   & -6.39   & -6.34     \\
-    \textsc{msweb     } & -10.25  & -9.71   & -9.89   & -9.93   & -9.86   & -10.23  & -10.17  & -10.10  & -9.89     \\
-    \textsc{nltcs     } & -6.11   & -6.06   & -5.99   & -6.05   & -6.01   & -6.30   & -6.29   & -6.37   & -6.22     \\
-    \textsc{plants    } & -12.97  & -12.98  & -13.02  & -14.19  & -12.81  & -14.76  & -14.33  & -14.26  & -13.80    \\
-    \textsc{pumsb-star} & -24.78  & -24.12  & -26.12  & -26.06  & -22.75  & -27.14  & -26.78  & -26.75  & -26.45    \\
-    \textsc{eachmovie } & -52.48  & -53.67  & -58.01  & -54.82  & -51.49  & -52.68  & -52.34  & -51.43  & -51.46    \\
-    \textsc{retail    } & -11.04  & -10.81  & -10.72  & -10.94  & -10.87  & -11.08  & -10.98  & -10.95  & -10.83    \\
+    \textsc{accidents } & -30.03  & $|$-28.73$|$  & -30.16  & -31.02  & \textbf{-27.91}  & \underline{-28.71} & -30.18  & -29.66  & -29.17     \\
+    \textsc{ad        } & -19.73  & \underline{-16.38}  & -31.78  & \textbf{-15.50}  & -23.96  & $|$-19.09$|$ & -22.51  & -20.87  & -20.37     \\
+    \textsc{audio     } & -40.50  & -41.50  & \underline{-39.94}  & -40.91  & \textbf{-39.80}  & $|$-40.16$|$ & -41.05  & -40.66  & -40.68     \\
+    \textsc{bbc       } & $|$-250.68$|$ & -254.41 & -253.19 & \textbf{-248.34} & \underline{-248.50}  & -255.16 & -259.17 & -260.32 & -254.09  \\
+    \textsc{netflix   } & -57.02  & -58.69  & \textbf{-55.71}  & -57.58  & \underline{-56.47}  & $|$-56.97$|$  & -59.91  & -60.06  & -57.60    \\
+    \textsc{book      } & -35.88  & -34.99  & -34.97  & -34.75  & $|$-34.40$|$  & \textbf{-33.51} & -36.15  & -34.45  & \underline{-33.95}     \\
+    \textsc{20-newsgrp} & -155.92 & -154.47 & -155.97 & \underline{-153.75} & $|$-154.17$|$ & \textbf{-152.94} & -158.10 & -156.74 & -154.35   \\
+    \textsc{reuters-52} & $|$-85.06$|$  & -86.22  & -89.61  & -84.70  & \textbf{-84.59}  & -85.56  & -91.61  & -87.73  & -86.62    \\
+    \textsc{webkb     } & -158.20 & -155.33 & -161.09 & \textbf{-153.67} & $|$-155.21$|$ & \underline{-154.33} & -156.40 & -155.70 & -156.40   \\
+    \textsc{dna       } & \textbf{-82.52}  & -86.22  & -88.01  & -86.61  & \underline{-84.45}  & $|$-85.12$|$  & -86.55  & -85.30  & -85.61    \\
+    \textsc{jester    } & -75.98  & -55.03  & \textbf{-51.29}  & -53.43  & \underline{-52.80}  & $|$-52.97$|$  & -53.67  & -53.28  & -53.13    \\
+    \textsc{kdd       } & -2.18   & $|$-2.13$|$   & \textbf{-2.11}   & -2.15   & \underline{-2.12}   & -2.13  & -2.20   & -2.19   & -2.15      \\
+    \textsc{kosarek   } & -10.98  & -10.68  & \textbf{-10.52}  & -10.77  & \underline{-10.59}  & $|$-10.61$|$  & -10.97  & -10.86  & -10.85    \\
+    \textsc{msnbc     } & \underline{-6.11}   & \textbf{-6.04}   & \textbf{-6.04}   & $|$-6.18$|$   & \textbf{-6.04}   & -6.34  & -6.39   & -6.42   & -6.39      \\
+    \textsc{msweb     } & -10.25  & \textbf{-9.71}   & $|$-9.89$|$   & -9.93   & \underline{-9.86}   & $|$-9.89$|$  & -10.23  & -10.17  & -10.10     \\
+    \textsc{nltcs     } & -6.11   & -6.06   & \textbf{-5.99}   & $|$-6.05$|$   & \underline{-6.01}   & -6.22  & -6.30   & -6.29   & -6.37      \\
+    \textsc{plants    } & \underline{-12.97}  & $|$-12.98$|$  & -13.02  & -14.19  & \textbf{-12.81}  & -13.80  & -14.76  & -14.33  & -14.26    \\
+    \textsc{pumsb-star} & $|$-24.78$|$  & \underline{-24.12}  & -26.12  & -26.06  & \textbf{-22.75}  & -26.45  & -27.14  & -26.78  & -26.75    \\
+    \textsc{eachmovie } & -52.48  & -53.67  & -58.01  & -54.82  & $|$-51.49$|$  & \underline{-51.46}  & -52.68  & -52.34  & \textbf{-51.43}    \\
+    \textsc{retail    } & -11.04  & \underline{-10.81}  & \textbf{-10.72}  & -10.94  & -10.87  & $|$-10.83$|$  & -11.08  & -10.98  & -10.95    \\
+    \hline
+    \multirow{2}{*}[-0.5em]{\textbf{Avg. Rank}}  & \textbf{4.3}     & $|$4.8$|$     & 5.2     & 4.85    & 4.9     & \underline{4.6}  & 5.95    & 5.45    & 4.95         \\
+                                            & 4.3              & 3.65          & $|$3.55$|$ & 3.9  & \textbf{2.15} & \underline{3.45} &   &         &              \\
     \hline
   \end{tabular}
   }
+  %[
+    %-30.03   -28.73   -30.16   -31.02   -27.91   -30.18   -29.66   -29.17   -28.71  ;
+    %-19.73   -16.38   -31.78   -15.50   -23.96   -22.51   -20.87   -20.37   -19.09  ;
+    %-40.50   -41.50   -39.94   -40.91   -39.80   -41.05   -40.66   -40.68   -40.16  ;
+    %-250.68  -254.41  -253.19  -248.34  -248.50  -259.17  -260.32  -254.09  -255.16 ;
+    %-57.02   -58.69   -55.71   -57.58   -56.47   -59.91   -60.06   -57.60   -56.97  ;
+    %-35.88   -34.99   -34.97   -34.75   -34.40   -36.15   -34.45   -33.95   -33.51  ;
+    %-155.92  -154.47  -155.97  -153.75  -154.17  -158.10  -156.74  -154.35  -152.94 ;
+    %-85.06   -86.22   -89.61   -84.70   -84.59   -91.61   -87.73   -86.62   -85.56  ;
+    %-158.20  -155.33  -161.09  -153.67  -155.21  -156.40  -155.70  -156.40  -154.33 ;
+    %-82.52   -86.22   -88.01   -86.61   -84.45   -86.55   -85.30   -85.61   -85.12  ;
+    %-75.98   -55.03   -51.29   -53.43   -52.80   -53.67   -53.28   -53.13   -52.97  ;
+    %-2.18    -2.13    -2.11    -2.15    -2.12    -2.20    -2.19    -2.15    -2.13   ;
+    %-10.98   -10.68   -10.52   -10.77   -10.59   -10.97   -10.86   -10.85   -10.61  ;
+    %-6.11    -6.04    -6.04    -6.18    -6.04    -6.39    -6.42    -6.39    -6.34   ;
+    %-10.25   -9.71    -9.89    -9.93    -9.86    -10.23   -10.17   -10.10   -9.89   ;
+    %-6.11    -6.06    -5.99    -6.05    -6.01    -6.30    -6.29    -6.37    -6.22   ;
+    %-12.97   -12.98   -13.02   -14.19   -12.81   -14.76   -14.33   -14.26   -13.80  ;
+    %-24.78   -24.12   -26.12   -26.06   -22.75   -27.14   -26.78   -26.75   -26.45  ;
+    %-52.48   -53.67   -58.01   -54.82   -51.49   -52.68   -52.34   -51.43   -51.46  ;
+    %-11.04   -10.81   -10.72   -10.94   -10.87   -11.08   -10.98   -10.95   -10.83  ;
+  %]
   \caption{Performance of \textproc{LearnRP} against state-of-the-art competitors in twenty binary
   datasets for density estimation.}
   \label{tab:binary}
