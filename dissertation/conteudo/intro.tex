@@ -107,13 +107,15 @@ We organize this dissertation as follows. We begin \Cref{ch:pc} by formally defi
 circuits (\Cref{sec:pc}), conducting a review of some of the structural constraints that we might
 impose on PCs, as well as what we may gain from them in terms of tractability.
 We then list existing formalisms that may be viewed as instances of PCs, and what their structure
-entail in terms of inference power. In \Cref{ch:learning}, we address existing PC structure
+entail in terms of inference power. We finish the chapter by looking at a particular class of PCs
+which allow the embedding of logical formulae within their support. In \Cref{ch:learning}, we address existing PC structure
 learning algorithms dividing them into three classes: divide-and-conquer learning
 (\Cref{sec:divconq}), incremental learning (\Cref{sec:incremental}) and random learning
 (\Cref{sec:random}). For each, we give a brief analysis on their complexity and discuss their
 advantages and disadvantages. We cover the two new structure learners in \Cref{ch:scalable},
-providing empirical results on their performance. The final chapter (??) is dedicated to
-summarizing our research contributions and pointing to potential future work in learning PCs.
+providing empirical results on their performance. The final chapter (\Cref{ch:conclusion}) is
+dedicated to summarizing our research contributions and pointing to potential future work in
+learning PCs.
 
 Our contributions in this dissertation address the following research topics.
 
@@ -124,21 +126,21 @@ background knowledge in the form of logical constraints. The algorithm samples a
 distribution of possible PSDDs that are weakly consistent with the logical formula. How weak
 consistency is depends on a parameter that trades permission of false statements as non zero
 probability events with circuit complexity. We provide the algorithm and empirical results in
-Section 4.??.
+\Cref{sec:logical}.
 
 \newCTitle{boxgray}{Using ensembles to strengthen consistency}
 
 The PC sampler given by \citet{geh21a} produces competitive probabilistic models (in terms of
 likelihood), albeit weak logical models in the sense that it possibly assigns non-zero probability
-to false variable assignments -- as we discuss in Section 4.??, it never assigns zero probability
-to true statements. By producing many weak models, we not only gain in terms of data fitness, but
-also consistency: if any one component in the ensemble returns an assignment to be impossible, the
-whole model should return false.
+to false variable assignments -- as we discuss in \Cref{sec:logical}, it never assigns zero
+probability to true statements. By producing many weak models, we not only gain in terms of data
+fitness, but also consistency: if any one component in the ensemble returns an assignment to be
+impossible, the whole model should return false.
 
 \newCTitle{boxgray}{Random projections to efficiently learn PCs}
 
 Usual methods often employ clustering algorithms for constructing convex combinations of
 computational units. These can take many iterations to converge or require space quadratic in the
-number of data points. Instead, in Section 4.?? we present linear alternatives based on random
+number of data points. Instead, in \Cref{sec:data} we present linear alternatives based on random
 projections \citep{dasgupta08a,dasgupta08b}.
 

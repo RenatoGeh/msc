@@ -238,19 +238,20 @@ consider a naïve approach.
 \end{figure}
 
 Let $\phi$ be a logical formula acting as our knowledge base, and assume that a vtree $\vtree$ is
-given beforehand. To compile a PSDD from $\phi$, we must decompose it down to a disjunction of
+given beforehand. To obtain a PSDD whose support is $\phi$, we decompose it down to a disjunction of
 prime and sub conjunctions. This is a non-trivial problem, as primes must not only be mutual
 exclusive (to ensure determinism) but exhaustive (to make sure the circuit is coherent with $\phi$
 in all possible assignments). If we assume primes to be conjunctions of literals, then to adhere to
-\Cref{def:partition} there must be an exponential number of elements $2^{|\Sc(v^\gets)|}$, where
-$v$ is the vtree node that corresponds to the partition. Subs, however, are easy to retrieve as
-they correspond to the restriction of $\phi$ under the assignment induced by the prime.
-\Cref{fig:partition} shows a partition whose primes are conjunctions over $A$ and $B$. This problem
-is the same as the one faced by \citet{geh20}: under the assumption of conjunctions of literals as
-primes, $\phi$ can only be faithfully represented as a PSDD if the circuit is exponential.
+\Cref{def:partition} there will be, in the worst case, an exponential number of elements
+$2^{|\Sc(v^\gets)|}$, where $v$ is the vtree node that corresponds to the partition. Subs, however,
+are easy to retrieve as they correspond to the restriction of $\phi$ under the assignment induced
+by the prime. \Cref{fig:partition} shows a partition whose primes are conjunctions over $A$ and
+$B$. This problem is the same as the one faced by \citet{geh20}: under the assumption of
+conjunctions of literals as primes, $\phi$ can only be faithfully represented as a PSDD if the
+circuit is exponential in the number of variables.
 
 To overcome this exponential blow-up, we might restrict the number of primes at each partition.
-Unfortunately, if we bound this number to a constant, say $k$, and randomly sample primes from the
+Unfortunately, if we upper bound this number by a constant, say $k$, and randomly sample primes from the
 space of all possible conjunctions of literals, then we face yet another problem: the scope of subs
 might contain variables not in their corresponding vtree node. Take the top circuit in
 \Cref{fig:partial} as an example. Note that the scope for primes is defined by
@@ -265,7 +266,7 @@ the set itself, as variables that do not appear in the formula yet are part of t
 play a \emph{probabilistic} role in the PSDD.
 
 For these circuits to both preserve structure decomposability \emph{and} have tractable
-representation, we need to resort to a weaker definition of a partition that relaxes the logical
+representation, we resort to a weaker definition of a partition that relaxes the logical
 constraints.
 
 \begin{definition}[Partial partition]\label{def:partialpart}
@@ -710,7 +711,7 @@ a dataset of \num{5000} training instances and \num{10000} test instances.
 
 A more complex alternative configuration for the LED setting, \texttt{led-pixels}, is the
 interpretation of digits as images and segments as pixel regions. The segment constraints remain
-unchanged, but now pixels act as the latent variables. \Cref{fig:led} (bottom) shows ten samples
+unchanged, but now pixel regions act as the latent variables. \Cref{fig:led} (bottom) shows ten samples
 for each the ten digits; each instance from the dataset is a $10\times 15$ black-and-white image.
 In this pixelized version, we do not explicitly describe, in the form of logical constraints, a
 one-to-one mapping of pixel regions as segments; instead, we visually identify key points where
@@ -786,7 +787,7 @@ efficiently encode such restrictions \citep{een06}). We set the number of compon
 
 The plot in \Cref{fig:ll-dota} shows the test log-likelihood of the tested approaches. Despite
 accurately encoding logical constraints, \textproc{LearnPSDD} initially obtains worse performance
-when compared to \textproc{SampledPSDD}, but quickly picks up, outperforming other models by a
+when compared to \textproc{SamplePSDD}, but quickly picks up, outperforming other models by a
 large margin. \textproc{SamplePSDD} ranks first for small data regimes, and is comparable to
 \textproc{Strudel} (and mixtures of) for large training datasets. \textproc{LearnSPN} encountered
 problems scaling to more than \num{50000} instances due to intensive memory usage in both
@@ -850,7 +851,7 @@ shown more concretely when we learn from the constraints set by the \texttt{dota
 tried to manipulate formulae with a CNF, the intractability of cardinality constraints would
 unfortunately impede any progress.
 
-We no provide an analysis on the complexity of $\textproc{SamplePSDD}$. We start with the
+We now provide an analysis on the complexity of $\textproc{SamplePSDD}$. We start with the
 $\textproc{SamplePartialPartition}$ subroutine. If we choose a BDD for manipulating formulae, then
 restrictions are done in $\bigo(c\log c)$, where $c$ is the size of the BDD's graph. At every
 iteration of the main loop in line \ref{alg:samplepartial:line:while} of \Cref{alg:samplepartial},
@@ -877,16 +878,6 @@ about \num{2.76} seconds for learning a single PSDD.
 
 \subsubsection{Performance and Sampling Bias}
 
-The approximation quality of \textproc{SamplePSDD} is highly dependent on both the vtree and
-maximum number of primes. In this section, we compare the impact of both in terms of performance
-and circuit complexity. We assess performance by the log-likelihoods in the test set, as well as
-consistency with the original logical constraints. The latter is measured by randomly sampling
-\num{5000} (possibly invalid) instances and evaluating whether the circuit correctly decides their
-value. A set of the top \num{100} sampled PSDDs (in terms of log-likelihood in the train set) are
-selected out of \num{500} circuits learned on the $10$-choose-$5$ \texttt{sushi} dataset to compose
-the ensemble. Circuit complexity is estimated in terms of both time taken to sample all 500
-circuits and graph size (i.e.\ number of nodes) of each individually generated PSDD.
-
 \begin{figure}[t]
   \begin{subfigure}{0.495\textwidth}
     \resizebox{\textwidth}{!}{\includegraphics{vtree_ll}}
@@ -900,6 +891,16 @@ circuits and graph size (i.e.\ number of nodes) of each individually generated P
     test log-likelihood for the $10$-choose-$5$ \texttt{sushi} dataset.}
   \label{fig:ll-comp}
 \end{figure}
+
+The approximation quality of \textproc{SamplePSDD} is highly dependent on both the vtree and
+maximum number of primes. In this section, we compare the impact of both in terms of performance
+and circuit complexity. We assess performance by the log-likelihoods in the test set, as well as
+consistency with the original logical constraints. The latter is measured by randomly sampling
+\num{5000} (possibly invalid) instances and evaluating whether the circuit correctly decides their
+value. A set of the top \num{100} sampled PSDDs (in terms of log-likelihood in the train set) are
+selected out of \num{500} circuits learned on the $10$-choose-$5$ \texttt{sushi} dataset to compose
+the ensemble. Circuit complexity is estimated in terms of both time taken to sample all 500
+circuits and graph size (i.e.\ number of nodes) of each individually generated PSDD.
 
 It is quite clear that the structure of the vtree is tightly linked to the structure of a PSDD,
 especially given the graphical constraints imposed by \textproc{SamplePSDD} and the fact that subs
@@ -1063,6 +1064,7 @@ empirically show that employing random projections boosts performance significan
 regular axis-aligned projections.
 
 \subsection{Random Projections}
+\label{sec:rp}
 
 Let $\set{D}$ be a dataset with $\set{X}$ variables. A function $f:\mathcal{X}\to\{0,1\}$ describes a
 hyperplane over variables in $\set{X}$ and is here called a \emph{rule}. A rule partitions data by
@@ -1334,16 +1336,19 @@ $k$-means for learning sums and G-test for products, setting $k=2$ for a shorter
 do not report running times for the original \textproc{Prometheus} code since, as far as we know,
 the source was not made public and no working implementation was found.
 
+\subsubsection{Binary data}
+
 \Cref{tab:binary} shows benchmark results for binary data. For fairness, we report results for best
 ensembles of \textproc{XPC}, \textproc{Strudel} and \textproc{LearnPSDD} so that all models
 compared are smooth and structure decomposable (with the exception of \textproc{LearnSPN} and
 \textproc{Prometheus} which are only decomposable) but nondeterministic. Columns
 \textproc{LearnRP}-10, \textproc{LearnRP}-20, \textproc{LearnRP}-30 and \textproc{LearnRP}-F
-correspond to runs of \textproc{LearnRP} where we optimize the learned structure with 10, 20, 30
-and 100 iterations of batch EM with a batch size of 500 instances. After this, for
+correspond to runs of a single \textproc{LearnRP} circuit where we optimize the learned structure
+with 10, 20, 30 and 100 iterations of batch EM with a batch size of 500 instances. After this, for
 \textproc{LearnRP}-F, we proceed to run 30 iterations of full EM, a regularization technique
-suggested in \citet{liu21}. \Cref{tab:bintime} shows how much time each learning algorithm took to
-learn a \emph{single} circuit for each dataset.
+suggested in \citet{liu21}. The last two rows of \Cref{tab:binary} correspond to the average rank
+of each algorithm, with the last one ignoring \textproc{LearnRP}-10, \textproc{LearnRP}-20 and
+\textproc{LearnRP}-30.
 
 \begin{table}[t]
   \resizebox{\textwidth}{!}{
@@ -1354,18 +1359,34 @@ learn a \emph{single} circuit for each dataset.
     \textbf{\textproc{LearnRP}-10} & \textbf{\textproc{LearnRP}-20} &
     \textbf{\textproc{LearnRP}-30}\\
     \hline
-    \textsc{nltcs}     & 7m & 3m & 6m & 17s & & 4s & 8s & 12s\\
-    \textsc{plants}    & 50m & 41m & 26m & 1m3s & & 52s & 1m47s & 2m32s\\
-    \textsc{audio}     & 2h & 33m & 51m & 1m58s & & 1m25s & 2m45s & 4m11s\\
-    \textsc{jester}    & 52m & 24m & 37m & 1m20s & & 1m20s & 2m37s & 3m54s\\
-    \textsc{netflix}   & 1h & 14m & 33m & 2m8s & & 1m40s & 3m22s & 4m48s\\
-    \textsc{accidents} & 47m & 20m & 41m & 1m47s & & 1m30s & 2m45s & 4m10s\\
-    \textsc{book}      & >3h & 8m & 1h & 2m26s & & 7m24s & 15m17s & 21m55s\\
-    \textsc{dna}       & >3h & >3h & >3h & 17s & & 1m27s & 2m47s & 3m13s\\
+    \textsc{nltcs}     & 7m & 3m & 6m & 17s & 3m19s & 4s & 8s & 12s\\
+    \textsc{plants}    & 50m & 41m & 26m & 1m3s & 26m & 52s & 1m47s & 2m32s\\
+    \textsc{audio}     & 2h & 33m & 51m & 1m58s & 37m & 1m25s & 2m45s & 4m11s\\
+    \textsc{jester}    & 52m & 24m & 37m & 1m20s & 29m & 1m20s & 2m37s & 3m54s\\
+    \textsc{netflix}   & 1h & 14m & 33m & 2m8s & 46m & 1m40s & 3m22s & 4m48s\\
+    \textsc{accidents} & 47m & 20m & 41m & 1m47s & 33m & 1m30s & 2m45s & 4m10s\\
+    \textsc{book}      & >3h & 8m & 1h22m & 2m26s & 2h & 7m24s & 15m17s & 21m55s\\
+    \textsc{dna}       & >3h & >3h & >3h & 17s & 11m & 1m27s & 2m47s & 3m13s\\
     \hline
   \end{tabular}
   }
+  \caption{Learning time benchmark for a single circuit of \textproc{LearnSPN}, \textproc{Strudel},
+    \textproc{LearnPSDD}, \textproc{XPC} and \textproc{LearnRP}.}
+  \label{tab:bintime}
 \end{table}
+
+\Cref{tab:bintime} shows average running time for each learning algorithm to learn a \emph{single}
+circuit for each dataset. Note that the performance reported in \Cref{tab:binary} for
+\textproc{Strudel}, \textproc{LearnPSDD} and \textproc{XPC} correspond to ensemble results, meaning
+that in all but \textproc{Strudel} (where a shared-structure mixture was learned) one has to
+multiply the averages in \Cref{tab:bintime} with the number of components in the ensemble to get a
+better picture of the speed difference.
+
+\Cref{tab:binsize} shows circuit sizes for each learning algorithm. All except for
+\textproc{LearnSPN} are reported as in their original works to better reflect the log-likelihood
+results shown in \Cref{tab:binary}. Because \citet{gens13} do not report circuit sizes, we report
+values from our own runs. We do not show circuit sizes for \textproc{Prometheus} since we could not
+find the source code and \citet{jaini18a} do not report circuit sizes.
 
 \begin{sidewaystable}
   \resizebox{\textheight}{!}{
@@ -1397,7 +1418,7 @@ learn a \emph{single} circuit for each dataset.
     \textsc{eachmovie } & -52.48  & -53.67  & -58.01  & -54.82  & $|$-51.49$|$  & \underline{-51.46}  & -52.68  & -52.34  & \textbf{-51.43}    \\
     \textsc{retail    } & -11.04  & \underline{-10.81}  & \textbf{-10.72}  & -10.94  & -10.87  & $|$-10.83$|$  & -11.08  & -10.98  & -10.95    \\
     \hline
-    \multirow{2}{*}[-0.5em]{\textbf{Avg. Rank}}  & \textbf{4.3}     & $|$4.8$|$     & 5.2     & 4.85    & 4.9     & \underline{4.6}  & 5.95    & 5.45    & 4.95         \\
+    \multirow{2}{*}[-0.15em]{\textbf{Avg. Rank}}  & \textbf{4.3}     & $|$4.8$|$     & 5.2     & 4.85    & 4.9     & \underline{4.6}  & 5.95    & 5.45    & 4.95         \\
                                             & 4.3              & 3.65          & $|$3.55$|$ & 3.9  & \textbf{2.15} & \underline{3.45} &   &         &              \\
     \hline
   \end{tabular}
@@ -1424,7 +1445,105 @@ learn a \emph{single} circuit for each dataset.
     %-52.48   -53.67   -58.01   -54.82   -51.49   -52.68   -52.34   -51.43   -51.46  ;
     %-11.04   -10.81   -10.72   -10.94   -10.87   -11.08   -10.98   -10.95   -10.83  ;
   %]
-  \caption{Performance of \textproc{LearnRP} against state-of-the-art competitors in twenty binary
-  datasets for density estimation.}
+  \caption{Performance of \textproc{LearnRP} in log-likelihood against state-of-the-art competitors
+    in the twenty binary datasets for density estimation. Entries in \textbf{\textup{bold}}
+    correspond to best performance, \underline{\textup{underlined}} entries are second best, and
+    $|$\textup{barred}$|$ entries are third place.}
   \label{tab:binary}
 \end{sidewaystable}
+
+Overall, we found that \textproc{LearnRP} was competitive against the state-of-the-art, often
+reaching second or first place in the case of \textproc{LearnRP}-F. As expected for such a simple
+learning algorithm, it was hardly the best, although even under few EM iterations it was capable of
+producing somewhat competitive models. Arguably, \textproc{LearnRP}'s strengths come from its
+speed, learning circuits in a fraction of the time when compared to \textproc{LearnSPN},
+\textproc{Strudel} and \textproc{LearnPSDD}. Perhaps the more direct competitor of
+\textproc{LearnRP} in terms of scalability is \textproc{XPC}, showing the strengths of \randclass{}
+when it comes to speed. Recall from \Cref{sec:xpcs}, however that \textproc{XPC} requires an
+extensive grid search on the hyperparameters, while the performance of \textproc{LearnRP} mainly
+depends on how much time one is willing to spend to fine-tune weights with parameter learning.
+Notably, we found that \textproc{LearnRP} performs worse on data with fewer variables (e.g.\
+\textsc{nltcs}, \textsc{msnbc}, \textsc{kdd}) and better on data with more variables (e.g.\
+\textsc{20-newsgrp}, \textsc{book}, \textsc{webkb}), which is perhaps correlated with the smaller,
+and respectively larger, circuits from \Cref{tab:binsize}.
+
+\begin{table}[t]
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{c|cccc|cccc}
+    \hline
+    \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
+    \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} &
+    \textbf{\textproc{LearnRP}-F} & \textbf{\textproc{LearnRP}-10} &
+    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-30}\\
+    \hline
+    \textsc{accidents } & 32708   & 75363   & 8418  & 11921   & 17609     & 17693   & 17309   & 17977   \\
+    \textsc{ad        } & 40901   & 13152   & 12238 & 22093   & 89525     & 88877   & 94111   & 87117   \\
+    \textsc{audio     } & 50130   & 55675   & 18208 & 29317   & 17319     & 17457   & 17369   & 17621   \\
+    \textsc{bbc       } & 39389   & 29532   & 12335 & 14578   & 124439    & 124717  & 123765  & 126019  \\
+    \textsc{netflix   } & 36286   & 27173   & 10997 & 39868   & 20663     & 20539   & 20631   & 20447   \\
+    \textsc{book      } & 51493   & 54839   & 10978 & 13678   & 109881    & 108057  & 112303  & 109367  \\
+    \textsc{20-newsgrp} & 119060  & 58749   & 15793 & 65881   & 486105    & 485427  & 485733  & 481613  \\
+    \textsc{reuters-52} & 155191  & 36343   & 10410 & 36440   & 285060    & 286162  & 289292  & 285870  \\
+    \textsc{webkb     } & 223847  & 25406   & 11033 & 17122   & 207462    & 209069  & 205128  & 208299  \\
+    \textsc{dna       } & 12180   & 17507   & 3068  & 2616    & 26567     & 26527   & 26007   & 26495   \\
+    \textsc{jester    } & 25076   & 27713   & 11322 & 20273   & 20679     & 20887   & 21025   & 21065   \\
+    \textsc{kdd       } & 8755    & 6572    & 2915  & 13040   & 5389      & 5219    & 5229    & 5251    \\
+    \textsc{kosarek   } & 19512   & 37583   & 7173  & 20938   & 32357     & 33455   & 33087   & 32993   \\
+    \textsc{msnbc     } & 11606   & 20795   & 5465  & 4887    & 789       & 801     & 765     & 778     \\
+    \textsc{msweb     } & 10743   & 2347    & 6581  & 12135   & 48545     & 48805   & 49715   & 50235   \\
+    \textsc{nltcs     } & 1855    & 4373    & 1304  & 4401    & 515       & 511     & 491     & 519     \\
+    \textsc{plants    } & 36596   & 119194  & 11583 & 13960   & 9335      & 9317    & 9941    & 9655    \\
+    \textsc{pumsb-star} & 26206   & 108876  & 8298  & 8866    & 28725     & 28937   & 27731   & 29930   \\
+    \textsc{eachmovie } & 54184   & 123996  & 20648 & 21369   & 69357     & 67047   & 68623   & 69193   \\
+    \textsc{retail    } & 2158    & 3979    & 2989  & 6651    & 24345     & 24459   & 25031   & 24103   \\
+    \hline
+  \end{tabular}
+  }
+  \caption{Circuit size (in the number of nodes) comparison between \textproc{LearnRP} and the
+    state-of-the-art in the twenty binary datasets for density estimation.}
+  \label{tab:binsize}
+\end{table}
+
+\subsubsection{Continuous data}
+
+\Cref{tab:cont} shows results for continuous data. Note that some entries are positive since the
+log-likelihood of continuous variables can be positive. Because the evaluated continuous datasets
+were small in size, we only show results for \textproc{LearnRP} under 100 iterations of EM. We also
+do not run full EM after the batch variant as we found performance to degrade after doing so. When
+constructing the circuit with \textproc{LearnRP}, we use mixtures of three Gaussians as input
+nodes. We run learn both sum weights and input GMMs through EM. The last column of \Cref{tab:cont}
+shows the circuit sizes of \textproc{LearnRP}.
+
+\begin{table}[t]
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{c|cccccc|cc}
+    \hline
+    \textbf{Dataset} & \textbf{SRBMs} & \textbf{oSLRAU} & \textbf{GBMMs} & \textbf{GMMs} &
+    \textbf{\textproc{Prometheus}} & \textbf{iSPTs} & \textbf{\textproc{LearnRP}} & \textbf{Size} \\
+    \hline
+    \textsc{abalone}    & -2.28  & -0.94  & -1.17  & ---   & -0.85   & ---   & -6.13  & 317   \\
+    \textsc{ca}         & -4.95  & 21.19  & 3.42   & ---   & 27.82   & ---   & -5.84  & 2765  \\
+    \textsc{quake}      & -2.38  & -1.21  & -3.76  & ---   & -1.50   & ---   & -3.76  & 79    \\
+    \textsc{sensorless} & -26.91 & 60.72  & 8.56   & ---   & 62.03   & ---   & -38.46 & 12589 \\
+    \textsc{banknote}   & -2.76  & -1.39  & -4.64  & ---   & -1.96   & ---   & -6.06  & 79    \\
+    \textsc{flowsize}   & -0.79  & 15.32  & 5.72   & ---   & 18.03   & ---   &        &       \\
+    \textsc{kinematics} & -5.55  & -11.13 & -11.20 & ---   & -11.12  & ---   & -11.02 & 319   \\
+    \textsc{iris}       & ---    & ---    & ---    & -3.94 & -1.06   & -3.74 & -3.47  & 79    \\
+    \textsc{oldfaith}   & ---    & ---    & ---    & -1.73 & -1.48   & -1.70 & -4.33  & 19    \\
+    \textsc{chemdiabet} & ---    & ---    & ---    & -3.02 & -2.59   & -2.88 & -18.68 & 48    \\
+    \hline
+  \end{tabular}
+  }
+  \caption{Performance of \textproc{LearnRP} in log-likelihood against state-of-the-art competitors
+    in ten continuous datasets for density estimation and function approximation. Entries in
+    \textbf{\textup{bold}} correspond to best performance, \underline{\textup{underlined}} entries
+    are second best, and $|$\textup{barred}$|$ entries are third place. Last column shows size (in
+    the number of nodes) of circuits learned with \textproc{LearnRP}.}
+  \label{tab:cont}
+\end{table}
+
+Strangely, we found that \textproc{LearnRP} behaves extremely poorly on continuous datasets. This
+could be both due to the smaller number of variables in these datasets (as evidenced by the reduced
+circuit sizes in \Cref{tab:cont}'s last column), causing \textproc{LearnRP} to produce very small
+models; and because of the unpredictability and inconsistency of log-likelihood as a score in the
+continuous.

@@ -51,7 +51,7 @@
 
 %%%%% Listas criadas manualmente
 
-\chapter*{\raggedright{}Nomenclature}
+\chapter*{\raggedright{}List of Lists}
 
 %\chapter*{Lista de Símbolos}
 \disablenewpage{\section*{\raggedright\Large\textbf{List of Symbols}}}
@@ -94,7 +94,8 @@
 % Você pode escolher se quer ou não permitir a quebra de página
 %\listoftables
 %\renewcommand{\listtablename}{\Large List of Tables}
-%\disablenewpage{\listoftables}
+\disablenewpage{\section*{\raggedright\Large\textbf{List of Tables}}}
+\disablenewpage{\listoftables}
 
 % Esta lista é criada "automaticamente" pela package float quando
 % definimos o novo tipo de float "program" (em utils.tex)
@@ -110,25 +111,25 @@
 
 \tcblistof[\section*]{rem}{\Large List of Remarks}
 
-\section*{Notation}
+%\section*{Notation}
 
-We use the following notation throughout the work. Random variables are written in upper case (e.g.
-$X$, $Y$) and their values in lower case (e.g. $x$, $y$). We write $\mathcal{X}$ as the sample
-space and for independence we use $\indep$ to indicate that two variables $X$ and $Y$ are
-statistically independent, i.e. $X\indep Y$. We identify propositional variables with 0/1-valued
-random variables, and use them interchangeably.  Sets of variables and their joint values are
-written in boldface (e.g. $\set{X}$, $\set{x}$). Given a Boolean formula $f$, we write $\langle
-f\rangle$ to denote its semantics, i.e. the Boolean function represented by $f$. For Boolean
-formulas $f$ and $g$, we write $f\equiv g$ if they are logically equivalent, that is, if $\langle
-f\rangle = \langle g\rangle$; we abuse notation and write $\phi\equiv f$ to indicate that $\phi=
-\langle f\rangle$ for a Boolean function $\phi$. We use the notation $[a..b]$, with $b\geq
-a$ to denote the integer set $\{a,a+1,\ldots,b\}\subset\mathbb{Z}$. Similarly, we use $[b]$ as an
-equivalent for $[1..b]$. We denote the Iverson bracket as $\liv\phi\riv$, i.e.\ a function that
-returns 1 if $\phi$ is true and 0 otherwise. In the context of graph theory, we use sans serif
-letters for graph nodes (e.g. $\Node$, $\Sum$, $\Prod$, $\Leaf$) and bold variants for sets of
-nodes (e.g. $\Nodes$, $\Sums$, $\Prods$, $\Leaves$). We call $\Ch(\Node)$ the set of all children
-of a node $\Node$, $\Pa(\Node)$ as the set of all parents, and $\Desc(\Node)$ the set of all
-descendants.
+%We use the following notation throughout the work. Random variables are written in upper case (e.g.
+%$X$, $Y$) and their values in lower case (e.g. $x$, $y$). We write $\mathcal{X}$ as the sample
+%space and for independence we use $\indep$ to indicate that two variables $X$ and $Y$ are
+%statistically independent, i.e. $X\indep Y$. We identify propositional variables with 0/1-valued
+%random variables, and use them interchangeably.  Sets of variables and their joint values are
+%written in boldface (e.g. $\set{X}$, $\set{x}$). Given a Boolean formula $f$, we write $\langle
+%f\rangle$ to denote its semantics, i.e. the Boolean function represented by $f$. For Boolean
+%formulas $f$ and $g$, we write $f\equiv g$ if they are logically equivalent, that is, if $\langle
+%f\rangle = \langle g\rangle$; we abuse notation and write $\phi\equiv f$ to indicate that $\phi=
+%\langle f\rangle$ for a Boolean function $\phi$. We use the notation $[a..b]$, with $b\geq
+%a$ to denote the integer set $\{a,a+1,\ldots,b\}\subset\mathbb{Z}$. Similarly, we use $[b]$ as an
+%equivalent for $[1..b]$. We denote the Iverson bracket as $\liv\phi\riv$, i.e.\ a function that
+%returns 1 if $\phi$ is true and 0 otherwise. In the context of graph theory, we use sans serif
+%letters for graph nodes (e.g. $\Node$, $\Sum$, $\Prod$, $\Leaf$) and bold variants for sets of
+%nodes (e.g. $\Nodes$, $\Sums$, $\Prods$, $\Leaves$). We call $\Ch(\Node)$ the set of all children
+%of a node $\Node$, $\Pa(\Node)$ as the set of all parents, and $\Desc(\Node)$ the set of all
+%descendants.
 
 % Sumário (obrigatório)
 \tableofcontents

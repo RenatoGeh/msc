@@ -194,6 +194,24 @@ meaning it suffices testing only some combinations. Even so, this heuristic is s
 worst case. \Cref{fig:indepgraph} shows $\mathcal{G}$, the spanning forest resulted from the
 connected component heuristic, and the equivalent product node from this decomposition.
 
+\subsubsection{Pros and cons}
+
+\paragraph{Pros.} Perhaps the main factor for \textproc{LearnSPN}'s popularity is how easily
+implementable, intuitive and modular it is. Even more remarkably, it is an empirically competitive
+PC learning algorithm despite its age, serving as a baseline for most subsequent works in PC
+literature. Lastly, the fact that each recursive call from \textproc{LearnSPN} is completely
+independent from each the other makes it an attractive candidate for CPU parallelization.
+
+\paragraph{Cons.} Debatably, one of the key weakness of \textproc{LearnSPN} is its tree-shaped
+computational graph, meaning that they are strictly less succint compared to non-tree DAG PCs
+\citep{martens14}. In terms of runtime efficiency, the algorithm struggles on high dimensional
+data due to the complexity involved in computing costly statistical tests. Despite
+\Cref{alg:learnspn} giving the impression that no hyperparameter tuning is needed for
+\textproc{LearnSPN}, in practice the modules for learning sums and products often take many
+parameters, most of which (if not all) are exactly the same for every recursive call. This can have
+a negative impact on the algorithm's performance, since the same parameters are repeatedly used
+even under completely different data.
+
 \begin{figure}[t]
   \begin{subfigure}[t]{0.3\textwidth}
     \centering
@@ -254,24 +272,6 @@ connected component heuristic, and the equivalent product node from this decompo
   \label{fig:indepgraph}
 \end{figure}
 
-\subsubsection{Pros and cons}
-
-\paragraph{Pros.} Perhaps the main factor for \textproc{LearnSPN}'s popularity is how easily
-implementable, intuitive and modular it is. Even more remarkably, it is an empirically competitive
-PC learning algorithm despite its age, serving as a baseline for most subsequent works in PC
-literature. Lastly, the fact that each recursive call from \textproc{LearnSPN} is completely
-independent from each the other makes it an attractive candidate for CPU parallelization.
-
-\paragraph{Cons.} Debatably, one of the key weakness of \textproc{LearnSPN} is its tree-shaped
-computational graph, meaning that they are strictly less succint compared to non-tree DAG PCs
-\citep{martens14}. In terms of runtime efficiency, the algorithm struggles on high dimensional
-data due to the complexity involved in computing costly statistical tests. Despite
-\Cref{alg:learnspn} giving the impression that no hyperparameter tuning is needed for
-\textproc{LearnSPN}, in practice the modules for learning sums and products often take many
-parameters, most of which (if not all) are exactly the same for every recursive call. This can have
-a negative impact on the algorithm's performance, since the same parameters are repeatedly used
-even under completely different data.
-
 \subsection{\textproc{ID-SPN}}
 
 A subtle yet effective way of improving the performance of \textproc{LearnSPN} is to consider
@@ -285,6 +285,17 @@ used in line \ref{alg:idspn:line:extend} to grow the circuit in a divide-and-con
 name \textproc{ID-SPN} comes from \emph{direct} variable interactions, meaning the relationships
 modeled through the Markov networks as input nodes; and \emph{indirect} interactions brought from
 the latent variable interpretation of sum nodes.
+
+With respect to its implementation, \textproc{ID-SPN} is as modular as \textproc{LearnSPN} in the
+sense that the data partitioning is left as a subroutine. Indeed, even the choice of input
+distributions is customizable: although \citeauthor{rooshenas14} recommend Markov networks, any
+tractable distribution will do. Despite this seemingly small change compared to the original
+\textproc{LearnSPN} algorithm, \textproc{ID-SPN} seems to perform better compared to its
+counterpart most of the time \citep{rooshenas14,jaini18a}, although at a cost to learning speed.
+Further, because of the enormous parameter space brought by having to learn Markov networks as
+inputs \emph{and} perform the optimizations from sums and products, grid search hyperparameter
+tuning is infeasible. \citep{rooshenas14} recommend random search \citep{bergstra12a} as an
+alternative.
 
 \begin{algorithm}[t]
   \caption{\textproc{ExtendID}}\label{alg:extendid}
@@ -311,34 +322,18 @@ the latent variable interpretation of sum nodes.
   \end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}[t]
-  \caption{\textproc{ID-SPN}}\label{alg:idspn}
-  \begin{algorithmic}[1]
-    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
-    \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
-    \State Create a single-node PC: $\mathcal{C}\gets\textproc{LearnMarkov}(\set{D},\set{X})$
-    \State Let $\mathcal{M}$ be a memoization function associating a node with a dataset and scope
-    \State Call $\mathcal{C}'$ a copy of $\mathcal{C}$
-    \While{improving $\mathcal{C}$ yields better likelihood}
-      \State Pick worse node $\Node$ from $\mathcal{C}'$
-      \State Extract sub-data $\set{D}'$ and sub-scope $\set{X}'$ from $\mathcal{M}(\Node)$
-      \State Replace $\Node$ with $\textproc{ExtendID}(\set{D}',\set{X}',\mathcal{M})$\label{alg:idspn:line:extend}
-      \IIf{$\mathcal{C}'$ has better likelihood than $\mathcal{C}$}{$\mathcal{C}\gets\mathcal{C}$}
-    \EndWhile
-    \State \textbf{return} $\mathcal{C}$
-  \end{algorithmic}
-\end{algorithm}
+\subsubsection{Complexity}
 
-With respect to its implementation, \textproc{ID-SPN} is as modular as \textproc{LearnSPN} in the
-sense that the data partitioning is left as a subroutine. Indeed, even the choice of input
-distributions is customizable: although \citeauthor{rooshenas14} recommend Markov networks, any
-tractable distribution will do. Despite this seemingly small change compared to the original
-\textproc{LearnSPN} algorithm, \textproc{ID-SPN} seems to perform better compared to its
-counterpart most of the time \citep{rooshenas14,jaini18a}, although at a cost to learning speed.
-Further, because of the enormous parameter space brought by having to learn Markov networks as
-inputs \emph{and} perform the optimizations from sums and products, grid search hyperparameter
-tuning is infeasible. \citep{rooshenas14} recommend random search \citep{bergstra12a} as an
-alternative.
+As \textproc{ID-SPN} is a special case of \textproc{LearnSPN}, the analysis for the sums and
+products subroutines holds. The only difference is on the runtime complexity for learning input
+nodes and the convergence rate for \textproc{ID-SPN}. Assuming input nodes are learned from the
+method suggested by \citet{rooshenas14}, which involves learning a probabilistic circuit from a
+Markov network \citep{lowd13a}, then each ``input'' node takes time $\bigo(i\cdot c(k\cdot n+m))$,
+where $i$ is the number of iterations to run, $c$ is the size of the generated PC, and constant $k$
+is a bound on the number of candidate improvements to the circuit, which can grow exponentially for
+multi-valued variables. Importantly, opposite from \textproc{LearnSPN} where we only learn input
+nodes once per call \emph{if} data is univariate, \textproc{ID-SPN} requires learning multiple
+multivariate inputs for \emph{every} \textproc{ExtendID} call.
 
 \begin{figure}[t]
   \resizebox{\textwidth}{!}{
@@ -419,19 +414,6 @@ alternative.
   fact be extended as well.}
 \end{figure}
 
-\subsubsection{Complexity}
-
-As \textproc{ID-SPN} is a special case of \textproc{LearnSPN}, the analysis for the sums and
-products subroutines holds. The only difference is on the runtime complexity for learning input
-nodes and the convergence rate for \textproc{ID-SPN}. Assuming input nodes are learned from the
-method suggested by \citet{rooshenas14}, which involves learning a probabilistic circuit from a
-Markov network \citep{lowd13a}, then each ``input'' node takes time $\bigo(i\cdot c(k\cdot n+m))$,
-where $i$ is the number of iterations to run, $c$ is the size of the generated PC, and constant $k$
-is a bound on the number of candidate improvements to the circuit, which can grow exponentially for
-multi-valued variables. Importantly, opposite from \textproc{LearnSPN} where we only learn input
-nodes once per call \emph{if} data is univariate, \textproc{ID-SPN} requires learning multiple
-multivariate inputs for \emph{every} \textproc{ExtendID} call.
-
 \subsubsection{Pros and Cons}
 
 \paragraph{Pros.} If we assume any multivariate distribution in place of Markov networks, PCs
@@ -450,6 +432,24 @@ learning Markov networks (or any other complex multivariate distribution as inpu
 heavy weight during learning. This, coupled with the fact that hyperparameter tuning in the huge
 parameter space of \textproc{ID-SPN} must be done by a random search method, can take a heavy price
 in terms of learning time.
+
+\begin{algorithm}[t]
+  \caption{\textproc{ID-SPN}}\label{alg:idspn}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
+    \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
+    \State Create a single-node PC: $\mathcal{C}\gets\textproc{LearnMarkov}(\set{D},\set{X})$
+    \State Let $\mathcal{M}$ be a memoization function associating a node with a dataset and scope
+    \State Call $\mathcal{C}'$ a copy of $\mathcal{C}$
+    \While{improving $\mathcal{C}$ yields better likelihood}
+      \State Pick worse node $\Node$ from $\mathcal{C}'$
+      \State Extract sub-data $\set{D}'$ and sub-scope $\set{X}'$ from $\mathcal{M}(\Node)$
+      \State Replace $\Node$ with $\textproc{ExtendID}(\set{D}',\set{X}',\mathcal{M})$\label{alg:idspn:line:extend}
+      \IIf{$\mathcal{C}'$ has better likelihood than $\mathcal{C}$}{$\mathcal{C}\gets\mathcal{C}$}
+    \EndWhile
+    \State \textbf{return} $\mathcal{C}$
+  \end{algorithmic}
+\end{algorithm}
 
 \subsection{\textproc{Prometheus}}
 
@@ -710,24 +710,6 @@ and deterministic probabilistic circuit (see \Cref{subsection:touncertainty}), m
 computational graph must respect a vtree. We therefore must address the issue of learning the vtree
 before we turn to the PC learning algorithm \emph{per se}.
 
-Recall that for a vtree $\vtree$, every inner node $v\in\vtree$ with $\set{X}=\Sc(v^\gets)$ and
-$\set{Y}=\Sc(v^\to)$ determines that $\set{X}$ and $\set{Y}$ are independent, i.e.\
-$p_\mathcal{C}(\set{X},\set{Y})=p_\mathcal{C}(\set{X}) p_\mathcal{C}(\set{Y})$ for a PC
-$\mathcal{C}$. This means that a PC's vtree is pivotal in embedding the independencies of the
-circuit's distribution. With this in mind, \citet{liang17} propose two approaches to inducing
-vtrees from data, both of which use mutual information
-\begin{equation*}
-  \mutualinf(\set{X},\set{Y})=\sum_{\set{X}=\set{x}}\sum_{\set{Y}=\set{y}}p(\set{x},\set{y})\log\frac{p(\set{x},\set{y})}{p(\set{x})p(\set{y})}
-\end{equation*}
-for deciding independence. To avoid computing an exponential number of MI terms, an approximation
-based on the average pairwise MI is computed instead
-\begin{equation*}
-  \pairmi(\set{X},\set{Y})=\frac{1}{|\set{X}||\set{Y}|}\cdot\sum_{X\in\set{X}}\sum_{Y\in\set{Y}}\mutualinf(X,Y).
-\end{equation*}
-The first approach learns vtrees in a top-down fashion, starting with a full scope and recursively
-partitioning down to the unit set. The second learns bottom-up, starting with singletons and
-joining sets of variables up to full scope.
-
 \begin{figure}[t]
   \resizebox{\textwidth}{!}{
   \begin{tikzpicture}
@@ -844,6 +826,24 @@ joining sets of variables up to full scope.
   \label{fig:topdownvtree}
 \end{figure}
 
+Recall that for a vtree $\vtree$, every inner node $v\in\vtree$ with $\set{X}=\Sc(v^\gets)$ and
+$\set{Y}=\Sc(v^\to)$ determines that $\set{X}$ and $\set{Y}$ are independent, i.e.\
+$p_\mathcal{C}(\set{X},\set{Y})=p_\mathcal{C}(\set{X}) p_\mathcal{C}(\set{Y})$ for a PC
+$\mathcal{C}$. This means that a PC's vtree is pivotal in embedding the independencies of the
+circuit's distribution. With this in mind, \citet{liang17} propose two approaches to inducing
+vtrees from data, both of which use mutual information
+\begin{equation*}
+  \mutualinf(\set{X},\set{Y})=\sum_{\set{X}=\set{x}}\sum_{\set{Y}=\set{y}}p(\set{x},\set{y})\log\frac{p(\set{x},\set{y})}{p(\set{x})p(\set{y})}
+\end{equation*}
+for deciding independence. To avoid computing an exponential number of MI terms, an approximation
+based on the average pairwise MI is computed instead
+\begin{equation*}
+  \pairmi(\set{X},\set{Y})=\frac{1}{|\set{X}||\set{Y}|}\cdot\sum_{X\in\set{X}}\sum_{Y\in\set{Y}}\mutualinf(X,Y).
+\end{equation*}
+The first approach learns vtrees in a top-down fashion, starting with a full scope and recursively
+partitioning down to the unit set. The second learns bottom-up, starting with singletons and
+joining sets of variables up to full scope.
+
 \paragraph{Top-down vtree learning.} Let $\mathcal{G}$ be a fully connected weighted graph where
 variables are nodes. For each edge $\edge{XY}$, attribute its weight as $\mutualinf(X,Y)$.
 Learning the vtree top-down amounts to partitioning $\mathcal{G}$ such that the cut-set that
@@ -856,16 +856,6 @@ bipartition $(\set{X}, \set{Y})$ in $\mathcal{G}$ minimizing the $\pairmi$ of th
 vtree inner node representing this bipartition and connect it to the two vtrees produced by the
 recursive calls over $\set{X}$ and $\set{Y}$; if $\set{X}=\{X\}$ (resp. $\set{Y}=\{Y\}$), produce
 a leaf node $X$ (resp. $Y$). \Cref{fig:topdownvtree} shows four iterations of this procedure.
-
-\paragraph{Bottom-up vtree learning.} Again, take $\mathcal{G}$ as the fully connected weighted
-graph from computing the pairwise mutual information of variables. Now consider that every node of
-$\mathcal{G}$ is a vtree whose only node is the variable itself. To learn a vtree bottom-up is to
-find pairings of vtrees such that the mutual information between them is high, meaning that the
-partitionings at higher levels are minimized (and so determine the ``true'' independence
-relationships between subsets of variables). To produce balanced vtrees, the algorithm attempts to
-join vtrees of same height whose $\pairmi$ is maximal; this is equivalent to min-cost perfect
-matching, which can be solved, in our case, in $\bigo(m^4)$, where $m$ is the number of variables
-\citep{edmonds65,kolmogorov09}. \Cref{fig:bottomupvtree} exemplifies the algorithm.
 
 \begin{figure}[t]
   \resizebox{\textwidth}{!}{
@@ -1041,6 +1031,16 @@ matching, which can be solved, in our case, in $\bigo(m^4)$, where $m$ is the nu
     tree.}
   \label{fig:bottomupvtree}
 \end{figure}
+
+\paragraph{Bottom-up vtree learning.} Again, take $\mathcal{G}$ as the fully connected weighted
+graph from computing the pairwise mutual information of variables. Now consider that every node of
+$\mathcal{G}$ is a vtree whose only node is the variable itself. To learn a vtree bottom-up is to
+find pairings of vtrees such that the mutual information between them is high, meaning that the
+partitionings at higher levels are minimized (and so determine the ``true'' independence
+relationships between subsets of variables). To produce balanced vtrees, the algorithm attempts to
+join vtrees of same height whose $\pairmi$ is maximal; this is equivalent to min-cost perfect
+matching, which can be solved, in our case, in $\bigo(m^4)$, where $m$ is the number of variables
+\citep{edmonds65,kolmogorov09}. \Cref{fig:bottomupvtree} exemplifies the algorithm.
 
 \textproc{LearnPSDD} is an incremental learning algorithm. This means that it takes an existing PC
 and incrementally grows the circuit by some criterion, preserving the structural constraints from
@@ -2075,32 +2075,6 @@ are translated into products of (degenerate) Bernoullis. Determinism can be rela
 form of regularization, for instance Laplace smoothing, both on CLTs and on the products of
 Bernoullis.
 
-Following the footsteps of \textproc{RAT-SPN}, they generate a tree-shaped random region graph and
-produce a PC from it. Despite both employing region graphs, the graph in \citet{dimauro21} is only
-used as an artifice for formalizing the structure construction: their process for reconstructing a
-PC from a region graph boils down to replacing an inner region with a single sum, a leaf region
-with a single input and a partition with a single product. Although one \emph{could} generate a
-non-tree shaped PC by setting $s>1$ and $l>1$ (i.e.\ number of sums and inputs per inner and leaf
-region respectively), the resulting circuit could be reduced to a tree, since both sums (and
-inputs) coming from the same region would be syntatically the same\footnote{Whether this
-``expanded'' circuit could have its performance improved if one were to run, say EM, to exploit
-this increase in capacity is an interesting question that unfortunately was left unexplored in
-\citet{dimauro21}.}.
-
-A critical step to efficiently ensuring consistency with the logical restrictions is to assign only
-consistent subsets of data to subcircuits. Just like in \divclass{} class algorithms, partition
-(i.e.\ product) nodes in the region graph define column splits over data and regions (i.e.\ sums
-and inputs) correspond to row splits. The algorithm then associates a node with a portion of data
-according to its scope and logical constraint. More specifically, when the $i$-th prime defines a
-conjunction of literals $\alpha_i$, only assignments $\set{x}$ whose application
-$\alpha_i(\set{x})$ are true are transferred down, effectively splitting data row-wise. To ensure
-that the resulting circuit is also decomposable, only $\Sc(\alpha_i)$ variables are passed to
-primes, with the remaining variables going to the subs. This way, sum weights can be estimated as
-the subdata size ratios just like in \textproc{LearnSPN}, as \Cref{fig:xpcs} shows. Each subdata
-$\set{D}_{\alpha_i}$ corresponds to joining all assignments consistent with $\alpha_i$, as shown
-through matching colors on the table on the right. Data is divided by rows according to the
-satisfiability of each prime $\alpha_i$ and by column according to the scope of each prime.
-
 \begin{figure}[t]
   \newcolumntype{x}{>{\columncolor{boxolive}}c}
   \newcolumntype{y}{>{\columncolor{boxmunsel}}c}
@@ -2208,6 +2182,32 @@ satisfiability of each prime $\alpha_i$ and by column according to the scope of 
     circuit is deterministic.}
   \label{fig:xpcs}
 \end{figure}
+
+Following the footsteps of \textproc{RAT-SPN}, they generate a tree-shaped random region graph and
+produce a PC from it. Despite both employing region graphs, the graph in \citet{dimauro21} is only
+used as an artifice for formalizing the structure construction: their process for reconstructing a
+PC from a region graph boils down to replacing an inner region with a single sum, a leaf region
+with a single input and a partition with a single product. Although one \emph{could} generate a
+non-tree shaped PC by setting $s>1$ and $l>1$ (i.e.\ number of sums and inputs per inner and leaf
+region respectively), the resulting circuit could be reduced to a tree, since both sums (and
+inputs) coming from the same region would be syntatically the same\footnote{Whether this
+``expanded'' circuit could have its performance improved if one were to run, say EM, to exploit
+this increase in capacity is an interesting question that unfortunately was left unexplored in
+\citet{dimauro21}.}.
+
+A critical step to efficiently ensuring consistency with the logical restrictions is to assign only
+consistent subsets of data to subcircuits. Just like in \divclass{} class algorithms, partition
+(i.e.\ product) nodes in the region graph define column splits over data and regions (i.e.\ sums
+and inputs) correspond to row splits. The algorithm then associates a node with a portion of data
+according to its scope and logical constraint. More specifically, when the $i$-th prime defines a
+conjunction of literals $\alpha_i$, only assignments $\set{x}$ whose application
+$\alpha_i(\set{x})$ are true are transferred down, effectively splitting data row-wise. To ensure
+that the resulting circuit is also decomposable, only $\Sc(\alpha_i)$ variables are passed to
+primes, with the remaining variables going to the subs. This way, sum weights can be estimated as
+the subdata size ratios just like in \textproc{LearnSPN}, as \Cref{fig:xpcs} shows. Each subdata
+$\set{D}_{\alpha_i}$ corresponds to joining all assignments consistent with $\alpha_i$, as shown
+through matching colors on the table on the right. Data is divided by rows according to the
+satisfiability of each prime $\alpha_i$ and by column according to the scope of each prime.
 
 At each iteration of \Cref{alg:xpcs}, sub leaf region nodes, denoted here as $\mathcal{S}$ regions,
 are randomly selected for further expansion. \Cref{alg:xpcs-expand} takes a candidate region
