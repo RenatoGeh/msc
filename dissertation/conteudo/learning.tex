@@ -710,6 +710,37 @@ and deterministic probabilistic circuit (see \Cref{subsection:touncertainty}), m
 computational graph must respect a vtree. We therefore must address the issue of learning the vtree
 before we turn to the PC learning algorithm \emph{per se}.
 
+Recall that for a vtree $\vtree$, every inner node $v\in\vtree$ with $\set{X}=\Sc(v^\gets)$ and
+$\set{Y}=\Sc(v^\to)$ determines that $\set{X}$ and $\set{Y}$ are independent, i.e.\
+$p_\mathcal{C}(\set{X},\set{Y})=p_\mathcal{C}(\set{X}) p_\mathcal{C}(\set{Y})$ for a PC
+$\mathcal{C}$. This means that a PC's vtree is pivotal in embedding the independencies of the
+circuit's distribution. With this in mind, \citet{liang17} propose two approaches to inducing
+vtrees from data, both of which use mutual information
+\begin{equation*}
+  \mutualinf(\set{X},\set{Y})=\sum_{\set{X}=\set{x}}\sum_{\set{Y}=\set{y}}p(\set{x},\set{y})\log\frac{p(\set{x},\set{y})}{p(\set{x})p(\set{y})}
+\end{equation*}
+for deciding independence. To avoid computing an exponential number of MI terms, an approximation
+based on the average pairwise MI is computed instead
+\begin{equation*}
+  \pairmi(\set{X},\set{Y})=\frac{1}{|\set{X}||\set{Y}|}\cdot\sum_{X\in\set{X}}\sum_{Y\in\set{Y}}\mutualinf(X,Y).
+\end{equation*}
+The first approach learns vtrees in a top-down fashion, starting with a full scope and recursively
+partitioning down to the unit set. The second learns bottom-up, starting with singletons and
+joining sets of variables up to full scope.
+
+\paragraph{Top-down vtree learning.} Let $\mathcal{G}$ be a fully connected weighted graph where
+variables are nodes. For each edge $\edge{XY}$, attribute its weight as $\mutualinf(X,Y)$.
+Learning the vtree top-down amounts to partitioning $\mathcal{G}$ such that the cut-set that
+divides the two partitions $\set{X}$ and $\set{Y}$ is minimal with respect to $\pairmi$.
+\citet{liang17} further argue that balanced vtrees produce smaller PCs, and so they reduce learning
+to a balanced min-cut bipartition problem. Although this is known to be NP-complete
+\citep{garey90}, optimized solvers are able to produce high quality bipartitions efficiently
+\citep{karypsis98}. In a nutshell, the vtree construction goes as follows: find a balanced min-cut
+bipartition $(\set{X}, \set{Y})$ in $\mathcal{G}$ minimizing the $\pairmi$ of the edges; add a
+vtree inner node representing this bipartition and connect it to the two vtrees produced by the
+recursive calls over $\set{X}$ and $\set{Y}$; if $\set{X}=\{X\}$ (resp. $\set{Y}=\{Y\}$), produce
+a leaf node $X$ (resp. $Y$). \Cref{fig:topdownvtree} shows four iterations of this procedure.
+
 \begin{figure}[t]
   \resizebox{\textwidth}{!}{
   \begin{tikzpicture}
@@ -826,36 +857,31 @@ before we turn to the PC learning algorithm \emph{per se}.
   \label{fig:topdownvtree}
 \end{figure}
 
-Recall that for a vtree $\vtree$, every inner node $v\in\vtree$ with $\set{X}=\Sc(v^\gets)$ and
-$\set{Y}=\Sc(v^\to)$ determines that $\set{X}$ and $\set{Y}$ are independent, i.e.\
-$p_\mathcal{C}(\set{X},\set{Y})=p_\mathcal{C}(\set{X}) p_\mathcal{C}(\set{Y})$ for a PC
-$\mathcal{C}$. This means that a PC's vtree is pivotal in embedding the independencies of the
-circuit's distribution. With this in mind, \citet{liang17} propose two approaches to inducing
-vtrees from data, both of which use mutual information
-\begin{equation*}
-  \mutualinf(\set{X},\set{Y})=\sum_{\set{X}=\set{x}}\sum_{\set{Y}=\set{y}}p(\set{x},\set{y})\log\frac{p(\set{x},\set{y})}{p(\set{x})p(\set{y})}
-\end{equation*}
-for deciding independence. To avoid computing an exponential number of MI terms, an approximation
-based on the average pairwise MI is computed instead
-\begin{equation*}
-  \pairmi(\set{X},\set{Y})=\frac{1}{|\set{X}||\set{Y}|}\cdot\sum_{X\in\set{X}}\sum_{Y\in\set{Y}}\mutualinf(X,Y).
-\end{equation*}
-The first approach learns vtrees in a top-down fashion, starting with a full scope and recursively
-partitioning down to the unit set. The second learns bottom-up, starting with singletons and
-joining sets of variables up to full scope.
+\paragraph{Bottom-up vtree learning.} Again, take $\mathcal{G}$ as the fully connected weighted
+graph from computing the pairwise mutual information of variables. Now consider that every node of
+$\mathcal{G}$ is a vtree whose only node is the variable itself. To learn a vtree bottom-up is to
+find pairings of vtrees such that the mutual information between them is high, meaning that the
+partitionings at higher levels are minimized (and so determine the ``true'' independence
+relationships between subsets of variables). To produce balanced vtrees, the algorithm attempts to
+join vtrees of same height whose $\pairmi$ is maximal; this is equivalent to min-cost perfect
+matching, which can be solved, in our case, in $\bigo(m^4)$, where $m$ is the number of variables
+\citep{edmonds65,kolmogorov09}. \Cref{fig:bottomupvtree} exemplifies the algorithm.
 
-\paragraph{Top-down vtree learning.} Let $\mathcal{G}$ be a fully connected weighted graph where
-variables are nodes. For each edge $\edge{XY}$, attribute its weight as $\mutualinf(X,Y)$.
-Learning the vtree top-down amounts to partitioning $\mathcal{G}$ such that the cut-set that
-divides the two partitions $\set{X}$ and $\set{Y}$ is minimal with respect to $\pairmi$.
-\citet{liang17} further argue that balanced vtrees produce smaller PCs, and so they reduce learning
-to a balanced min-cut bipartition problem. Although this is known to be NP-complete
-\citep{garey90}, optimized solvers are able to produce high quality bipartitions efficiently
-\citep{karypsis98}. In a nutshell, the vtree construction goes as follows: find a balanced min-cut
-bipartition $(\set{X}, \set{Y})$ in $\mathcal{G}$ minimizing the $\pairmi$ of the edges; add a
-vtree inner node representing this bipartition and connect it to the two vtrees produced by the
-recursive calls over $\set{X}$ and $\set{Y}$; if $\set{X}=\{X\}$ (resp. $\set{Y}=\{Y\}$), produce
-a leaf node $X$ (resp. $Y$). \Cref{fig:topdownvtree} shows four iterations of this procedure.
+\textproc{LearnPSDD} is an incremental learning algorithm. This means that it takes an existing PC
+and incrementally grows the circuit by some criterion, preserving the structural constraints from
+the PC in the process. Once a vtree $\vtree$ has been learned from data, we use it to construct an
+initial circuit that respects $\vtree$. The choice of circuit initialization is dependent on our
+task. For example, within the context of PSDDs, we are mostly interested in starting out with a PC
+induced from an LC encoding a certain knowledge base (see \Cref{sec:pckb}); this is usually
+done in a case-by-case basis, where LCs are compiled for a particular task and then promoted to PCs
+(see \Cref{rem:initpc}). However, if one does not require specifying the distribution's support,
+any PC will do.
+
+\emph{How} and \emph{where} the circuit is grown -- once we have acquired a vtree and an initial
+circuit -- are the main topics of interest now. We first address the matter of \emph{how}, i.e.\
+how can we increase a PC's expressivity such that we preserve a desired set of structural
+constraints; and later of \emph{where}, i.e.\ which portions of the circuit are eligible for
+growth and how do we know they are good candidates.
 
 \begin{figure}[t]
   \resizebox{\textwidth}{!}{
@@ -1032,31 +1058,30 @@ a leaf node $X$ (resp. $Y$). \Cref{fig:topdownvtree} shows four iterations of th
   \label{fig:bottomupvtree}
 \end{figure}
 
-\paragraph{Bottom-up vtree learning.} Again, take $\mathcal{G}$ as the fully connected weighted
-graph from computing the pairwise mutual information of variables. Now consider that every node of
-$\mathcal{G}$ is a vtree whose only node is the variable itself. To learn a vtree bottom-up is to
-find pairings of vtrees such that the mutual information between them is high, meaning that the
-partitionings at higher levels are minimized (and so determine the ``true'' independence
-relationships between subsets of variables). To produce balanced vtrees, the algorithm attempts to
-join vtrees of same height whose $\pairmi$ is maximal; this is equivalent to min-cost perfect
-matching, which can be solved, in our case, in $\bigo(m^4)$, where $m$ is the number of variables
-\citep{edmonds65,kolmogorov09}. \Cref{fig:bottomupvtree} exemplifies the algorithm.
+\citeauthor{liang17} propose two local transformations for growing a circuit $\mathcal{C}$:
+\textproc{Split} and \textproc{Clone}. The first acts by multiplying a sum node's product child
+$\Prod$ into $\Prod_1,\ldots,\Prod_k$ products such that $\pi_1,\ldots,\pi_k$ (primes of
+$\Prod_1,\ldots,\Prod_k$ respectively) are mutually exclusive. This is done by attributing all
+possible values of a variable in $\Sc(\Prod)$, say $A$, to each prime, meaning that $\pi_i$ will
+contain the assignment $A=i$ for every $i\in\left[k\right]$. This attribution is done by partially
+copying $\mathcal{C}_{\Prod}$ into $k$ circuits $\mathcal{C}_{\Prod}^{(1)},\ldots,
+\mathcal{C}_{\Prod}^{(k)}$ up to some depth $m$ and then conditioning $\mathcal{C}_{\Prod}^{(i)}$
+on $\liv A=i\riv$. This is straightforward for the discrete case: at the appropriate vtree node
+(i.e.\ one that contains $A$ as a leaf), replace the input node whose scope is $A$ into an
+indicator node, setting it to the appropriate assignment of $A$. Although \citet{liang17} only
+considers the binary case, the transformation can be extended to the continuous if we consider $k$
+piecewise distributions whose support is over only a set interval. Naturally, input nodes must then
+have their support truncated to the appropriate $i$-th interval, which is no easy feat in the
+general case. The left side of \Cref{fig:splitclone} shows \textproc{Split} for the binary case.
 
-\textproc{LearnPSDD} is an incremental learning algorithm. This means that it takes an existing PC
-and incrementally grows the circuit by some criterion, preserving the structural constraints from
-the PC in the process. Once a vtree $\vtree$ has been learned from data, we use it to construct an
-initial circuit that respects $\vtree$. The choice of circuit initialization is dependent on our
-task. For example, within the context of PSDDs, we are mostly interested in starting out with a PC
-induced from an LC encoding a certain knowledge base (see \Cref{sec:pckb}); this is usually
-done in a case-by-case basis, where LCs are compiled for a particular task and then promoted to PCs
-(see \Cref{rem:initpc}). However, if one does not require specifying the distribution's support,
-any PC will do.
-
-\emph{How} and \emph{where} the circuit is grown -- once we have acquired a vtree and an initial
-circuit -- are the main topics of interest now. We first address the matter of \emph{how}, i.e.\
-how can we increase a PC's expressivity such that we preserve a desired set of structural
-constraints; and later of \emph{where}, i.e.\ which portions of the circuit are eligible for
-growth and how do we know they are good candidates.
+The other proposed transformation, \textproc{Clone}, does something similar for sum nodes. Pick a
+sum node $\Sum$ whose children are $\Child_1,\ldots,\Child_k$ and parents $\Prod_1$ and $\Prod_2$;
+double $\Sum$ and $\Child_1,\ldots,\Child_k$, producing clones $\Sum'$ and $\Child_1',\ldots,
+\Child_k'$. Disconnect the edge coming from $\Prod_2$ to $\Sum$ and instead connect it to $\Sum'$.
+Connect all $\Child_1',\ldots,\Child_k'$ to the same children as their original counterparts. This
+operation is visualized on the right side of \Cref{fig:splitclone}. One can further extend
+\textproc{Clone} to apply this operation cloning nodes up to some depth $m$ and then joining the
+last remaining deepest nodes similar to what was described for $\Child_1',\ldots,\Child_k'$.
 
 \begin{figure}[t]
   \begin{center}
@@ -1173,31 +1198,6 @@ growth and how do we know they are good candidates.
   \label{fig:splitclone}
 \end{figure}
 
-\citeauthor{liang17} propose two local transformations for growing a circuit $\mathcal{C}$:
-\textproc{Split} and \textproc{Clone}. The first acts by multiplying a sum node's product child
-$\Prod$ into $\Prod_1,\ldots,\Prod_k$ products such that $\pi_1,\ldots,\pi_k$ (primes of
-$\Prod_1,\ldots,\Prod_k$ respectively) are mutually exclusive. This is done by attributing all
-possible values of a variable in $\Sc(\Prod)$, say $A$, to each prime, meaning that $\pi_i$ will
-contain the assignment $A=i$ for every $i\in\left[k\right]$. This attribution is done by partially
-copying $\mathcal{C}_{\Prod}$ into $k$ circuits $\mathcal{C}_{\Prod}^{(1)},\ldots,
-\mathcal{C}_{\Prod}^{(k)}$ up to some depth $m$ and then conditioning $\mathcal{C}_{\Prod}^{(i)}$
-on $\liv A=i\riv$. This is straightforward for the discrete case: at the appropriate vtree node
-(i.e.\ one that contains $A$ as a leaf), replace the input node whose scope is $A$ into an
-indicator node, setting it to the appropriate assignment of $A$. Although \citet{liang17} only
-considers the binary case, the transformation can be extended to the continuous if we consider $k$
-piecewise distributions whose support is over only a set interval. Naturally, input nodes must then
-have their support truncated to the appropriate $i$-th interval, which is no easy feat in the
-general case. The left side of \Cref{fig:splitclone} shows \textproc{Split} for the binary case.
-
-The other proposed transformation, \textproc{Clone}, does something similar for sum nodes. Pick a
-sum node $\Sum$ whose children are $\Child_1,\ldots,\Child_k$ and parents $\Prod_1$ and $\Prod_2$;
-double $\Sum$ and $\Child_1,\ldots,\Child_k$, producing clones $\Sum'$ and $\Child_1',\ldots,
-\Child_k'$. Disconnect the edge coming from $\Prod_2$ to $\Sum$ and instead connect it to $\Sum'$.
-Connect all $\Child_1',\ldots,\Child_k'$ to the same children as their original counterparts. This
-operation is visualized on the right side of \Cref{fig:splitclone}. One can further extend
-\textproc{Clone} to apply this operation cloning nodes up to some depth $m$ and then joining the
-last remaining deepest nodes similar to what was described for $\Child_1',\ldots,\Child_k'$.
-
 It is easy to see that, in both cases, smoothness, structure decomposability and determinism are
 preserved. In fact, if the original circuit encodes a particular support (i.e.\ a knowledge base),
 the PC resulting from applying any of the two transformations must also encode the same support,
@@ -1218,33 +1218,6 @@ of any of the two operations. In other words, the algorithm randomly evaluates a
 the log-likelihood of training data penalized by the size of the resulting PC, iteratively growing
 the circuit until there is no more improvement or reaches an iteration step or time limit, as
 \Cref{alg:learnpsdd} shows.
-
-\begin{algorithm}[t]
-  \caption{\textproc{LearnPSDD}}\label{alg:learnpsdd}
-  \begin{algorithmic}[1]
-    \Require Data $\set{D}$, vtree $\vtree$, initial PC $\mathcal{C}$, max depth $m$, scope $\set{X}$
-    \Ensure A smooth, structure decomposable and deterministic PC learned from $\set{D}$
-    \While{there is score improvement or has not reached the iteration/time limit}
-      \State $s_{\Sum}\gets -\infty$
-      \State Let $(\Sum^\ast,\Prod^\ast)$ be the best \textproc{Split} candidate seen so far, initially empty
-      \For{each candidate $(\Sum,\Prod)$ of all possible \textproc{Split} candidates}
-        \State $\mathcal{C}'\gets\textproc{Split}(\mathcal{C},\Sum,\Prod,\vtree,m)$
-        \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
-        \IIf{$s'>s_{\Sum}$}{$s_{\Sum}\gets s'$ and $\Sum^\ast,\Prod^\ast\gets\Sum,\Prod$}
-      \EndFor
-      \State $s_{\Child}\gets -\infty$
-      \State Let $\Child^\ast$ be the best \textproc{Clone} candidate seen so far, initially empty
-      \For{each candidate $\Child$ of all possible \textproc{Clone} candidates}
-        \State $\mathcal{C}'\gets\textproc{Clone}(\mathcal{C},\Child,\vtree,m)$
-        \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
-        \IIf{$s'>s_{\Child}$}{$s_{\Child}\gets s'$ and $\Child^\ast\gets\Child$}
-      \EndFor
-      \IIf{$s_{\Sum}>s_{\Child}$}{$\mathcal{C}\gets\textproc{Split}(\mathcal{C},\Sum^\ast,\Prod^\ast,\vtree,m)$}
-      \IElse{$\mathcal{C}\gets\textproc{Clone}(\mathcal{C},\Child^\ast,\vtree,m)$}
-    \EndWhile
-    \State \textbf{return} $\mathcal{C}$
-  \end{algorithmic}
-\end{algorithm}
 
 \subsubsection{Complexity}
 
@@ -1272,6 +1245,33 @@ change for the nodes affected in the transformation and their ancestors, allowin
 iteration is therefore $\bigo(|\mathcal{C}|^2)$ if we assume $m=0$, with the first $|\mathcal{C}|$
 coming from the search of all candidates in $\mathcal{C}$, and the second from the computation of
 $\score$. Each iteration further increases $|\mathcal{C}|$, slowing down the algorithm's runtime.
+
+\begin{algorithm}[t]
+  \caption{\textproc{LearnPSDD}}\label{alg:learnpsdd}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, vtree $\vtree$, initial PC $\mathcal{C}$, max depth $m$, scope $\set{X}$
+    \Ensure A smooth, structure decomposable and deterministic PC learned from $\set{D}$
+    \While{there is score improvement or has not reached the iteration/time limit}
+      \State $s_{\Sum}\gets -\infty$
+      \State Let $(\Sum^\ast,\Prod^\ast)$ be the best \textproc{Split} candidate seen so far, initially empty
+      \For{each candidate $(\Sum,\Prod)$ of all possible \textproc{Split} candidates}
+        \State $\mathcal{C}'\gets\textproc{Split}(\mathcal{C},\Sum,\Prod,\vtree,m)$
+        \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
+        \IIf{$s'>s_{\Sum}$}{$s_{\Sum}\gets s'$ and $\Sum^\ast,\Prod^\ast\gets\Sum,\Prod$}
+      \EndFor
+      \State $s_{\Child}\gets -\infty$
+      \State Let $\Child^\ast$ be the best \textproc{Clone} candidate seen so far, initially empty
+      \For{each candidate $\Child$ of all possible \textproc{Clone} candidates}
+        \State $\mathcal{C}'\gets\textproc{Clone}(\mathcal{C},\Child,\vtree,m)$
+        \State $s'\gets\score(\set{D},\mathcal{C},\mathcal{C}')$
+        \IIf{$s'>s_{\Child}$}{$s_{\Child}\gets s'$ and $\Child^\ast\gets\Child$}
+      \EndFor
+      \IIf{$s_{\Sum}>s_{\Child}$}{$\mathcal{C}\gets\textproc{Split}(\mathcal{C},\Sum^\ast,\Prod^\ast,\vtree,m)$}
+      \IElse{$\mathcal{C}\gets\textproc{Clone}(\mathcal{C},\Child^\ast,\vtree,m)$}
+    \EndWhile
+    \State \textbf{return} $\mathcal{C}$
+  \end{algorithmic}
+\end{algorithm}
 
 \subsubsection{Pros and Cons}
 
