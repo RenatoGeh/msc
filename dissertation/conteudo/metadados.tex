@@ -103,33 +103,34 @@
   A crescente popularidade de modelos gerativos, assim como o aumento da demanda por modelos que
   produzam inferência exata e de forma flexível vêm motivando a comunidade de aprendizado de
   máquina a procurar por modelos probabilísticos que sejam tanto expressivos quanto tratáveis.
-  Circuitos probabilísticos (PC, do inglês) são uma família de modelos probabilísticos tratáveis
-  capazes de responder uma vasta gama de consultas de forma exata e em tempo polinomial. Sua
-  sintaxe operacional concretizada por um grafo computacional junto a sua semântica probabilística
-  possibilitam que seus parâmetros sejam estimados pelas eficientes e altamente escaláveis técnicas
-  utilizadas em aprendizado profundo. Notavelmente, tratabilidade está fortemente ligada às
-  restrições impostas no grafo subjacente: ao impor certas restrições gráficas, consultas como
-  probabilidade marginal, \emph{maximum a posteriori} ou entropia tornam-se computáveis em tempo
-  linear, ao mesmo tempo retendo alta expressividade. Enquanto que inferência é, de forma geral,
-  descomplicado, a tarefa de aprender PCs de forma que os circuitos tanto observem as restrições
-  estruturais necessárias quanto explorem sua expressividade tem se provado um desafio. O atual
-  estado-da-arte para algoritmos de aprendizado estrutural de PCs pode ser grosseiramente dividido
-  em três categorias principais. A maior parte dos algoritmos de aprendizado buscam gerar um
-  circuito em formato de árvore através de decomposições recursivas nos dados, na maior parte das
-  vezes através de algoritmos de \emph{clustering} e custosos testes de independência estatística,
-  o que pode tornar o processo inviável em altas dimensões. Alternativamente, outras técnicas
-  envolvem construir uma complexa rede por meio de métodos incrementais iterativos que preservem
-  uma certa estrutura do grafo. Além desta técnica depender de um circuito inicial suficientemente
-  expressivo, tais métodos podem demorar vários minutos por iteração, e muitas iterações até que
-  haja uma melhora visível. Por último, outras alternativas envolvem gerar aleatoriamente um
-  circuito probabilístico através de algum critério. Apesar desta técnica normalmente gerar modelos
-  menos performativos quando comparados com outros métodos, PCs aleatórios são ordens de grandeza
-  mais eficiente em relação a tempo de execução. Com isso em mente, esta dissertação busca propor
-  algoritmos de aprendizado estrutural de PCs que sejam rápidos e escaláveis através de duas lentes
-  distintas: de um ponto de vista lógico, buscamos construir um PC sob variáveis binárias altamente
-  estruturado que tome conhecimento certo na forma de restrições lógicas, e traduza-as em um
-  circuito probabilístico de forma escalável; por meio da ótica de busca por estruturas guiada por
-  dados, nós propomos construir PCs de forma hierárquica por meio de hiperplanos aleatórios. Nós
-  mostramos, de forma empírica, que ambas são competitivas comparadas ao estado-da-arte, e que
-  podemos melhorar sua performance por meio de estratégias simples de \emph{ensembles}.
+  Circuitos probabilísticos (PC, do inglês \emph{probabilistic circuit}) são uma família de modelos
+  probabilísticos tratáveis capazes de responder uma vasta gama de consultas de forma exata e em
+  tempo polinomial. Sua sintaxe operacional concretizada por um grafo computacional junto a sua
+  semântica probabilística possibilitam que seus parâmetros sejam estimados pelas eficientes e
+  altamente escaláveis técnicas utilizadas em aprendizado profundo. Notavelmente, tratabilidade
+  está fortemente ligada às restrições impostas no grafo subjacente: ao impor certas restrições
+  gráficas, consultas como probabilidade marginal, \emph{maximum a posteriori} ou entropia
+  tornam-se computáveis em tempo linear, ao mesmo tempo retendo alta expressividade. Enquanto que
+  inferência é, de forma geral, descomplicado, a tarefa de aprender PCs de forma que os circuitos
+  tanto observem as restrições estruturais necessárias quanto explorem sua expressividade tem se
+  provado um desafio. O atual estado-da-arte para algoritmos de aprendizado estrutural de PCs pode
+  ser grosseiramente dividido em três categorias principais. A maior parte dos algoritmos de
+  aprendizado buscam gerar um circuito em formato de árvore através de decomposições recursivas nos
+  dados, na maior parte das vezes através de algoritmos de \emph{clustering} e custosos testes de
+  independência estatística, o que pode tornar o processo inviável em altas dimensões.
+  Alternativamente, outras técnicas envolvem construir uma complexa rede por meio de métodos
+  incrementais iterativos que preservem uma certa estrutura do grafo. Além desta técnica depender
+  de um circuito inicial suficientemente expressivo, tais métodos podem demorar vários minutos por
+  iteração, e muitas iterações até que haja uma melhora visível. Por último, outras alternativas
+  envolvem gerar aleatoriamente um circuito probabilístico através de algum critério. Apesar desta
+  técnica normalmente gerar modelos menos performativos quando comparados com outros métodos, PCs
+  aleatórios são ordens de grandeza mais eficiente em relação a tempo de execução. Com isso em
+  mente, esta dissertação busca propor algoritmos de aprendizado estrutural de PCs que sejam
+  rápidos e escaláveis através de duas lentes distintas: de um ponto de vista lógico, buscamos
+  construir um PC sob variáveis binárias altamente estruturado que tome conhecimento certo na forma
+  de restrições lógicas, e traduza-as em um circuito probabilístico de forma escalável; por meio da
+  ótica de busca por estruturas guiada por dados, nós propomos construir PCs de forma hierárquica
+  por meio de hiperplanos aleatórios. Nós mostramos, de forma empírica, que ambas são competitivas
+  comparadas ao estado-da-arte, e que podemos melhorar sua performance por meio de estratégias
+  simples de \emph{ensembles}.
 }

@@ -1,15 +1,16 @@
 \chapter{Introduction}
 
-Machine learning has become, without a doubt, ubiquitous in tech. From self-driving vehicles to
-bioinformatics, data-driven models have taken the center stage when it comes to state-of-the-art
-prediction and modeling of real-world tasks. In many of these scenarios, such as system diagnosis
-of automated power plants or real-time translation, timely decisions are crucial to the
-well-functioning of often critical systems. In others, agents must be either precise or come with
-approximation guarantees of their estimation, as is the case of decision making in healthcare or
-finance. Even more crucially, these predictive models often need to perform complex reasoning tasks
-over hundreds if not thousands of variables, sometimes under known constraints dependent on
-domain; and yet prove expressive enough to learn from the possibly enormous quantity of data
-available.
+Machine learning has become, without a doubt, ubiquitous in today's technology. From self-driving
+vehicles to bioinformatics, data-driven models have taken the center stage when it comes to
+state-of-the-art prediction and modeling of real-world tasks \citep{grigorescu20,lan18,li19,khan18,
+sezer20}. In many of these scenarios, such as system diagnosis of automated power plants or
+real-time translation, timely decisions are crucial to the well-functioning of often critical
+systems \citep{enshaei19,niehues18}. In others, agents must be either precise or come with
+approximation guarantees of their estimation, as is the case of decision making in healthcare,
+finance or other sensitive data \citep{lou19}. Even more crucially, these predictive models often
+need to perform complex reasoning tasks over hundreds if not thousands of variables, sometimes
+under known constraints dependent on domain \citep{xu18,marin20,wong12,lu13}; and yet prove
+expressive enough to learn from the possibly enormous quantity of data available.
 
 Fulfilling these requirements are Probabilistic Circuits (PCs), a class of probabilistic models
 distinctly specified by recursive compositions of distributions through graphical formalisms.
@@ -49,11 +50,17 @@ large data, and not to achieve top tier performance on benchmark datasets.
 
 The objectives of this dissertation are two-fold. First, we seek to provide a concise literature
 review on structure learning algorithms for probabilistic circuits, describing a few of the most
-popular popular techniques for learning PCs. Second, we present two new structural learning
-algorithms for PCs whose focus are on efficiently learning from complex domains; we show that our
-approaches are scalable and competitive against the state-of-the-art.
+popular techniques for learning PCs. This particular contribution comes from a need for a
+systematic comparison of the large body of techniques that have been developed so far, each with
+different trade-offs of computational cost, accuracy and structural properties. To this end, we
+compare and categorize structure learning algorithms with respect to time and memory requirements,
+efficient queries enabled by the learned model and the pros and cons brought by each.
 
-\section{Contributions and Dissertation Outline}
+Second, we present two new structural learning algorithms for PCs whose focus are on efficiently
+learning from complex domains; we show that our approaches are scalable and competitive against the
+state-of-the-art.
+
+\section{Dissertation Outline}
 
 We begin \Cref{ch:pc} by formally defining probabilistic circuits (\Cref{sec:pc}), conducting a
 review of some of the structural constraints that we might impose on PCs, as well as what we may
@@ -84,8 +91,11 @@ forests \citep{correia20}. We revisit a well-known inductive method of hierarchi
 oblique projections to learn decision trees \citep{dasgupta08a,dasgupta08b} and transplant them
 into the context of probabilistic circuits. We found that our approach produced fairly competitive
 PCs in a fraction of the time. The final chapter (\Cref{ch:conclusion}) is dedicated to summarizing
-our research contributions and pointing to potential future work in learning PCs. Overall, our
-contributions in this dissertation address the following research topics.
+our research contributions and pointing to potential future work in learning PCs.
+
+\subsection{Contributions}
+
+Overall, our contributions in this dissertation address the following research topics.
 
 \newCTitle{boxgray}{Scalably learning PCs directly from background knowledge}
 
