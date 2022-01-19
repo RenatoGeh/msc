@@ -13,7 +13,7 @@ and nomenclature. Call $\set{X}=\{X_1,X_2,\ldots,X_m\}$ a set of random variable
 by $\set{x}=\{x_1,x_2,\ldots,x_m\}$ the \emph{assignment} of each value $x_i$ to RV $X_i$. Let $p$
 be a probability distribution over variables $\set{X}$; we use the notation $p(\set{X}=\set{x})$ to
 represent the probability of $\set{X}$ taking values $\set{x}$ according to $p$. On that note, if
-$\set{X}$ is the set of RVs of the probability distribution $p$, then we say that $\set{X}$ is the
+$\set{X}$ is the set of all RVs of probability distribution $p$, then we say that $\set{X}$ is the
 \emph{scope} of $p$, here denoted by the functional $\Sc(p)$. When an assignment $\set{y}$ over RVs
 $\set{Y}$ covers only a portion of $\Sc(p)=\set{X}$, or in other words $\set{Y}\subset\set{X}$,
 then $\set{y}$ is called a \emph{partial assignment}; otherwise, if it captures the entire scope,
@@ -25,7 +25,7 @@ the set of edges, the function $\Ch(\Node)$ maps a node $\Node\in\Nodes$ to the 
 of $\Node$, that is, all nodes which have an edge \emph{coming from} $\Node$. Similarly,
 $\Pa(\Node)$ maps $\Node$ to its parents: the set of nodes which have an edge \emph{going to}
 $\Node$. We assume that edge connections are unique, meaning that for two connected nodes $\Node_1$
-and $\Node_2$, there can only exist a single edge connecting them, denoting as
+and $\Node_2$, there can only exist a single edge connecting them, denoting
 $\edge{\Node_1\Node_2}$ the edge coming from $\Node_1$ to $\Node_2$.
 
 \section{Distributions as Computational Graphs}
@@ -36,147 +36,150 @@ computational units. We start with a broad definition of probabilistic circuits.
 
 \begin{definition}[Probabilistic circuit]
   A \emph{probabilistic circuit} $\mathcal{C}$ is a rooted connected DAG whose nodes describe
-  non-negative functions: a \emph{sum node} $\Sum$ represents a weighted summation over their children
-  $\Sum(\set{x})=\sum_{\Child\in\Ch(\Sum)} w_{\Sum,\Child}\cdot\Child(\set{x})$, a \emph{product
-  node} $\Prod$ multiplies all of its children $\Prod(\set{x})=\prod_{\Child\in\Ch(\Prod)}
-  \Child(\set{x})$, and \emph{input nodes}, i.e.\ nodes with no outgoing edges, are defined as
-  probability density functions.\label{def:pc}
+  non-negative functions: a \emph{sum node} $\Sum$ represents a weighted summation over its
+  children $\Sum(\set{x})=\sum_{\Child\in\Ch(\Sum)} w_{\Sum,\Child}\cdot\Child(\set{x})$, a
+  \emph{product node} $\Prod$ multiplies all of its children
+  $\Prod(\set{x})=\prod_{\Child\in\Ch(\Prod)} \Child(\set{x})$, and \emph{input nodes}, i.e.\ nodes
+  with no outgoing edges, are defined as probability density functions.\label{def:pc}
 \end{definition}
 
 In its simplest form, a PC is a single input node annotated with a tractable unnormalized
 probability distribution. In practice, however, inputs are typically portrayed as normalized
 parametric univariate or multivariate density (or mass) functions, and we shall assume them as so
 throughout this dissertation unless explicitly stated otherwise. We also assume, for purposes of
-simplifying analysis, that any query on an input node is done so in $\bigo(1)$ on the size of the
+simplifying analysis, that any query on an input node is computed in $\bigo(1)$ on the size of the
 input. To simplify notation, from here on out we shall use the term distribution to mean a
 probability density (or mass) function and argue that input nodes represent probability
 distributions. The semantics of this shall be clear given the context.
 
-Let $\Leaf_p$ be a PC input node representing a distribution $p$ and an assignment $\set{x}$; we
-use the notation $\Leaf_p(\set{X}=\set{x})$ to mean $p(\set{X}=\set{x})$, often omitting $p$ when
-its explicit form is not needed and $\set{X}$ when meaning is clear from context. We say that the
-\emph{value} of input node $\Leaf_p$ with respect to some query is the value of $p$ with respect to
-that same query. This concept becomes clearer when we talk about reasoning in \Cref{sec:inf} and
-how to compute queries in PCs. For now, we assume that the value of a node is simply the
-computation of the computational graph when we assume the value of inputs to take a particular
-probability according to the distribution they represent.
+Let $\Leaf$ be a PC input node representing a distribution $p$ and an assignment $\set{x}$; we
+use the notation $\Leaf(\set{X}=\set{x})$ to mean $p(\set{X}=\set{x})$, often omitting $\set{X}$
+when meaning is clear from context. We say that the \emph{value} of input node $\Leaf$ with
+respect to some query is the value of $p$ with respect to that same query. As an example,
+\Cref{fig:units-input} shows the case when $\Leaf$ represents a Gaussian. If we were to compute its
+value, for instance $p(x=0.29)$, then we would have to refer to the value of $\Leaf$'s distribution,
+in this case $p(x=0.29)=0.80$. Similarly, the value of inner nodes correspond to the resulting
+value of its functions, e.g.\ weighted sums or products, given an assignment, as the remaining
+examples in \Cref{fig:units} show. The concept of value of a node shall become clearer when we talk
+about reasoning in \Cref{sec:inf} and how to compute queries in PCs. For now, we assume that this
+value is simply the result of the computation of the function it represents given an assignment.
 
-%Before we continue, we must draw a clear distinction between the \emph{semantics} of a PC, i.e.\
-%the probabilistic meaning of the computational graph and their nodes, as well as their values; and
-%the \emph{syntax} and syntactical properties of these mathematical objects.
+An inner node indicates an operation to be computed from the value of its children. Although
+\Cref{def:pc} only references sums and products, the subject of more general operations and their
+benefits in terms of inference is an interesting question which we briefly touch in
+\Cref{rem:optract}, but otherwise remains out of the scope of this work. In this dissertation, we
+restrict ourselves to the study of products and sums as inner nodes; and for that matter, sums
+whose weights are non-negative and sum to one.
 
-An inner node indicates an operation to be computed from the value of its children. The subject of
-which operations yield which benefits in terms of inference is an interesting question which we
-briefly touch in \Cref{rem:optract}, but otherwise remains out of the scope of this work. In this
-dissertation, we restrict ourselves to the study of \emph{sums} and \emph{products}. We first
-address sums, which appear as convex combinations in probabilistic circuits.
-
-Let $\Sum$ be a PC sum node, and denote by $\Ch(\Sum)$ the child nodes of $\Sum$. For every edge
-$\edge{\Sum\Child}$ coming out of $\Sum$ and going into $\Child$, we attribute a weight $w_{\Sum,
-\Child}\geq 0$, such that $\sum_{\Child\in\Ch(\Sum)} w_{\Sum,\Child} = 1$. A sum node semantically
-defines a mixture model over its children, essentially acting as a latent variable over the
-component distributions \citep{poon11,peharz16}. Its value is the weighted sum of its children
-$p_{\Sum}(\set{x})=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\cdot p_{\Child}(\set{x})$. Again, to
-simplify notation we shall use $\Node(\set{x})$ as an alias for $p_{\Node}(\set{x})$, that is, the
-probability distribution given by a node $\Node$'s induced distribution. \Cref{eg:mixgauss} shows a
-case of a Gaussian mixture model as a PC.
-
-So far, the only nonlinearities present in PCs come from the internal computations of input nodes.
-In fact, a PC that only contains sums and inputs can always be reduced to a mixture model (see
-\Cref{thm:summix}). Adding \emph{product nodes} as another form of nonlinearity increases
-expressivity sufficiently for PCs to be capable of representing any discrete probability
-distribution \citep{darwiche03,martens14,peharz15}. More importantly, products semantically act as
-factorizations of their children, indicating a conditional independence relationship between
-variables from different children given the value of a latent variable. In practice, product nodes
-are simply products of their children: if $\Prod$ is a PC product node, then its value is given by
-$\Prod(\set{x})=\prod_{\Child\in\Ch(\Prod)} \Child(\set{x})$.
-
-%Before we address the \emph{semantics} of probabilistic circuits, including the probabilistic
-%meaning of the computational graph, it may be sensible to first discuss the \emph{syntax} around
-%the PCs. To this end, we shall now introduce \emph{sum} and \emph{product} (inner) nodes from an
-%operational point of view. We
-
-\begin{example}[sidebyside,lefthand width=0.6\textwidth]{Gaussians as probabilistic circuits}{gaussians} %
-  Let $\mathcal{C}$ a probabilistic circuit with a single (input) node $\Leaf$. We associate
-  $\Leaf$ with a univariate Gaussian distribution $p(X)=\gaussian(X;\mu,\sigma^2)$, meaning that
-  any query on $\Leaf$ directly translates to $p$. As an example, suppose $\mu=0$ and $\sigma^2=1$
-  and we wish to compute $\Leaf(x=0.8;\mu,\sigma^2)$. The probability of this input shall then be
-  \begin{equation*}
-    \Leaf(x=0.8;\mu,\sigma^2)=\gaussian(x=0.8;\mu=0,\sigma^2=1)=0.29.
-  \end{equation*}
-  Likewise, the marginal probability of a random variable $Y$ not in $\Sc(L)=\{X\}$ for the
-  probabilistic circuit $\mathcal{C}$ rooted at $\Leaf$ is the marginal of $p$
-  \begin{equation*}
-    \Leaf(y;\mu,\sigma^2)=\int_x\Leaf(x,y;\mu,\sigma^2)\dif{}x=1.0.
-  \end{equation*}
-  \tcblower
-  \centering
-  \begin{tikzpicture}
-    \pgfplotsset{
-      every axis/.append style={
-        axis line style={->},
-        tick label style={font={\scriptsize\bfseries}},
-        x tick label style={color=white,above right},
-        y tick label style={color=white,above right},
-        grid style={black,dashed},
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.32\textwidth}
+    \begin{tikzpicture}
+      \pgfplotsset{
+        every axis/.append style={
+          axis line style={->},
+          tick label style={font={\scriptsize\bfseries}},
+          x tick label style={color=white,above right},
+          y tick label style={color=white,above right},
+          grid style={black,dashed},
+        }
       }
+      \begin{axis}[
+        no markers, domain=-5:5, samples=35,
+        height=2.75cm, width=\columnwidth,
+        xtick={0.8}, ytick={0.29},
+        xticklabels={\colorbox{boxblue}{\textbf{0.8}}},
+        yticklabels={\colorbox{boxgreen}{\textbf{0.29}}},
+        axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
+        every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
+        every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
+        enlargelimits=false, clip=false, axis on top,
+        grid = major
+      ]
+        \path[name path=axis] (axis cs:0,0) -- (axis cs:5,0);
+        \addplot[very thick,boxteal,name path=g] {gauss(0,1)};
+        \addplot[boxteal!40] fill between [of=g and axis];
+      \end{axis}
+
+      \node (px) at (0.6, -0.7) {$p(x)$};
+      \newGaussNode{g}{$(px) + (1.25,0)$};
+      \node (x) at ($(g) + (1,0)$) {$x$};
+      \draw[boxdgray,edge] (g) -- (px);
+      \draw[boxdgray,edge] (x) -- (g);
+
+      \newGaussNode[label=below:$X$]{gv}{$(g) - (0,1.0)$};
+      \node (pxv) at ($(gv) - (1.25,0)$) {\colorbox{boxgreen}{\color{white}$\mathbf{.29}$}};
+      \node (xv) at ($(gv) + (1.25,0)$) {\colorbox{boxblue}{\color{white}$\mathbf{.80}$}};
+      \draw[boxdgray,edge] (gv) -- (pxv);
+      \draw[boxdgray,edge] (xv) -- (gv);
+    \end{tikzpicture}
+    \caption{}
+    \label{fig:units-input}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.32\textwidth}
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \newSumNode[fill=boxmunsel]{r}{0, 0};
+      \node (c1) at ($(r) + (1.45,-1.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{.75}$}};
+      \node (c2) at ($(r) + (1.45,0)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{.65}$}};
+      \node (c3) at ($(r) + (1.45,1.5)$) {\scriptsize\colorbox{boxpurple}{\color{white}$\mathbf{.35}$}};
+      \draw[edge] (r) edge[bend right=5] node[below,pos=0.3,yshift=-0.2cm] {\scriptsize$.25$} (c1);
+      \draw[edge] (r) edge[bend right=5] node[above,pos=0.5,yshift=0.1cm] {\scriptsize$.30$} (c2);
+      \draw[edge] (r) edge[bend right=5] node[above,pos=0.3,yshift=0.3cm] {\scriptsize$.45$} (c3);
+      \draw[edge,boxdgray] (c1) edge[bend left=-5] (r);
+      \draw[edge,boxdgray] (c2) edge[bend left=-5] (r);
+      \draw[edge,boxdgray] (c3) edge[bend left=-5] (r);
+      \node (t) at ($(r) + (-1.0,0)$) {\scriptsize\colorbox{boxgreen}{\color{white}$\mathbf{.54}$}};
+      \draw[edge,boxdgray] (r) -- (t);
+      \node (b) at ($(c2) + (1.35,0)$) {\scriptsize\colorbox{boxblue}{\color{white}$\set{x}$}};
+      \draw[edge,boxdgray] (b) -- (c1);
+      \draw[edge,boxdgray] (b) -- (c2);
+      \draw[edge,boxdgray] (b) -- (c3);
+    \end{tikzpicture}
     }
-    \begin{axis}[
-      no markers, domain=-5:5, samples=35,
-      height=2.75cm, width=\columnwidth,
-      xtick={0.8}, ytick={0.29},
-      xticklabels={\colorbox{boxblue}{\textbf{0.8}}},
-      yticklabels={\colorbox{boxgreen}{\textbf{0.29}}},
-      axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
-      every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
-      every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
-      enlargelimits=false, clip=false, axis on top,
-      grid = major
-    ]
-      \addplot[very thick,boxteal] {gauss(0,1)};
-    \end{axis}
-  \end{tikzpicture}
-
-  \begin{tikzpicture}
-    \node (x) at (0, 0) {$x$};
-    \newGaussNode{g}{$(x) + (1,0)$};
-    \node (px) at ($(g) + (1.25,0)$) {$p(x)$};
-    \draw[boxdgray,edge] (x) -- (g);
-    \draw[boxdgray,edge] (g) -- (px);
-
-    \newGaussNode[label=below:$X$]{gv}{$(g) - (0,1.0)$};
-    \node (xv) at ($(gv) - (1.25,0)$) {\colorbox{boxblue}{\color{white}$\mathbf{.80}$}};
-    \node (pxv) at ($(gv) + (1.25,0)$) {\colorbox{boxgreen}{\color{white}$\mathbf{.29}$}};
-    \draw[boxdgray,edge] (xv) -- (gv);
-    \draw[boxdgray,edge] (gv) -- (pxv);
-  \end{tikzpicture}
-
-  \begin{tikzpicture}
-    \pgfplotsset{
-      every axis/.append style={
-        axis line style={->},
-        tick label style={},
-        grid style={black}
-      }
+    \caption{}
+    \label{fig:units-sum}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.32\textwidth}
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \newProdNode[fill=boxred!70]{r}{0, 0};
+      \node (c1) at ($(r) + (1.45,-1.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{.40}$}};
+      \node (c2) at ($(r) + (1.45,0)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{.80}$}};
+      \node (c3) at ($(r) + (1.45,1.5)$) {\scriptsize\colorbox{boxpurple}{\color{white}$\mathbf{.50}$}};
+      \draw[edge] (r) edge[bend right=5] (c1);
+      \draw[edge] (r) edge[bend right=5] (c2);
+      \draw[edge] (r) edge[bend right=5] (c3);
+      \draw[edge,boxdgray] (c1) edge[bend left=-5] (r);
+      \draw[edge,boxdgray] (c2) edge[bend left=-5] (r);
+      \draw[edge,boxdgray] (c3) edge[bend left=-5] (r);
+      \node (t) at ($(r) + (-1.0,0)$) {\scriptsize\colorbox{boxgreen}{\color{white}$\mathbf{.16}$}};
+      \draw[edge,boxdgray] (r) -- (t);
+      \node (b) at ($(c2) + (1.35,0)$) {\scriptsize\colorbox{boxblue}{\color{white}$\set{x}$}};
+      \draw[edge,boxdgray] (b) -- (c1);
+      \draw[edge,boxdgray] (b) -- (c2);
+      \draw[edge,boxdgray] (b) -- (c3);
+    \end{tikzpicture}
     }
-    \begin{axis}[
-      no markers, domain=-5:5, samples=35,
-      xtick={-5}, ytick={0},
-      xticklabels={}, yticklabels = {},
-      height=2.75cm, width=\columnwidth,
-      axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
-      every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
-      every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
-      enlargelimits=false, clip=false, axis on top,
-      grid=major
-    ]
-      \path[name path=axis] (axis cs:0,0) -- (axis cs:5,0);
-      \addplot[very thick,boxteal,name path=g] {gauss(0,1)};
-      \addplot[boxteal!80] fill between [of=g and axis];
-      \node at (2.5,0.3) {\colorbox{boxblue}{\color{white}\scriptsize\textbf{1.0}}};
-    \end{axis}
-  \end{tikzpicture}
-\end{example}
+    \caption{}
+    \label{fig:units-prod}
+  \end{subfigure}
+  \caption{An input node as a Gaussian distribution \uncaption{(a)}, a sum node \uncaption{(b)},
+    and a product node \uncaption{(c)}, the last two with three children each. Arrows in black
+    signal (possibly weighted) edges in the computational graph, while gray edges indicate the
+    computational flow: given an assignment \colorbox{boxblue}{\color{white}$\set{x}$}, the
+    computation flows the opposite direction, starting on inputs and going up to the root,
+    resulting in the final value in \colorbox{boxgreen}{\color{white}\textup{green}}.}
+  \label{fig:units}
+\end{figure}
+
+Semantically, a PC represents an unnormalized probability distribution composed out of the
+functions each of its computational units represent. When all sum weights in a PC are convex
+combinations and every one of its input is a normalized probability distribution, then the
+encompassing PC is also normalized. Throughout this dissertation, we shall assume these two
+conditions to be true. Locally, sum nodes have the semantic interpretation of a mixture model over
+its children, essentially acting as a latent variable over the component distributions
+\citep{poon11,peharz16}. \Cref{eg:mixgauss} shows a case of a Gaussian mixture model as a PC, that
+is, a single sum node over univariate Gaussian distributions as inputs.
 
 \newcommand\mone{1}%
 \newcommand\sone{0.65}%
@@ -281,6 +284,16 @@ $\Prod(\set{x})=\prod_{\Child\in\Ch(\Prod)} \Child(\set{x})$.
     \end{tikzpicture}
   \end{center}
 \end{example}
+
+So far, the only nonlinearities present in PCs come from the internal computations of input nodes.
+In fact, a PC that only contains sums and inputs can always be reduced to a mixture model (see
+\Cref{thm:summix}). Adding \emph{product nodes} as another form of nonlinearity increases
+expressivity sufficiently for PCs to be capable of representing any discrete probability
+distribution \citep{darwiche03,martens14,peharz15}. More importantly, products semantically act as
+factorizations of their children, indicating a conditional independence relationship between
+variables from different children given the value of a latent variable. In practice, product nodes
+are simply products of their children: if $\Prod$ is a PC product node, then its value is given by
+$\Prod(\set{x})=\prod_{\Child\in\Ch(\Prod)} \Child(\set{x})$.
 
 The scope of an inner node $\Node$ is the set of all variables that appear in the descendants of
 $\Node$, or more formally $\Sc(\Node)=\bigcup_{\Child\in\Ch(\Node)}\Sc(\Child)$. This can be

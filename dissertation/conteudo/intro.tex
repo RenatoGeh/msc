@@ -15,17 +15,16 @@ expressive enough to learn from the possibly enormous quantity of data available
 Fulfilling these requirements are Probabilistic Circuits (PCs), a class of probabilistic models
 distinctly specified by recursive compositions of distributions through graphical formalisms.
 Vaguely speaking, PCs are computational graphs akin to neural networks, but whose network structure
-and computational units abide by special constraints. More concretely, as we shall see in
-\Cref{sec:inf}, these structural and operational constraints lead to sufficient conditions for the
-polynomial time computation of complex exact queries, providing a powerful toolbox for
-probabilistic reasoning. Within these specific conditions span a wide range of subclasses, each
-establishing a distinct set of restrictions on their structure in order to enable different
-segments within the tractability spectrum. These specific families of PCs have been known
-throughout literature by different names: Arithmetic Circuits (ACs, \cite{darwiche03}), Sum-Product
-Networks (SPNs, \cite{poon11}), Cutset Networks (CNets, \cite{rahman14}), Probabilistic Sentential
-Decision Diagrams (PSDDs, \cite{kisa14}), Probabilistic Decision Graphs (PDGs, \cite{jaeger04}) and
-And/Or-Graphs (AOGs, \cite{dechter07}) are some of the more well-known formalisms caught under the
-PC framework.
+and computational units abide by special constraints. More concretely, these structural and
+operational constraints lead to sufficient conditions for the polynomial time computation of
+complex exact queries, providing a powerful toolbox for probabilistic reasoning. Within these
+specific conditions span a wide range of subclasses, each establishing a distinct set of
+restrictions on their structure in order to enable different segments within the tractability
+spectrum. These specific families of PCs have been known throughout literature by different names:
+Arithmetic Circuits (ACs, \cite{darwiche03}), Sum-Product Networks (SPNs, \cite{poon11}), Cutset
+Networks (CNets, \cite{rahman14}), Probabilistic Sentential Decision Diagrams (PSDDs,
+\cite{kisa14}), Probabilistic Decision Graphs (PDGs, \cite{jaeger04}) and And/Or-Graphs (AOGs,
+\cite{dechter07}) are some of the more well-known formalisms caught under the PC framework.
 
 While inference in PCs is usually straightforward, learning their structure so that they both
 obey the needed structural restrictions and prove expressive enough for the task at hand has proven
@@ -45,8 +44,8 @@ with competitive results \citep{peharz20a,dimauro21,geh21a,peharz20b}. Apart fro
 side of random structure generation, usual structure learning algorithms often require an extensive
 grid-search for hyperparameter tuning to achieve top quality performance, which is usually not the
 case for random algorithms. For the usual data scientist or machine learning practicioner,
-hyperparameter tuning can become exhaustive, especially if the goal is to analyze and infer from
-large data, and not to achieve top tier performance on benchmark datasets.
+hyperparameter tuning can become time consuming and tedious, especially if the goal is to analyze
+and infer from large data, and not to achieve top tier performance on benchmark datasets.
 
 The objectives of this dissertation are two-fold. First, we seek to provide a concise literature
 review on structure learning algorithms for probabilistic circuits, describing a few of the most
@@ -54,11 +53,27 @@ popular techniques for learning PCs. This particular contribution comes from a n
 systematic comparison of the large body of techniques that have been developed so far, each with
 different trade-offs of computational cost, accuracy and structural properties. To this end, we
 compare and categorize structure learning algorithms with respect to time and memory requirements,
-efficient queries enabled by the learned model and the pros and cons brought by each.
+efficient queries enabled by the learned model and the overall pros and cons brought by each.
 
 Second, we present two new structural learning algorithms for PCs whose focus are on efficiently
 learning from complex domains; we show that our approaches are scalable and competitive against the
-state-of-the-art.
+state-of-the-art. They both take advantage of random circuit generation to quickly construct PCs
+with little to no need for hyperparameter tuning. The first approaches the problem of circuit
+construction through the lenses of symbolic machine learning, effective for constructing PCs from
+highly structured binary data where prior knowledge of the domain can be embedded into the model as
+a means to define its support. We describe a randomized algorithm capable of taking background
+knowledge in the form of logical constraints and produce PC samples whose support are relaxations
+of the given logical formula. By taking advantage of known expert knowledge, the resulting PC
+attributes mass to the more relevant portions of the sample space, resulting in a more performant
+model, especially in data scarce regimes with abundant certain knowledge. We show how this approach
+scales well to complex formulae and large amounts of data. From a pure data point of view, we
+present a simple yet effective way to learn the structure of probabilistic circuits by exploiting a
+recently discovered connection between PCs and random forests \citep{correia20}. We revisit a
+well-known inductive method of hierarchically stacking oblique projections to learn decision trees
+\citep{dasgupta08a,dasgupta08b} and transplant them into the context of probabilistic circuits,
+adapting one of the more popular techniques for constructing PCs and proposing a simpler and faster
+random version based on random oblique projections. We found that our approach produced fairly
+competitive PC structures in a fraction of the time.
 
 \section{Dissertation Outline}
 
@@ -75,27 +90,23 @@ three classes: divide-and-conquer learning (\Cref{sec:divconq}), incremental lea
 (\Cref{sec:incremental}) and random learning (\Cref{sec:random}). For each, we give a brief
 analysis on their complexity and discuss their advantages and disadvantages.
 
-In \Cref{ch:scalable}, we propose two scalable structural learning algorithms for probabilistic
-circuits that are especially suited for large data and fast deployment. They both take advantage of
-random network generation to quickly construct PCs with little to no need for hyperparameters. The
-first approaches this problem through the lenses of symbolic machine learning, effective for
-constructing PCs from highly structured binary data where prior knowledge of the domain can be
-embedded into the model as a means to define its support. We describe a randomized algorithm
-capable of taking background knowledge in the form of logical constraints and produce PC samples
-whose support are relaxations of the given logical formula. We show how this approach scales well
-to complex formulae and large amounts of data.
+In \Cref{ch:scalable}, we propose the two scalable structural learning algorithms for probabilistic
+circuits that are especially suited for large data and fast deployment.  The final chapter
+(\Cref{ch:conclusion}) is dedicated to summarizing our research contributions and pointing to
+potential future work in learning PCs.
 
-From a pure data point of view, we present a simple and effective way to learn the structure of
-probabilistic circuits by exploiting a recently discovered connection between PCs and random
-forests \citep{correia20}. We revisit a well-known inductive method of hierarchically stacking
-oblique projections to learn decision trees \citep{dasgupta08a,dasgupta08b} and transplant them
-into the context of probabilistic circuits. We found that our approach produced fairly competitive
-PCs in a fraction of the time. The final chapter (\Cref{ch:conclusion}) is dedicated to summarizing
-our research contributions and pointing to potential future work in learning PCs.
+\section{Contributions}
 
-\subsection{Contributions}
+Overall, our contributions throughout this dissertation address the following research topics.
 
-Overall, our contributions in this dissertation address the following research topics.
+\newCTitle{boxgray}{A concise review of literature on structure learning of PCs}
+
+\Cref{ch:learning} is dedicated to an extensive review of some of the existing techniques for
+learning the structure of probabilistic circuits. We categorize them into three different classes
+and analyze each in terms of their time requirements. We describe them in detail and list insights
+on what seems to work and what could potentially be improved. Perhaps more importantly, we provide
+a birds-eye view of what each learning algorithm guarantees in terms of structural constraints,
+time requirement and number of hyperparameters needed during learning.
 
 \newCTitle{boxgray}{Scalably learning PCs directly from background knowledge}
 
