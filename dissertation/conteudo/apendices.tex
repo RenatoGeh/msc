@@ -217,10 +217,11 @@ contains only products or inputs and every product node contains only \emph{two}
 \linevi*
 \begin{proof}
   \label{proof:linevi}
-  For a sum node $\Sum$, we have the following marginalization query
+  For a sum node $\Sum$ and query variables $\set{X}$, we have the following marginalization of
+  variables $\set{Y}$
   \begin{align*}
     \int\Sum(\set{x},\set{y})\dif\set{y}&=\int\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\Child(\set{x},\set{y})\dif\set{y}\\
-                                        &=\sum_{\Child\in\Ch(\Sum)}w_{\sum,\Child}\int\Child(\set{x},\set{y})\dif\set{y}.
+                                        &=\sum_{\Child\in\Ch(\Sum)}w_{\Sum,\Child}\int\Child(\set{x},\set{y})\dif\set{y}.
   \end{align*}
   Analogously, for a product node
   \begin{align*}

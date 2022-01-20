@@ -41,6 +41,8 @@ computational units. We start with a broad definition of probabilistic circuits.
   \emph{product node} $\Prod$ multiplies all of its children
   $\Prod(\set{x})=\prod_{\Child\in\Ch(\Prod)} \Child(\set{x})$, and \emph{input nodes}, i.e.\ nodes
   with no outgoing edges, are defined as univariate probability density functions.\label{def:pc}
+  The \emph{size} of $\mathcal{C}$ probabilistic circuit is the number of nodes and edges of its
+  graph, denoted by $|\mathcal{C}|$.
 \end{definition}
 
 In its simplest form, a PC is a single input node annotated with an unnormalized probability
@@ -182,11 +184,13 @@ sum to one, or in other words, nodes which correspond to convex combinations of 
 Semantically, the root of a PC represents an unnormalized probability distribution composed out of
 the functions of its descendant computational units. When all sums in a PC are convex combinations
 and every one of its inputs are normalized probability distributions, then the encompassing PC is
-also normalized. \textbf{Throughout this dissertation, we shall assume sums to be convex
-combinations and inputs to be normalized.} Locally, sum nodes have the semantic interpretation of a
-mixture model over its children, essentially acting as a latent variable over the component
-distributions \citep{poon11,peharz16}. \Cref{eg:mixgauss} shows a case of a Gaussian mixture model
-as a PC, that is, a single sum node over Gaussian distributions as inputs.
+also normalized, meaning that the distribution it represents is normalized. \textbf{Throughout this
+dissertation, we shall assume sums to be convex combinations and inputs to be
+normalized\footnote{This assumption incurs in no loss of generality, as \cite{peharz15} show.}.}
+Locally, sum nodes have the semantic interpretation of a mixture model over its children,
+essentially acting as a latent variable over the component distributions \citep{poon11,peharz16}.
+\Cref{eg:mixgauss} shows a case of a Gaussian mixture model as a PC, that is, a single sum node
+over Gaussian distributions as inputs.
 
 \newcommand\mone{1}%
 \newcommand\sone{0.65}%
@@ -303,15 +307,19 @@ while $\Sc(\inode[fill=boxpink!50]{\newGaussNode})=\Sc(\inode[fill=boxgoldenrod!
 =\{Y\}$. Consequentially, their parent sum nodes will have the same scope as their children
 $\Sc(\inode[fill=boxred!70]{\newSumNode})=\{X\}$ and $\Sc(\inode[fill=boxpurple!60]{\newSumNode})=
 \{Y\}$, yet the root node's scope is $\Sc(\inode[fill=boxgreen]{\newProdNode})=\{X,Y\}$, since its
-childrens' scopes are distinct. When computing the value of a node $\Node$, the domain of the
-function it computes $\Node(\set{X}=\set{x})$ is restricted to the node's scope
-$\Sc(\Node)=\set{X}$. For instance, in the case of \Cref{eg:factors}, the domain of
-\inode[fill=boxgreen]{\newProdNode} is over $X$ and $Y$: $\inode[fill=boxgreen](X,Y)$, while
-\inode[fill=boxred!70]{\newSumNode} and \inode[fill=boxpurple!60]{\newSumNode} are only over $X$
-and $Y$ respectively. The notion of scope is essential to many structural properties in PCs, many
-of which provide sufficient conditions for tractably computing a wide range of inference queries on
-probabilistic circuits as feedforward passes on the computational graph, as we detail in
+childrens' scopes are distinct. The notion of scope is essential to many structural properties in
+PCs, many of which provide sufficient conditions for tractably computing a wide range of inference
+queries on probabilistic circuits as feedforward passes on the computational graph, as we detail in
 \Cref{sec:inf}.
+
+When computing the value of a node $\Node$, the domain of the function it computes
+$\Node(\set{X}=\set{x})$ is restricted to the node's scope $\Sc(\Node)=\set{X}$. For instance, in
+the case of \Cref{eg:factors}, the domain of \inode[fill=boxgreen]{\newProdNode} is over $X$ and
+$Y$, while \inode[fill=boxred!70]{\newSumNode} and \inode[fill=boxpurple!60]{\newSumNode} are only
+over $X$ and $Y$ respectively. Having said that, for simplification purposes we often abuse
+notation and assume that, given an assignment $\set{x}$ of RVs $\set{X}$, the application of
+$\Node(\set{x})$ is strictly over the variables in $\Sc(\Node)$, meaning that the assignments of
+any RVs outside of $\Node$'s scope are simply ignored.
 
 \newcommand\xmone{2}%
 \newcommand\xsone{0.5}%
@@ -498,21 +506,19 @@ probabilistic circuits as feedforward passes on the computational graph, as we d
 \end{example}
 
 Before we address reasoning in probabilistic circuits, we first describe indicator nodes,
-subcircuits, circuit size and induced subcircuits, all of which are basic concepts of PCs that we
-shall need later throughout the text. We start with a special case of an input node. An
-\emph{indicator node} is an input node whose distribution is the indicator function $f(x)=\liv
-x=k\riv$, i.e. a degenerate distribution with all of its mass on $k$ and zero anywhere else. A
-special case is when $X$ is binary and $k=1$, in which case we say the input node is a literal
-node, denoting by the usual propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$.
-Graphically, we shall use \inode{\newLeafNode} for indicators and the textual propositional
+subcircuits, circuit size, induced subcircuits, and standard circuits, all of which are basic
+concepts of PCs that we shall need later throughout the text. We start with a special case of an
+input node. An \emph{indicator node} is an input node whose distribution is the indicator function
+$f(x)=\liv x=k\riv$, i.e. a degenerate distribution with all of its mass on $k$ and zero anywhere
+else. A special case is when $X$ is binary and $k=1$, in which case we say the input node is a
+literal node, denoting by the usual propositional notation $X$ for when $k=1$ and $\neg X$ for
+$k=0$. Graphically, we shall use \inode{\newLeafNode} for indicators and the textual propositional
 notation for literals.
 
 Let $\mathcal{C}$ be a probabilistic circuit and consider a node $\Node\in\mathcal{C}$. We say that
 $\Node_\mathcal{C}$ is a subcircuit of $\mathcal{C}$ rooted at $\Node$ if $\Node_\mathcal{C}$'s
 root is $\Node$, all nodes and edges in $\mathcal{C}_{\Node}$ are also in $\mathcal{C}$ and
-$\mathcal{C}_{\Node}$ is also a probabilistic circuit. The size of a probabilistic circuit is the
-number of nodes and edges of its computational graph. We use $|\mathcal{C}|$ to denote the size of
-a PC $\mathcal{C}$.
+$\mathcal{C}_{\Node}$ is also a probabilistic circuit.
 
 \begin{definition}[Induced subcircuit]\label{def:inducedsub}
   Let $\mathcal{C}$ be a probabilistic circuit. An \emph{induced subcircuit} $\mathcal{S}$ of
@@ -683,9 +689,15 @@ is tree-shaped, as is the case in \Cref{fig:induced}, they are referred to as in
   \label{fig:induced}
 \end{figure}
 
+A probabilistic circuit $\mathcal{C}$ that contains no consecutive sums or products (i.e. for every
+sum all of its children are either inputs or products, and for products their children are either
+inputs or sums) is said to be in \emph{standard} form circuit. Any PC can be efficiently
+transformed into a \emph{standard} circuit in a process we call \emph{standardization} (see
+\Cref{thm:standard}).
+
 \begin{remark}[breakable]{On operators and tractability}{optract}
   Throughout this work we consider only products and convex combinations (apart from the implicit
-  operations contained within input nodes) as potential computational units. The question of whether
+  operations contained within input nodes) as potential computational units. The subject of whether
   any other operator could be used to gain expressivity without loss of tractability is without a
   doubt an interesting research question, and one that is actively being pursued. However, this is
   certainly out of the scope of this dissertation, and so we restrict discussion on this topic and
@@ -719,14 +731,15 @@ is tree-shaped, as is the case in \Cref{fig:induced}, they are referred to as in
   \citep{melibari16a}, and einsum \citep{peharz20b} operations.
 \end{remark}
 
-\section{Reasoning in Probabilistic Circuits}
+\section{Reasoning with Probabilistic Circuits}
 \label{sec:inf}
 
-When reasoning with probabilistic models, and especially probabilistic circuits, three queries
-stand out as the most commonly used in real-world applications: probability of evidence, marginal
-probability and conditional probability. Throughout this section, we lay out these and other
-inference tasks, describe sufficient conditions for enabling these queries in PCs, and
-algorithmically show how to tractably compute them when these conditions are met.
+Up to now, we have only vaguely touched on the issue of computing the value of a probabilistic
+circuit. Throughout this section, we define some of the possible inference tasks available to PCs,
+describe sufficient conditions for enabling these queries within this framework, and
+algorithmically show how to tractably compute them in the computational graph when these conditions
+are met. We start defining the four most basic probabilistic queries in PCs: probability of
+evidence, marginal probability, conditional probability and maximum a posteriori probability.
 
 Consider a normalized probability distribution $p$ whose scope is $\Sc(p)=\set{X}$ and let
 $\set{x}$ be a complete assignment of $\set{X}$. We define the \emph{probability of evidence},
@@ -737,10 +750,59 @@ and calling $\set{y}$ a partial assignment of it, we say that the query $p(\set{
 \emph{marginal probability}, here denoted by \mar{}, of query variables $\set{Y}$ with the
 remaining variables $\set{Z}=\set{X}\cap \set{Y}$ marginalized. This corresponds to the summing out
 $\sum_{\set{z}}p(\set{y}, \set{z})$ when in the discrete, and the integral
-$\int_{\set{z}}p(\set{y},\set{z})\dif\set{z}$ in the continuous. The \emph{conditional probability}
-of query variables $\set{Y}$ given \emph{evidence variables} $\set{Z}$ is the probability
-$p(\set{y}|\set{z})=\frac{p(\set{y}, \set{z})}{p(\set{z})}$, which we shall call by the shorthand
-\con{} throughout this dissertation.
+$\int_{\set{z}}p(\set{y},\set{z})\dif\set{z}$ in the continuous. Aside from \evi{} and \mar{},
+prediction tasks such as classification often require computing the \emph{conditional probability}
+$p(\set{y}|\set{z})=\frac{p(\set{y},\set{z})}{p(\set{z})}$, which we shall call by the shorthand
+\con{}, of query variables $\set{Y}$ given evidence variables $\set{Z}$ in order to understand, in
+the case of image classification, the probability of a certain label given pixel values. A related
+yet more difficult task is to compute the \emph{maximum a posteriori} probability (\map{}), which
+involves finding the most probable assignment of a set of RVs $\set{Y}$, said to be the query
+variables, conditioned on evidence variables $\set{X}$, say for image reconstruction. To do so, we
+must compute the most probable assignment $\set{y}$ (for instance, the missing pixels to be
+reconstructed) conditioned on evidence $\set{x}$ (for example, values of the known pixels), or more
+formally
+\begin{equation}
+  \max_{\set{y}}p(\set{y}|\set{x})=\max_{\set{y}}\frac{p(\set{y},\set{x})}{p(\set{x})}=
+  \frac{\max_{\set{y}}p(\set{y},\set{x})}{p(\set{x})}.
+  \label{eq:map}
+\end{equation}
+For this dissertation, we shall only consider the case of full \map{}, as computing partial \map{}
+is provably hard in most PCs \citep{peharz16,decampos11}.  Unless explicitly stated, \map{} shall
+mean full \map{}, i.e. when $\set{x}\cup\set{y}$ forms a complete assignment of the scope. Full
+\map{} also goes by the name of \emph{most probable explanation} (MPE) in literature.  Although at
+first it may seem like \map{} is no harder than computing a \con{}, it turns out that for smooth
+and decomposable PCs, \map{} is unfortunately NP-hard \citep{conaty17,mei18}. Now that we have
+properly defined the queries we are interested in, we begin listing sufficient conditions for their
+tractability in PCs and the algorithms that compute them.
+
+As we have already (informally) seen in the previous section, computing the probability of evidence
+for an assignment $\set{x}$ according to a PC $\mathcal{C}$ amounts to the computation of the value
+of $\mathcal{C}$'s root by a bottom-up computation of node values. Starting with inputs, we compute
+their value by querying their distribution for their probability of evidence; this is then
+followed by simply computing inner node values normally. \Cref{alg:evi} shows this procedure
+algorithmically, computing the \evi{} in linear time to the size of the circuit. Of note is the
+fact that, if the PC is not normalized, then the result of this procedure must be normalized by a
+constant, extractable in a similar way; however, since we assume all PCs to be normalized, the
+value returned by \Cref{alg:evi} is already normalized.
+
+\begin{algorithm}[t]
+  \caption{\evi}\label{alg:evi}
+  \begin{algorithmic}[1]
+    \Require A PC $\mathcal{C}$ and complete assignment $\set{x}$
+    \Ensure $\mathcal{C}(\set{x})$
+    \State Let $v$ be a hash function mapping a node to its value
+    \For{each $\Node$ in reverse topological order}
+      \IIf{$\Node$ is an input}{$v(\Node)\gets\Node(\set{x})$}
+      \IElseIf{$\Node$ is a sum}{$v(\Node)\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
+      \IElseIf{$\Node$ is a product}{$v(\Node)\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
+    \EndFor%
+    \State \textbf{return} $v(\normalfont{R})$, where $\textsf{R}$ is $\mathcal{C}$'s root
+  \end{algorithmic}
+\end{algorithm}
+
+By our definition of PCs, computing the \evi{} of a PC is always tractable. Computing the \mar{},
+on the other hand, does not always come for free. We now introduce the first two structural
+constraints for probabilistic circuits which, together, enable tractable \mar{} in PCs.
 
 \begin{definition}[Smoothness]
   A probabilistic circuit $\mathcal{C}$ is said to be \emph{smooth} if for every sum node $\Sum$ in
@@ -753,6 +815,16 @@ $p(\set{y}|\set{z})=\frac{p(\set{y}, \set{z})}{p(\set{z})}$, which we shall call
   \Ch(\Prod)$.
 \end{definition}
 
+When a probabilistic circuit $\mathcal{C}$ is both \emph{smooth} and \emph{decomposable}, any
+marginal is linear time computable in $\mathcal{C}$ \citep{poon11,peharz15}. Although smoothness
+and decomposability are sufficient for tractably computing marginals, they are not necessary. In
+fact, \emph{consistency} is a weaker constraint on products that, coupled with smoothness, confers
+efficient \mar{} \citep{poon11}. \Cref{fig:smooth-decomp} shows examples of smooth and decomposable
+circuits. Although there exist PCs that are neither smooth nor decomposable (or consistent) and
+also have tractable \mar{} (this is the case of density estimation trees \citep{ram11}, as
+\Cref{eg:det} later shows), these two properties are often adopted during learning due to their
+intuitive and uncomplicated syntax. In fact, \textbf{all PCs shown throughout this dissertation
+shall be \emph{at least} smooth and decomposable unless explicitly stated otherwise.}
 
 \begin{figure}[t]
   \begin{subfigure}[t]{0.31\textwidth}
@@ -840,61 +912,9 @@ $p(\set{y}|\set{z})=\frac{p(\set{y}, \set{z})}{p(\set{z})}$, which we shall call
   \end{subfigure}
   \caption{Decomposable but non-smooth \uncaption{(a)}, smooth but non-decomposable
     \uncaption{(b)}, and smooth and decomposable \uncaption{(c)} circuits. Labels below inputs
-    indicate their scopes.}
+    indicate their scope.}
   \label{fig:smooth-decomp}
 \end{figure}
-
-When a PC is both \emph{smooth} and \emph{decomposable}, then the circuit is said to be
-\emph{valid}, which means it correctly computes the probability of any evidence. Although
-smoothness and decomposability are sufficient for validity, they are not necessary. In fact,
-\emph{consistency} is a weaker constraint on products that, coupled with smoothness, confers
-validity \citep{poon11}. Although there exist valid PCs that are neither smooth nor decomposable
-(or consistent), these two properties are often adopted during learning due to their intuitive and
-uncomplicated syntax. In fact, all PCs shown throughout this dissertation shall be \emph{at least}
-smooth and decomposable unless explicitly stated otherwise.
-
-
-
-We now formally address how to compute two inference queries that, up until now, were only
-informally touched on: namely the probability of evidence and marginal probability. Given a
-probabilistic circuit $\mathcal{C}$ whose root is $\Node$, we shall use $\mathcal{C}$ and its root
-$\Node$ interchangeably when there is no need for a distinction. We refer to the probability of
-evidence by the shorthand \evi{}, computable by a bottom-up evaluation of each node as shown in
-\Cref{alg:evi}. Likewise, marginals are denoted by \mar{}, and are computed bottom-up just like in
-\evi{} with the exception of inputs, where we marginalize over the unseen variables, as shown in
-\Cref{alg:mar}. In both cases, the evaluations are correct and linear time computable on the size
-of the circuit -- recall that queries on inputs are assumed to be computed in constant time -- as
-formally stated by the following result.
-
-\begin{algorithm}[t]
-  \caption{\evi}\label{alg:evi}
-  \begin{algorithmic}[1]
-    \Require A smooth and decomposable PC $\mathcal{C}$ and complete assignment $\set{x}$
-    \Ensure Probability $\mathcal{C}(\set{x})$
-    \State Let $v$ be a hash function mapping a node to its probability
-    \For{each $\Node$ in reverse topological order}
-      \IIf{$\Node$ is an input}{$v_{\Node}\gets\Node(\set{x})$}
-      \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
-      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
-    \EndFor%
-    \State \textbf{return} $v_{\normalfont{R}}$, where $\textsf{R}$ is $\mathcal{C}$'s root
-  \end{algorithmic}
-\end{algorithm}
-\begin{algorithm}[t]
-  \caption{\mar}\label{alg:mar}
-  \begin{algorithmic}[1]
-    \Require A smooth and decomposable PC $\mathcal{C}$ and partial assignment $\set{x}$
-    \Ensure Probability $\int_\set{y}\mathcal{C}(\set{x},\set{y})\dif\set{y}$\Comment{Call
-    $\set{Y}$ the remaining variables not in $\set{X}$}
-    \State Let $v$ be a hash function mapping a node to its probability
-    \For{each $\Node$ in reverse topological order}
-    \IIf{$\Node$ is an input}{$v_{\Node}\gets\int_\set{y}\Node(\set{x},\set{y})\dif\set{y}$}
-      \IElseIf{$\Node$ is a sum}{$v_{\Node}\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
-      \IElseIf{$\Node$ is a product}{$v_{\Node}\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
-    \EndFor%
-    \State \textbf{return} $v_{\normalfont{R}}$, where $\textsf{R}$ is $\mathcal{C}$'s root
-  \end{algorithmic}
-\end{algorithm}
 
 \begin{restatable}[\cite{poon11,pclec,vergari21}]{theorem}{linevi}
   \label{thm:linevi}
@@ -902,48 +922,30 @@ formally stated by the following result.
   \con{} can be computed in linear time (in the size of $\mathcal{C}$).
 \end{restatable}
 
-Prediction tasks often involve computing the \emph{conditional probability} $p(\set{Y}|\set{X})$,
-here denoted by \con{}, of query variables $\set{Y}$ given evidence variables $\set{X}$. With
-\mar{} available to us, querying for \con{} reduces to a simple two-pass evaluation over the
-circuit: the first computes the numerator as the marginal $p(\set{Y},\set{X})$, and the second the
-denominator marginal $p(\set{X})$. Importantly, \evi{} and \con{} are both special cases of \mar{}
-in the sense that they are marginalizations over different intervals (see proof of
-\Cref{thm:linevi} on \cpageref{proof:linevi}). More specifically, \evi{} is a marginalization over
-an empty set and \con{} is simply the quotient between two marginalization passes. Algorithmically,
-this means that the only distinction between these three queries is on what to do on the input
-nodes.
+What \Cref{thm:linevi}'s proof on \cpageref{proof:linevi} tells us is that, algorithmically, the
+only difference between \evi{}, \mar{} and \con{} is what is done on the input nodes. This can be
+seen in \Cref{alg:mar}, which shows how to compute marginals in PCs. With \mar{} available to us,
+querying for \con{} reduces to a simple two-pass evaluation over the circuit: the first computes
+the numerator as the marginal $p(\set{Y},\set{X})$, and the second the denominator marginal
+$p(\set{X})$.
 
-Before we continue to more complex queries on probabilistic circuits, we must first discuss some
-important concepts that often come up in PC literature. Mainly, we are interested in defining two
-notions here: \emph{standard circuits} and \emph{induced subcircuits}. A probabilistic circuit
-$\mathcal{C}$ that contains no consecutive sums or products (i.e. for every sum all of its children
-are either inputs or products, and for products their children are either inputs or sums) is said
-to be in \emph{standard} form circuit. Any PC can be transformed into a \emph{standard} circuit in
-a process we call \emph{standardization} (see \Cref{thm:standard}).
+\begin{algorithm}[t]
+  \caption{\mar}\label{alg:mar}
+  \begin{algorithmic}[1]
+    \Require A smooth and decomposable PC $\mathcal{C}$ and partial assignment $\set{x}$
+    \Ensure Probability $\int_\set{y}\mathcal{C}(\set{x},\set{y})\dif\set{y}$\Comment{Call
+    $\set{Y}$ the remaining variables not in $\set{X}$}
+    \State Let $v$ be a hash function mapping a node to its value
+    \For{each $\Node$ in reverse topological order}
+    \IIf{$\Node$ is an input}{$v(\Node)\gets\int_\set{y}\Node(\set{x},\set{y})\dif\set{y}$}
+    \IElseIf{$\Node$ is a sum}{$v(\Node)\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
+    \IElseIf{$\Node$ is a product}{$v(\Node)\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
+    \EndFor%
+    \State \textbf{return} $v(\normalfont{R})$, where $\textsf{R}$ is $\mathcal{C}$'s root
+  \end{algorithmic}
+\end{algorithm}
 
-Let $\mathcal{C}$ be a probabilistic circuit and node $\Node\in\mathcal{C}$. We say that
-$\mathcal{C}_{\Node}$ is a subcircuit of $\mathcal{C}$ rooted at $\Node$ if $\mathcal{C}_{\Node}$'s
-root is $\Node$, all nodes and edges in $\mathcal{C}_{\Node}$ are also in $\mathcal{C}$ and
-$\mathcal{C}_{\Node}$ is also a probabilistic circuit. We now introduce the concept of induced
-subcircuits \citep{chan06,dennis15,peharz14}.
-
-Suppose we wish to compute the most probable assignment of a variable, say for classification or
-image reconstruction. To do so, we must compute the most probable assignment of query variables
-$\set{y}$ (for instance, the labels to be predicted in classification) conditioned on the given
-evidence $\set{x}$ (for example, pixel values from an image to be classified), or more formally
-\begin{equation}
-  \max_{\set{y}}p(\set{y}|\set{x})=\max_{\set{y}}\frac{p(\set{y},\set{x})}{p(\set{x})}=
-  \frac{\max_{\set{y}}p(\set{y},\set{x})}{p(\set{x})},
-  \label{eq:map}
-\end{equation}
-often called the \emph{maximum a posteriori} (\map) probability. For this dissertation, we shall
-only consider the case of full \map{}, as computing partial \map{} is provably hard in most PCs
-\citep{peharz16,decampos11}.  Unless explicitly stated, \map{} shall mean full \map{}, i.e. when
-$\set{x}\cup\set{y}$ forms a complete assignment of the scope. Full \map{} also goes by the name of
-\emph{most probable explanation} (MPE) in literature.  Although at first it may seem like \map{} is
-no harder than computing a \con{}, it turns out that for smooth and decomposable PCs, \map{} is
-unfortunately intractable \citep{conaty17,mei18}. Similar to smoothness and decomposability, a
-sufficient condition to unlocking access to \map{} is \emph{determinism}.
+For sufficient condition to unlocking access to \map{} is \emph{determinism}.
 
 \begin{definition}[Determinism]
   A probabilistic circuit $\mathcal{C}$ is said to be \emph{deterministic} if for every sum node
@@ -1012,9 +1014,9 @@ proof on the algorithm's validity).
   $A$, body mass index $B$ and average amount of cheese consumed daily $C$ from three different
   cities $Y$.  Assuming $A$, $B$ and $C$ are independent, given a sample $x=(a,b,c)$ we can use
   Gaussian naïve Bayes to predict $x$'s class
-  \begin{equation*}
+  \begin{equation}
     p(y|a,b,c)=p(y)p(a|y)p(b|y)p(c|y).
-  \end{equation*}
+  \end{equation}
   In PC terms, $p(y)$ are the prior probabilities, i.e. sum weights, for each class and $p(z|y)$
   are Gaussian input nodes corresponding to the distributions of each feature in each city. To make
   sure that these are in fact conditional distributions, we introduce indicator variables
@@ -1255,9 +1257,9 @@ and $\Sc(v^\to)$ under the distribution encoded by its PC.
   phrase. Each observation $Y_i$ is a fragment (of $X_i$) taken from a complete sentence
   $\set{y}=(y_1,y_2,y_3)$. The first-order Hidden Markov Model (HMM) (on the right) models the
   joint probability of sentences
-  \begin{equation*}
+  \begin{equation}
     p(X_{1..3},Y_{1..3})=p(X_1)\prod_{i=2}^3 p(X_i|X_{i-1})\prod_{i=1}^3 p(Y_i|X_i).
-  \end{equation*}
+  \end{equation}
   This is computationally equivalent to the PC on the right. Each input node $p(Y_i|X_i)$ is a
   conditional distribution model (possibly another PC) for each assignment (here two) of $X_i$,
   meaning that if $p(Y_i|X_i=0)>0$, then $p(Y_i|X_i=1)=0$ and vice-versa. Root weights are exactly
@@ -1358,9 +1360,9 @@ implicitly assumes an arrangement of product scopes that is analogous to a vtree
   each node that essentially determines in which edge an observation should fall into. The density
   function of a tree $\mathcal{T}$ given a dataset $\set{D}$ of dimension $d$ is defined as the
   piecewise function
-  \begin{equation*}
+  \begin{equation}
     p_\mathcal{T}(\set{x})=\sum_{\Leaf\in\operatorname{Leaves}(\mathcal{T})}\frac{1}{\operatorname{Vol}(\Leaf)}\cdot\frac{\left|\set{D}\in\Leaf\right|}{|\set{D}|}\cdot\liv\set{x}\in\Leaf\riv,
-  \end{equation*}
+  \end{equation}
   where $\left|\set{D}\in\Leaf\right|$ indicates the number of assignments $\set{x}$ in the
   training dataset $\set{D}$ which fall inside the cell determined by leaf $\Leaf$, and
   $\operatorname{Vol}(\Leaf)$ retuns the volume of the $d$-dimensional cell $\Leaf$. The top figure
@@ -1375,9 +1377,9 @@ implicitly assumes an arrangement of product scopes that is analogous to a vtree
   sum nodes which encode such latent partitions and whose input nodes are truncated to follow these
   latent variables (i.e.\ their support is only over the space determined by the partitionings);
   collapse all layers (and weights) into a shallow PC with a single sum layer. Its value is then
-  \begin{equation*}
+  \begin{equation}
     p_\mathcal{C}(\set{x})=\sum_{\Leaf\in\operatorname{Inputs}(\mathcal{C})}w_{\Leaf}\cdot\Leaf(\set{x})\cdot\liv\set{x}\in\Leaf\riv.
-  \end{equation*}
+  \end{equation}
   \tcblower
   \centering
   \begin{tikzpicture}
@@ -1692,9 +1694,9 @@ on logic circuits.
   leaf where each variable $X$ determines a decision to go through the dashed line when $x=0$ or
   solid line when $x=1$. If the path ends at a $\top$, the function returns 1, otherwise it must
   end at a $\bot$ and therefore returns 0. The BDD above encodes the following logic formula
-  \begin{equation*}
+  \begin{equation}
     \phi(A,B,C)=(A\vee\neg B)\wedge(\neg B\vee C),
-  \end{equation*}
+  \end{equation}
   also shown as a truth table on the right, together with a logic circuit that encodes the same
   truth table and its vtree. Conjunctions take the role of products, with each conjunction node
   determining a vtree node's scope partition.
@@ -1784,18 +1786,18 @@ conjunctions in $\mathcal{L}$, and sums with disjunctions. Input nodes from $\ma
 replaced with a literal node if the function is degenerate, or with a disjunction over positive and
 negative literals otherwise. This makes sure $\mathcal{L}$ acts as the support of $\mathcal{C}$, as
 each disjunction node $\Sum_{\mathcal{L}}$ of $\mathcal{L}$ defines
-\begin{equation*}
+\begin{equation}
   \Sum_\mathcal{L}(\set{x})=\bigvee_{\Child\in\Ch_{\mathcal{C}}(\Sum_\mathcal{L})}\left\liv
   \Child_p(\set{x})>0\right\riv\wedge\left\liv\Child_s(\set{x})>0\right\riv,
-\end{equation*}
+\end{equation}
 where $\Ch_{\mathcal{C}}(\Sum)$ retrieves the children of $\Sum$'s corresponding sum node in
 $\mathcal{C}$, with $\Child_p(\set{x})$ and $\Child_s(\set{x})$ the probabilities of $\Child$'s
 prime and sub respectively. The corresponding sum node $\Sum_{\mathcal{C}}$ in $\mathcal{C}$ then
 only attributes a weight (i.e.\ probability) to each positive element as usual
-\begin{equation*}
+\begin{equation}
   \Sum_\mathcal{C}(\set{x},\set{y})=\sum_{\Child\in\Ch(\Sum_\mathcal{C})}w_{\Sum_\mathcal{C},\Child}\cdot
   \Child_p(\set{x})\cdot\Child_s(\set{y}).
-\end{equation*}
+\end{equation}
 When a deterministic sum (resp. disjunction) node has the above form, then this composition of a
 weighted sum (resp. disjunction) is known in PC and LC literature as a \emph{partition}.
 
@@ -1884,9 +1886,9 @@ querying for the probability of logical events, i.e.\ the expectation of a logic
 to a distribution, a special case of the previously defined \Cref{eq:exp}, where the circuit to be
 queried $\mathcal{L}$ is a logic circuit representing any logic query and $\mathcal{C}$ is the
 probabilistic interpretation
-\begin{equation*}
+\begin{equation}
   \mathbb{E}_{\mathcal{C}}\left[\mathcal{L}\right]=\int_{\set{x}}\mathcal{C}(\set{x})\mathcal{L}(\set{x})\dif\set{x}.
-\end{equation*}
+\end{equation}
 This computation is known to be tractable when $\mathcal{C}$ and $\mathcal{L}$ both have the same
 vtree and $\mathcal{C}$ is smooth, as \Cref{thm:expc} shows.
 
