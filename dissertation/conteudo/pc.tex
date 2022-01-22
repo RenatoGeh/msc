@@ -481,10 +481,10 @@ any RVs outside of $\Node$'s scope are simply ignored.
       \node at ($(p) + (0.5,-0.4)$) {\scriptsize$.7$};
       \node at ($(q) + (-0.5,-0.4)$) {\scriptsize$.6$};
       \node at ($(q) + (0.5,-0.4)$) {\scriptsize$.4$};
-      \node (l1) at ($(x1) + (0,-0.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{0.24}$}};
-      \node (l2) at ($(x2) + (0,-0.5)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{0.01}$}};
-      \node (l3) at ($(y1) + (0,-0.5)$) {\scriptsize\colorbox{boxpink}{\color{white}$\mathbf{0.12}$}};
-      \node (l4) at ($(y2) + (0,-0.5)$) {\scriptsize\colorbox{boxgoldenrod}{\color{white}$\mathbf{0.01}$}};
+      \node (l1) at ($(x1) + (0,-0.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{0.80}$}};
+      \node (l2) at ($(x2) + (0,-0.5)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{0.02}$}};
+      \node (l3) at ($(y1) + (0,-0.5)$) {\scriptsize\colorbox{boxpink}{\color{white}$\mathbf{0.20}$}};
+      \node (l4) at ($(y2) + (0,-0.5)$) {\scriptsize\colorbox{boxgoldenrod}{\color{white}$\mathbf{0.04}$}};
       \draw[edge,boxdgray] (p) edge[bend left=-5] (r);
       \draw[edge,boxdgray] (q) edge[bend left=-5] (r);
       \draw[edge,boxdgray] (x1) edge[bend left=-5] (p);
@@ -493,8 +493,8 @@ any RVs outside of $\Node$'s scope are simply ignored.
       \draw[edge,boxdgray] (y2) edge[bend left=-5] (q);
       \node at ($(p) + (-0.3,0.6)$) {\scriptsize\colorbox{boxred}{\color{white}$\mathbf{0.25}$}};
       \node at ($(q) + (0.3,0.6)$) {\scriptsize\colorbox{boxpurple}{\color{white}$\mathbf{0.14}$}};
-      \node (x) at ($(p) + (0,-2.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathbf{x=2}$}};
-      \node (y) at ($(q) + (0,-2.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathbf{y=4}$}};
+      \node (x) at ($(p) + (0,-2.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathstrut\mathbf{x=2}$}};
+      \node (y) at ($(q) + (0,-2.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathstrut\mathbf{y=4}$}};
       \draw[edge,boxdgray] (x) edge (l1);
       \draw[edge,boxdgray] (x) edge (l2);
       \draw[edge,boxdgray] (y) edge (l3);
@@ -512,8 +512,9 @@ input node. An \emph{indicator node} is an input node whose distribution is the 
 $f(x)=\liv x=k\riv$, i.e. a degenerate distribution with all of its mass on $k$ and zero anywhere
 else. A special case is when $X$ is binary and $k=1$, in which case we say the input node is a
 literal node, denoting by the usual propositional notation $X$ for when $k=1$ and $\neg X$ for
-$k=0$. Graphically, we shall use \inode{\newLeafNode} for indicators and the textual propositional
-notation for literals.
+$k=0$. Graphically, we shall use either \inode{\newLeafNode} or just the textual Iverson bracket
+$\liv\cdot\riv$ representation for indicators, while literals will be denoted by their textual
+propositional notation.
 
 Let $\mathcal{C}$ be a probabilistic circuit and consider a node $\Node\in\mathcal{C}$. We say that
 $\Node_\mathcal{C}$ is a subcircuit of $\mathcal{C}$ rooted at $\Node$ if $\Node_\mathcal{C}$'s
@@ -826,6 +827,22 @@ also have tractable \mar{} (this is the case of density estimation trees \citep{
 intuitive and uncomplicated syntax. In fact, \textbf{all PCs shown throughout this dissertation
 shall be \emph{at least} smooth and decomposable unless explicitly stated otherwise.}
 
+\begin{algorithm}[t]
+  \caption{\mar}\label{alg:mar}
+  \begin{algorithmic}[1]
+    \Require A smooth and decomposable PC $\mathcal{C}$ and partial assignment $\set{x}$
+    \Ensure Probability $\int_\set{y}\mathcal{C}(\set{x},\set{y})\dif\set{y}$\Comment{Call
+    $\set{Y}$ the remaining variables not in $\set{X}$}
+    \State Let $v$ be a hash function mapping a node to its value
+    \For{each $\Node$ in reverse topological order}
+    \IIf{$\Node$ is an input}{$v(\Node)\gets\int_\set{y}\Node(\set{x},\set{y})\dif\set{y}$}
+    \IElseIf{$\Node$ is a sum}{$v(\Node)\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
+    \IElseIf{$\Node$ is a product}{$v(\Node)\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
+    \EndFor%
+    \State \textbf{return} $v(\normalfont{R})$, where $\textsf{R}$ is $\mathcal{C}$'s root
+  \end{algorithmic}
+\end{algorithm}
+
 \begin{figure}[t]
   \begin{subfigure}[t]{0.31\textwidth}
     \begin{center}
@@ -922,6 +939,103 @@ shall be \emph{at least} smooth and decomposable unless explicitly stated otherw
   \con{} can be computed in linear time (in the size of $\mathcal{C}$).
 \end{restatable}
 
+\begin{example}[sidebyside,lefthand width=0.55\textwidth]{Density estimation trees as probabilistic circuits}{det}
+  A density estimation tree (DET) is a decision tree for the task of density estimation
+  \citep{ram11}. Briefly, a decision tree $\mathcal{T}$ partitions the data space (usually
+  $\mathbb{R}^d$) into cells by laying out hyperplanes usually orthogonal to the axes, creating a
+  latent variable for each node that essentially determines in which region an observation should
+  fall into. The density function of a tree $\mathcal{T}$ given a dataset $\set{D}$ of dimension
+  $d$ is defined as the piecewise function
+  \begin{equation}
+    p_\mathcal{T}(\set{x})=\sum_{\Leaf\in\operatorname{Leaves}(\mathcal{T})}\frac{\left|\set{D}\in\Leaf\right|}{|\set{D}|}\cdot\frac{\liv\set{x}\in\Leaf\riv}{\operatorname{Vol}(\Leaf)},
+  \end{equation}
+  where $\left|\set{D}\in\Leaf\right|$ indicates the number of assignments $\set{x}$ in the
+  training dataset $\set{D}$ which fall inside the cell determined by leaf $\Leaf$, and
+  $\operatorname{Vol}(\Leaf)$ retuns the volume of the $d$-dimensional cell $\Leaf$. The top figure
+  on the right shows a two-dimensional data space being partitioned, with the corresponding
+  decision tree below it. Each node in the tree is a (hyper)plane partitioning data, with every
+  edge determining which cell the observation falls into.
+
+  Equivalently, a sum node folowed by products which determine which side of the hyperplane an
+  assignment goes configures the same semantics as a DET decision node. Interestingly, when all
+  weights are set to one, its density is
+  \begin{equation}
+    p_\mathcal{C}(\set{x})=\sum_{\Leaf\in\operatorname{Inputs}(\mathcal{C})}\Leaf(\set{x})\cdot\left\liv\set{x}\in\Leaf\right\riv,
+  \end{equation}
+  where $\Leaf$ is the empirical estimate of the cell, meaning that an unnormalized, smooth yet non
+  decomposable PC is equivalent to a DET. The PC shown on the middle right reflects this, with node
+  colors on the PC matching the decision nodes in the DET. Alternatively, a normalized, smooth and
+  decomposable PC with a single sum node where each of its children is a fully factorized
+  circuit over the leaf's restrictions, as the bottom right PC shows, is also equivalent to a DET.
+  \tcblower
+  \centering
+  \begin{tikzpicture}
+    \fill[boxpink!30] (0,0) rectangle (2,2.5);
+    \fill[boxgoldenrod!40] (2,0) rectangle (3.5,2.5);
+    \draw[very thick,boxblue,dashed] (3.5,0) -- node[left,pos=0.9] {\color{boxblue}$\set{A}$} (3.5,5);
+    \draw[very thick,boxgreen,dashed] (0,2.5) -- node[right,pos=1] {\color{boxgreen}$\set{B}$} (3.5,2.5);
+    \draw[very thick,boxpurple!80,dashed] (2,0) -- node[above,pos=1] {\color{boxpurple}$\set{C}$} (2,2.5);
+    \node at (1,1.25) {$\Leaf_1$};
+    \node at (2.75,1.25) {$\Leaf_2$};
+    \node[circle,inner sep=0pt,minimum size=3pt,fill=black,label=above right:{$\set{x}$}] at (1.5,1.9) {};
+    \draw[very thick] (0,0) rectangle (5, 5);
+
+    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxblue!80] (a) at (3,-0.5) {$\set{A}$};
+    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxgreen!80] (b) at ($(a) + (-1,-1.5)$) {$\set{B}$};
+    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxpurple!60] (c) at ($(b) + (1,-1.5)$) {$\set{C}$};
+    \node[draw,fill=boxpink!30] (l1) at ($(c) + (-1,-1.5)$) {$L_1$};
+    \node[draw,fill=boxgoldenrod!40] (l2) at ($(c) + (1,-1.5)$) {$L_2$};
+    \draw (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}>\set{A}$} ($(a) + (1,-1.5)$);
+    \draw (a) -- node[above left,pos=0.5] {$\set{x}\leq\set{A}$} (b);
+    \draw[edge,boxdgray] (a) edge[bend left=15] (b);
+    \draw (b) -- node[below,pos=1] {$\vdots$} node[above left,pos=0.5] {$\set{x}\leq\set{B}$} ($(b) + (-1,-1.5)$);
+    \draw (b) -- node[above right,pos=0.5] {$\set{x}>\set{B}$} (c);
+    \draw[edge,boxdgray] (b) edge[bend right=15] (c);
+    \draw (c) -- node[above left,pos=0.5] {$\set{x}\leq\set{C}$} (l1);
+    \draw (c) -- node[above right,pos=0.5] {$\set{x}>\set{C}$} (l2);
+    \draw[edge,boxdgray] (c) edge[bend left=15] (l1);
+
+    \newSumNode[fill=boxblue!80,label=above left:{$\set{A}$}]{a}{$(a) + (-0.5,-6.0)$};
+    \newProdNode[fill=boxblue!80]{al}{$(a) + (-0.5,-1)$};
+    \newProdNode[fill=boxblue!80]{ar}{$(a) + (0.5,-1)$};
+    \newLeafNode[fill=boxblue!80,label=below:{$\left\liv\set{x}\leq\set{A}\right\riv$}]{ai}{$(al) + (-1.0,-1)$};
+    \newLeafNode[fill=boxblue!80,label=below:{$\left\liv\set{x}>\set{A}\right\riv$}]{nai}{$(ar) + (1.0,-1)$};
+    \draw[edge] (a) -- (al); \draw[edge] (al) -- (ai);
+    \draw[edge] (a) -- (ar); \draw[edge] (ar) -- (nai);
+    \draw[edge] (ar) -- node[below,pos=1] {$\vdots$} ($(ar) + (0,-1)$);
+
+    \newSumNode[fill=boxgreen!80,label=above right:{$\set{B}$}]{b}{$(al) + (0,-1)$};
+    \newProdNode[fill=boxgreen!80]{bl}{$(b) + (0,-1)$};
+    \newProdNode[fill=boxgreen!80]{br}{$(b) + (1,-1)$};
+    \newLeafNode[fill=boxgreen!80,label=below:{$\left\liv\set{x}\leq\set{B}\right\riv$}]{bi}{$(bl) + (-1.0,-1)$};
+    \newLeafNode[fill=boxgreen!80,label=below:{$\left\liv\set{x}>\set{B}\right\riv$}]{nbi}{$(br) + (1.0,-1)$};
+    \draw[edge] (al) -- (b);
+    \draw[edge] (b) -- (bl); \draw[edge] (bl) -- (bi);
+    \draw[edge] (b) -- (br); \draw[edge] (br) -- (nbi);
+    \draw[edge] (bl) -- node[below,pos=1] {$\vdots$} ($(bl) + (0,-1)$);
+
+    \newSumNode[fill=boxpurple!60,label=above left:{$\set{C}$}]{c}{$(br) + (0,-1)$};
+    \newProdNode[fill=boxpurple!60]{cl}{$(c) + (-1,-1)$};
+    \newProdNode[fill=boxpurple!60]{cr}{$(c) + (0,-1)$};
+    \newLeafNode[fill=boxpurple!60,label=below:{$\left\liv\set{x}\leq\set{C}\right\riv$}]{ci}{$(cl) + (-1.0,-1)$};
+    \newLeafNode[fill=boxpurple!60,label=below:{$\left\liv\set{x}>\set{C}\right\riv$}]{nci}{$(cr) + (1.0,-1)$};
+    \draw[edge] (br) -- (c);
+    \draw[edge] (c) -- (cl); \draw[edge] (cl) -- (ci);
+    \draw[edge] (c) -- (cr); \draw[edge] (cr) -- (nci);
+    \newGaussNode[label=below:{$\Leaf_1$},fill=boxpink!30]{l1}{$(cl) + (0,-1)$};
+    \newGaussNode[label=below:{$\Leaf_2$},fill=boxgoldenrod!40]{l2}{$(cr) + (0,-1)$};
+    \draw[edge] (cl) -- (l1);
+    \draw[edge] (cr) -- (l2);
+
+    \newSumNode[fill=boxteal]{r}{$(a) + (0.0,-7.5)$};
+    \newGaussNode[fill=boxpink!30,label=below:{$\Leaf_1\cdot\liv\set{x}\in\Leaf_1\riv$}]{l1}{$(r) + (-1.5,-1)$};
+    \newGaussNode[fill=boxgoldenrod!40,label=below:{$\Leaf_2\cdot\liv\set{x}\in\Leaf_2\riv$}]{l2}{$(r) + (1.5,-1)$};
+    \node at ($(r) + (0,-1)$) {$\cdots$};
+    \draw[edge] (r) -- node[above left,pos=0.5] {$w_{\Leaf_1}$} (l1);
+    \draw[edge] (r) -- node[above right,pos=0.5] {$w_{\Leaf_2}$} (l2);
+  \end{tikzpicture}
+\end{example}
+
 What \Cref{thm:linevi}'s proof on \cpageref{proof:linevi} tells us is that, algorithmically, the
 only difference between \evi{}, \mar{} and \con{} is what is done on the input nodes. This can be
 seen in \Cref{alg:mar}, which shows how to compute marginals in PCs. With \mar{} available to us,
@@ -929,36 +1043,9 @@ querying for \con{} reduces to a simple two-pass evaluation over the circuit: th
 the numerator as the marginal $p(\set{Y},\set{X})$, and the second the denominator marginal
 $p(\set{X})$.
 
-\begin{algorithm}[t]
-  \caption{\mar}\label{alg:mar}
-  \begin{algorithmic}[1]
-    \Require A smooth and decomposable PC $\mathcal{C}$ and partial assignment $\set{x}$
-    \Ensure Probability $\int_\set{y}\mathcal{C}(\set{x},\set{y})\dif\set{y}$\Comment{Call
-    $\set{Y}$ the remaining variables not in $\set{X}$}
-    \State Let $v$ be a hash function mapping a node to its value
-    \For{each $\Node$ in reverse topological order}
-    \IIf{$\Node$ is an input}{$v(\Node)\gets\int_\set{y}\Node(\set{x},\set{y})\dif\set{y}$}
-    \IElseIf{$\Node$ is a sum}{$v(\Node)\gets\sum_{\Child\in\Ch(\Node)}w_{\Node,\Child}v_{\Child}$}
-    \IElseIf{$\Node$ is a product}{$v(\Node)\gets\prod_{\Child\in\Ch(\Node)}v_{\Child}$}%
-    \EndFor%
-    \State \textbf{return} $v(\normalfont{R})$, where $\textsf{R}$ is $\mathcal{C}$'s root
-  \end{algorithmic}
-\end{algorithm}
-
-For sufficient condition to unlocking access to \map{} is \emph{determinism}.
-
-\begin{definition}[Determinism]
-  A probabilistic circuit $\mathcal{C}$ is said to be \emph{deterministic} if for every sum node
-  $\Sum\in\mathcal{C}$ only one child of $\Sum$ has nonnegative value at a time for any complete
-  assignment.
-\end{definition}
-
-At this point, we must introduce a graphical notation for \emph{indicator} nodes. An indicator node
-is an input node whose function is the indicator function $f(x)=\liv x=k\riv$, i.e. a degenerate
-distribution with all of its mass on $k$ and zero anywhere else. A special case is when $X$ is
-binary and $k=1$, in which case we say the input node is a literal node, denoting by the usual
-propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, we shall use
-\inode{\newLeafNode} for indicators and the textual propositional notation for literals.
+Besides smoothness and decomposability, another structural constraint of interest is
+\emph{determinism}. Together with the first two, determinism provides sufficient conditions for
+tractably computing the \map{}.
 
 \begin{algorithm}[t]
   \caption{\map}\label{alg:map}
@@ -990,24 +1077,231 @@ propositional notation $X$ for when $k=1$ and $\neg X$ for $k=0$. Graphically, w
   \end{algorithmic}
 \end{algorithm}
 
+\begin{definition}[Determinism]
+  A probabilistic circuit $\mathcal{C}$ is said to be \emph{deterministic} if for every sum node
+  $\Sum\in\mathcal{C}$ only one child of $\Sum$ has nonnegative value at a time for any complete
+  assignment.
+\end{definition}
+
 \begin{restatable}[\cite{peharz16}]{theorem}{det}
   \label{thm:det}
   Let $\mathcal{C}$ be a smooth, decomposable and \emph{deterministic} PC. \map{} is computable in
   linear time (in the size of $\mathcal{C}$).
 \end{restatable}
 
-When a PC is smooth, decomposable and deterministic, the \map{} is easily computable by simply
-replacing sum nodes with a max operation and performing a bottom-up \evi{} pass. This is commonly
-called the Max-Product algorithm, shown more formally in \Cref{alg:map}. To find the states that
-maximize \Cref{eq:map} in a given circuit $\mathcal{C}$, we first compute the \map{} probabilities
-through the usual bottom-up pass, and then find the maximum (in terms of probability) induced tree
-$\mathcal{M}$ rooted at $\mathcal{C}$. This maximum induced tree can be retrieved by a top-down
+As \Cref{thm:det}'s proof on \cpageref{proof:det} suggests, the \map{} on a smooth, decomposable
+and deterministic PC can be easily computed by simply replacing sum nodes with a max operation and
+performing a bottom-up \evi{} pass. This is commonly called the Max-Product algorithm, shown more
+formally in \Cref{alg:map}. To find the assignment $\set{y}$ that maximizes \Cref{eq:map} in a
+given circuit $\mathcal{C}$, we first compute the \map{} probabilities through the usual bottom-up
+pass, and then find the maximum (in terms of probability) induced tree $\mathcal{M}$ rooted at
+$\mathcal{C}$ through \Cref{alg:argmap}. This maximum induced tree can be retrieved by a top-down
 pass selecting the most probable sum child nodes according to the probabilities set by \map{}.
 Since $\mathcal{C}$ is decomposable, there cannot exist a node in $\mathcal{M}$ with more than one
 parent, meaning it is by construction a tree whose leaves are input nodes with scopes whose union
 is the scope of $\mathcal{C}$. This reduces the problem to a divide-and-conquer approach where each
-input node is individually maximized (see \Cref{alg:argmap} and \cpageref{proof:det} for a formal
-proof on the algorithm's validity).
+input node is individually maximized.
+
+Many known probabilistic models can be subsumed as smooth, decomposable and deterministic PCs, such
+Markov networks \citep{lowd13a}, naïve Bayes, thin junction trees \citep{bach01}, and more
+generally low-treewidth Bayesian networks \citep{darwiche03}. \Cref{eg:nbayes} shows a Gaussian
+naïve Bayes model as a probabilistic circuit.
+
+%\begin{figure}[t]
+  %\begin{subfigure}[t]{0.32\textwidth}
+    %\resizebox{\textwidth}{!}{
+    %\begin{tikzpicture}
+      %\newProdNode[fill=boxgreen]{r}{0,0};
+      %\newSumNode[fill=boxred!70]{p}{$(r) + (-1.25,-0.75)$};
+      %\newSumNode[fill=boxpurple!60]{q}{$(r) + (1.25,-0.75)$};
+      %\newProdNode[fill=boxteal]{t1}{$(p) + (-0.6,-1)$};
+      %\newProdNode[fill=boxorange!80]{t2}{$(p) + (0.65,-1)$};
+      %\newProdNode[fill=boxpink!50]{t3}{$(q) + (-0.6,-1)$};
+      %\newProdNode[fill=boxgoldenrod!70]{t4}{$(q) + (0.6,-1)$};
+      %\newGaussNode[fill=boxteal]{x1}{$(t1) + (0.6,-1.3)$};
+      %\newGaussNode[fill=boxorange!80]{x2}{$(t2) + (0.6,-1.3)$};
+      %\newGaussNode[fill=boxpink!50]{y1}{$(t3) + (0.6,-1.3)$};
+      %\newGaussNode[fill=boxgoldenrod!70]{y2}{$(t4) + (0.6,-1.3)$};
+      %\node (i1) at ($(t1) + (-0.25,-0.8)$) {\scriptsize$\left\liv\mathbf{x\leq 3}\right\riv$};
+      %\node (i2) at ($(t2) + (-0.25,-0.8)$) {\scriptsize$\left\liv\mathbf{x>3}\right\riv$};
+      %\node (i3) at ($(t3) + (-0.25,-0.8)$) {\scriptsize$\left\liv\mathbf{y\leq 4}\right\riv$};
+      %\node (i4) at ($(t4) + (-0.25,-0.8)$) {\scriptsize$\left\liv\mathbf{y>4}\right\riv$};
+      %\draw[edge] (r) edge[bend right=5] (p);
+      %\draw[edge] (r) edge[bend right=5] (q);
+      %\draw[edge] (p) edge[bend right=5] (t1);
+      %\draw[edge] (p) edge[bend right=5] (t2);
+      %\draw[edge] (q) edge[bend right=5] (t3);
+      %\draw[edge] (q) edge[bend right=5] (t4);
+      %\draw[edge] (t1) edge[bend right=5] (x1);
+      %\draw[edge] (t2) edge[bend right=5] (x2);
+      %\draw[edge] (t3) edge[bend right=5] (y1);
+      %\draw[edge] (t4) edge[bend right=5] (y2);
+      %\draw[edge] (t1) edge[bend right=5] (i1);
+      %\draw[edge] (t2) edge[bend right=5] (i2);
+      %\draw[edge] (t3) edge[bend right=5] (i3);
+      %\draw[edge] (t4) edge[bend right=5] (i4);
+      %\node at ($(p) + (-0.5,-0.4)$) {\scriptsize$.3$};
+      %\node at ($(p) + (0.5,-0.4)$) {\scriptsize$.7$};
+      %\node at ($(q) + (-0.5,-0.4)$) {\scriptsize$.6$};
+      %\node at ($(q) + (0.5,-0.4)$) {\scriptsize$.4$};
+      %\node (l1) at ($(x1) + (0,-0.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{.80}$}};
+      %\node (l2) at ($(x2) + (0,-0.5)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{.02}$}};
+      %\node (l3) at ($(y1) + (0,-0.5)$) {\scriptsize\colorbox{boxpink}{\color{white}$\mathbf{.20}$}};
+      %\node (l4) at ($(y2) + (0,-0.5)$) {\scriptsize\colorbox{boxgoldenrod}{\color{white}$\mathbf{.04}$}};
+      %\draw[edge,boxdgray] (p) edge[bend left=-5] (r);
+      %\draw[edge,boxdgray] (q) edge[bend left=-5] (r);
+      %\draw[edge,boxdgray] (t1) edge[bend right=5] (p);
+      %\draw[edge,boxdgray] (t2) edge[bend right=5] (p);
+      %\draw[edge,boxdgray] (t3) edge[bend right=5] (q);
+      %\draw[edge,boxdgray] (t4) edge[bend right=5] (q);
+      %\draw[edge,boxdgray] (i1) edge[bend right=5] (t1);
+      %\draw[edge,boxdgray] (i2) edge[bend right=5] (t2);
+      %\draw[edge,boxdgray] (i3) edge[bend right=5] (t3);
+      %\draw[edge,boxdgray] (i4) edge[bend right=5] (t4);
+      %\draw[edge,boxdgray] (x1) edge[bend left=-5] (t1);
+      %\draw[edge,boxdgray] (x2) edge[bend left=-5] (t2);
+      %\draw[edge,boxdgray] (y1) edge[bend left=-5] (t3);
+      %\draw[edge,boxdgray] (y2) edge[bend left=-5] (t4);
+      %\node at ($(t1) + (-0.4,0.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{.8}$}};
+      %\node at ($(t2) + (0.3,0.5)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{.0}$}};
+      %\node at ($(t3) + (-0.3,0.5)$) {\scriptsize\colorbox{boxpink}{\color{white}$\mathbf{.2}$}};
+      %\node at ($(t4) + (0.4,0.5)$) {\scriptsize\colorbox{boxgoldenrod}{\color{white}$\mathbf{.0}$}};
+      %\node at ($(p) + (-0.3,0.6)$) {\scriptsize\colorbox{boxred}{\color{white}$\mathbf{.25}$}};
+      %\node at ($(q) + (0.3,0.6)$) {\scriptsize\colorbox{boxpurple}{\color{white}$\mathbf{.74}$}};
+      %\node (x) at ($(p) + (0.,-4.0)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathstrut\mathbf{x=2}$}};
+      %\node (y) at ($(q) + (0,-4.0)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathstrut\mathbf{y=4}$}};
+      %\draw[edge,boxdgray] (x) edge[bend left=5] (l1);
+      %\draw[edge,boxdgray] (x) edge[bend right=10] (l2);
+      %\draw[edge,boxdgray] (x) edge[bend left=10] (i1);
+      %\draw[edge,boxdgray] (x) edge[bend right=20] (i2);
+      %\draw[edge,boxdgray] (y) edge[bend left=5] (l3);
+      %\draw[edge,boxdgray] (y) edge[bend right=10] (l4);
+      %\draw[edge,boxdgray] (y) edge[bend left=10] (i3);
+      %\draw[edge,boxdgray] (y) edge[bend right=20] (i4);
+      %\node (out) at ($(r) + (0,0.9)$) {\scriptsize\colorbox{boxgreen}{\color{white}$\mathbf{.035}$}};
+      %\draw[edge,boxdgray] (r) edge (out);
+    %\end{tikzpicture}
+    %}
+    %\caption{}
+  %\end{subfigure}
+  %\begin{subfigure}[t]{0.32\textwidth}
+    %\resizebox{\textwidth}{!}{
+    %\begin{tikzpicture}
+      %\newProdNode[fill=boxgreen]{r}{0,0};
+      %\newMaxNode[fill=boxred!70]{p}{$(r) + (-1.25,-0.75)$};
+      %\newMaxNode[fill=boxpurple!60]{q}{$(r) + (1.25,-0.75)$};
+      %\newProdNode[fill=boxteal]{t1}{$(p) + (-0.6,-1)$};
+      %\newProdNode[fill=boxorange!80]{t2}{$(p) + (0.65,-1)$};
+      %\newProdNode[fill=boxpink!50]{t3}{$(q) + (-0.6,-1)$};
+      %\newProdNode[fill=boxgoldenrod!70]{t4}{$(q) + (0.6,-1)$};
+      %\newGaussNode[fill=boxteal]{x1}{$(t1) + (0.6,-1.3)$};
+      %\newGaussNode[fill=boxorange!80]{x2}{$(t2) + (0.6,-1.3)$};
+      %\newGaussNode[fill=boxpink!50]{y1}{$(t3) + (0.6,-1.3)$};
+      %\newGaussNode[fill=boxgoldenrod!70]{y2}{$(t4) + (0.6,-1.3)$};
+      %\node (i1) at ($(t1) + (-0.25,-0.8)$) {\scriptsize$\left\liv\mathbf{x\leq 3}\right\riv$};
+      %\node (i2) at ($(t2) + (-0.25,-0.8)$) {\scriptsize$\left\liv\mathbf{x>3}\right\riv$};
+      %\node (i3) at ($(t3) + (-0.25,-0.8)$) {\scriptsize$\left\liv\mathbf{y\leq 4}\right\riv$};
+      %\node (i4) at ($(t4) + (-0.25,-0.8)$) {\scriptsize$\left\liv\mathbf{y>4}\right\riv$};
+      %\draw[edge] (r) edge[bend right=5] (p);
+      %\draw[edge] (r) edge[bend right=5] (q);
+      %\draw[edge] (p) edge[bend right=5] (t1);
+      %\draw[edge] (p) edge[bend right=5] (t2);
+      %\draw[edge] (q) edge[bend right=5] (t3);
+      %\draw[edge] (q) edge[bend right=5] (t4);
+      %\draw[edge] (t1) edge[bend right=5] (x1);
+      %\draw[edge] (t2) edge[bend right=5] (x2);
+      %\draw[edge] (t3) edge[bend right=5] (y1);
+      %\draw[edge] (t4) edge[bend right=5] (y2);
+      %\draw[edge] (t1) edge[bend right=5] (i1);
+      %\draw[edge] (t2) edge[bend right=5] (i2);
+      %\draw[edge] (t3) edge[bend right=5] (i3);
+      %\draw[edge] (t4) edge[bend right=5] (i4);
+      %\node at ($(p) + (-0.5,-0.4)$) {\scriptsize$.3$};
+      %\node at ($(p) + (0.5,-0.4)$) {\scriptsize$.7$};
+      %\node at ($(q) + (-0.5,-0.4)$) {\scriptsize$.6$};
+      %\node at ($(q) + (0.5,-0.4)$) {\scriptsize$.4$};
+      %\node (l1) at ($(x1) + (0,-0.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{.80}$}};
+      %\node (l2) at ($(x2) + (0,-0.5)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{.02}$}};
+      %\node (l3) at ($(y1) + (0,-0.5)$) {\scriptsize\colorbox{boxpink}{\color{white}$\mathbf{.56}$}};
+      %\node (l4) at ($(y2) + (0,-0.5)$) {\scriptsize\colorbox{boxgoldenrod}{\color{white}$\mathbf{.99}$}};
+      %\draw[edge,boxdgray] (p) edge[bend left=-5] (r);
+      %\draw[edge,boxdgray] (q) edge[bend left=-5] (r);
+      %\draw[edge,boxdgray] (t1) edge[bend right=5] (p);
+      %\draw[edge,boxdgray] (t2) edge[bend right=5] (p);
+      %\draw[edge,boxdgray] (t3) edge[bend right=5] (q);
+      %\draw[edge,boxdgray] (t4) edge[bend right=5] (q);
+      %\draw[edge,boxdgray] (i1) edge[bend right=5] (t1);
+      %\draw[edge,boxdgray] (i2) edge[bend right=5] (t2);
+      %\draw[edge,boxdgray] (i3) edge[bend right=5] (t3);
+      %\draw[edge,boxdgray] (i4) edge[bend right=5] (t4);
+      %\draw[edge,boxdgray] (x1) edge[bend left=-5] (t1);
+      %\draw[edge,boxdgray] (x2) edge[bend left=-5] (t2);
+      %\draw[edge,boxdgray] (y1) edge[bend left=-5] (t3);
+      %\draw[edge,boxdgray] (y2) edge[bend left=-5] (t4);
+      %\node at ($(t1) + (-0.4,0.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{.8}$}};
+      %\node at ($(t2) + (0.3,0.5)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{.0}$}};
+      %\node at ($(t3) + (-0.3,0.5)$) {\scriptsize\colorbox{boxpink}{\color{white}$\mathbf{.56}$}};
+      %\node at ($(t4) + (0.4,0.5)$) {\scriptsize\colorbox{boxgoldenrod}{\color{white}$\mathbf{.99}$}};
+      %\node at ($(p) + (-0.3,0.6)$) {\scriptsize\colorbox{boxred}{\color{white}$\mathbf{.25}$}};
+      %\node at ($(q) + (0.3,0.6)$) {\scriptsize\colorbox{boxpurple}{\color{white}$\mathbf{.14}$}};
+      %\node (x) at ($(p) + (0,-4.0)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathstrut\mathbf{x=2}$}};
+      %\node (y) at ($(q) + (0,-4.0)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathstrut\mathbf{\max y}$}};
+      %\draw[edge,boxdgray] (x) edge[bend left=5] (l1);
+      %\draw[edge,boxdgray] (x) edge[bend right=10] (l2);
+      %\draw[edge,boxdgray] (x) edge[bend left=10] (i1);
+      %\draw[edge,boxdgray] (x) edge[bend right=20] (i2);
+      %\draw[edge,boxdgray] (y) edge[bend left=5] (l3);
+      %\draw[edge,boxdgray] (y) edge[bend right=10] (l4);
+      %\draw[edge,boxdgray] (y) edge[bend left=10] (i3);
+      %\draw[edge,boxdgray] (y) edge[bend right=20] (i4);
+      %\node (out) at ($(r) + (0,0.9)$) {\scriptsize\colorbox{boxgreen}{\color{white}$\mathbf{.185}$}};
+      %\draw[edge,boxdgray] (r) edge (out);
+    %\end{tikzpicture}
+    %}
+    %\caption{}
+  %\end{subfigure}
+  %\begin{subfigure}[t]{0.32\textwidth}
+    %\begin{tikzpicture}
+      %\newProdNode[fill=boxgreen]{r}{0,0};
+      %\newMaxNode[fill=boxred!70]{p}{$(r) + (-1.25,-0.75)$};
+      %\newMaxNode[fill=boxpurple!60]{q}{$(r) + (1.25,-0.75)$};
+      %\newGaussNode[fill=boxteal]{x1}{$(p) + (-0.6,-1)$};
+      %\newGaussNode[fill=boxorange!80]{x2}{$(p) + (0.65,-1)$};
+      %\newGaussNode[fill=boxpink!50]{y1}{$(q) + (-0.6,-1)$};
+      %\newGaussNode[fill=boxgoldenrod!70]{y2}{$(q) + (0.6,-1)$};
+      %\draw[edge] (r) edge (p);
+      %\draw[edge] (r) edge (q);
+      %\draw[edge] (p) edge (x1);
+      %\draw[edge] (p) edge (x2);
+      %\draw[edge] (q) edge (y1);
+      %\draw[edge] (q) edge (y2);
+      %\node at ($(p) + (-0.5,-0.4)$) {\scriptsize$.3$};
+      %\node at ($(p) + (0.5,-0.4)$) {\scriptsize$.7$};
+      %\node at ($(q) + (-0.5,-0.4)$) {\scriptsize$.6$};
+      %\node at ($(q) + (0.5,-0.4)$) {\scriptsize$.4$};
+      %\node (l1) at ($(x1) + (0,-0.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{0.80}$}};
+      %\node (l2) at ($(x2) + (0,-0.5)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{0.02}$}};
+      %\node (l3) at ($(y1) + (0,-0.5)$) {\scriptsize\colorbox{boxpink}{\color{white}$\mathbf{0.56}$}};
+      %\node (l4) at ($(y2) + (0,-0.5)$) {\scriptsize\colorbox{boxgoldenrod}{\color{white}$\mathbf{0.99}$}};
+      %\draw[edge,boxdgray] (r) edge[bend left=10] (p);
+      %\draw[edge,boxdgray] (r) edge[bend left=10] (q);
+      %\draw[edge,boxdgray] (p) edge[bend left=10] (x1);
+      %\draw[edge,boxdgray] (p) edge[bend left=10] (x2);
+      %\draw[edge,boxdgray] (q) edge[bend left=10] (y2);
+      %\node at ($(p) + (-0.3,0.6)$) {\scriptsize\colorbox{boxred}{\color{white}$\mathbf{0.25}$}};
+      %\node at ($(q) + (0.3,0.6)$) {\scriptsize\colorbox{boxpurple}{\color{white}$\mathbf{0.74}$}};
+      %\node (x) at ($(p) + (0,-2.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathstrut\mathbf{x=2}$}};
+      %\node (y) at ($(q) + (0,-2.5)$) {\scriptsize\colorbox{boxgreen}{\color{white}$\mathstrut\mathbf{\max y = 3}$}};
+      %\draw[edge,boxdgray] (l1) edge (x);
+      %\draw[edge,boxdgray] (l2) edge (x);
+      %\draw[edge,boxdgray] (l3) edge (y);
+      %\draw[edge,boxdgray] (l4) edge (y);
+    %\end{tikzpicture}
+    %\caption{}
+  %\end{subfigure}
+  %\caption{}
+  %\label{fig:map}
+%\end{figure}
 
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Naïve Bayes as probabilistic circuits}{nbayes}
   Suppose we have samples of per capita census measurements on three different features, say age
@@ -1022,7 +1316,7 @@ proof on the algorithm's validity).
   sure that these are in fact conditional distributions, we introduce indicator variables
   ``selecting'' $Y$'s state. Since the PC resulting is deterministic, we can compute the \map{} for
   classification in linear time by simply replacing the root node with a max, which is exactly
-  equivalent to finding the highest likelihood of $x$ for each city $y$.
+  equivalent to finding the highest value of $x$ for each city $y$.
   \tcblower
   \begin{center}
   \begin{tikzpicture}
@@ -1078,10 +1372,10 @@ proof on the algorithm's validity).
   \end{center}
 \end{example}
 
-Although base queries cover most of the needs of the usual data scientist, more complex tasks
-involving information-theoretic measures, logical queries or distributional divergences are also
-(tractably) computable under the right conditions. Particularly, we are interested in a key
-component for tractability in all these tasks: the notion of \emph{vtrees} and \emph{structure
+Although we have only covered the most basic queries so far, more complex tasks involving
+information-theoretic measures, logical queries or distributional divergences are also (tractably)
+computable in PCs under the right conditions. Particularly, we are interested in a key component
+for tractability in all these tasks: the notion of \emph{vtrees} and \emph{structure
 decomposability}, a stronger variant of decomposability where variable partitionings on product
 nodes follow a hierarchy. This hierarchy is easily visualized through a \emph{vtree} (variable
 tree), a data structure that defines a (partial) ordering of variables.
@@ -1251,6 +1545,14 @@ exactly the same (and according to their corresponding vtree node). Semantically
 vtree's inner node $v$ defines a context-specific independence relationship between $\Sc(v^\gets)$
 and $\Sc(v^\to)$ under the distribution encoded by its PC.
 
+A PC which is both smooth and decomposable is often referred to as a Sum-Product Network (SPN,
+\cite{poon11}), although definitions vary around the presence of the two structural constraints
+as a requirement, with SPNs sometimes used as a synonym for probabilistic circuits. 
+Interestingly, many probabilistic models which can be interpreted as smooth, decomposable and
+deterministic PCs have independently sprung up throughout literature under a variety of names:
+Arithmetic Circuits (ACs, \cite{darwiche03}) and Cutset Networks (CNets, \cite{rahman14}) being two
+of them.
+
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Hidden Markov models as probabilistic circuits}{hmm}
   Say we wish to model a sequential structured dependence between three latent binary variables, for
   example the presence of a subject $X_1$, verb $X_2$ and object $X_3$ in a natural language
@@ -1352,85 +1654,6 @@ the other $\mathcal{C}_2$, partition the scope into the same decompositions \cit
 structure decomposable PC is then defined as a PC that is compatible with a copy of itself. In
 summary, the two definitions of structure decomposability are equivalent, except compatibility
 implicitly assumes an arrangement of product scopes that is analogous to a vtree.
-
-\begin{example}[sidebyside,lefthand width=0.55\textwidth]{Density estimation trees as probabilistic circuits}{det}
-  A density estimation tree is a decision tree for the task of density estimation \citep{ram11}.
-  Briefly, a decision tree $\mathcal{T}$ partitions the data space (usually $\mathbb{R}^d$) into
-  cells by laying out hyperplanes usually orthogonal to the axes, creating a latent variable for
-  each node that essentially determines in which edge an observation should fall into. The density
-  function of a tree $\mathcal{T}$ given a dataset $\set{D}$ of dimension $d$ is defined as the
-  piecewise function
-  \begin{equation}
-    p_\mathcal{T}(\set{x})=\sum_{\Leaf\in\operatorname{Leaves}(\mathcal{T})}\frac{1}{\operatorname{Vol}(\Leaf)}\cdot\frac{\left|\set{D}\in\Leaf\right|}{|\set{D}|}\cdot\liv\set{x}\in\Leaf\riv,
-  \end{equation}
-  where $\left|\set{D}\in\Leaf\right|$ indicates the number of assignments $\set{x}$ in the
-  training dataset $\set{D}$ which fall inside the cell determined by leaf $\Leaf$, and
-  $\operatorname{Vol}(\Leaf)$ retuns the volume of the $d$-dimensional cell $\Leaf$. The top figure
-  on the right shows a two-dimensional data space being partitioned, with the corresponding
-  decision tree below it. Each node in the tree is a (hyper)plane partitioning data, with every
-  edge determining which cell the observation falls into.
-
-  Equivalently, a sum node in a PC that determines the on-off state of a latent variable
-  partitioning the data space configures the same semantics as a density estimation tree. Instead
-  of delegating an observation's probability to the tree's leaves, a PC spreads out this density to
-  both weights in sum nodes and density in input nodes. Let $\mathcal{C}$ be a PC whose nodes are all
-  sum nodes which encode such latent partitions and whose input nodes are truncated to follow these
-  latent variables (i.e.\ their support is only over the space determined by the partitionings);
-  collapse all layers (and weights) into a shallow PC with a single sum layer. Its value is then
-  \begin{equation}
-    p_\mathcal{C}(\set{x})=\sum_{\Leaf\in\operatorname{Inputs}(\mathcal{C})}w_{\Leaf}\cdot\Leaf(\set{x})\cdot\liv\set{x}\in\Leaf\riv.
-  \end{equation}
-  \tcblower
-  \centering
-  \begin{tikzpicture}
-    \fill[boxpink!30] (0,0) rectangle (2,2.5);
-    \fill[boxgoldenrod!40] (2,0) rectangle (3.5,2.5);
-    \draw[very thick,boxblue,dashed] (3.5,0) -- node[left,pos=0.9] {\color{boxblue}$\set{A}$} (3.5,5);
-    \draw[very thick,boxgreen,dashed] (0,2.5) -- node[right,pos=1] {\color{boxgreen}$\set{B}$} (3.5,2.5);
-    \draw[very thick,boxpurple!80,dashed] (2,0) -- node[above,pos=1] {\color{boxpurple}$\set{C}$} (2,2.5);
-    \node at (1,1.25) {$\Leaf_1$};
-    \node at (2.75,1.25) {$\Leaf_2$};
-    \node[circle,inner sep=0pt,minimum size=3pt,fill=black,label=above right:{$\set{x}$}] at (1.5,1.9) {};
-    \draw[very thick] (0,0) rectangle (5, 5);
-
-    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxblue!80] (a) at (3,-1) {$\set{A}$};
-    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxgreen!80] (b) at ($(a) + (-1,-1.5)$) {$\set{B}$};
-    \node[inner sep=1pt,minimum size=12pt,circle,fill=boxpurple!60] (c) at ($(b) + (1,-1.5)$) {$\set{C}$};
-    \node[draw,fill=boxpink!30] (l1) at ($(c) + (-1,-1.5)$) {$L_1$};
-    \node[draw,fill=boxgoldenrod!40] (l2) at ($(c) + (1,-1.5)$) {$L_2$};
-    \draw (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}>\set{A}$} ($(a) + (1,-1.5)$);
-    \draw (a) -- node[above left,pos=0.5] {$\set{x}\leq\set{A}$} (b);
-    \draw[edge,boxdgray] (a) edge[bend left=15] (b);
-    \draw (b) -- node[below,pos=1] {$\vdots$} node[above left,pos=0.5] {$\set{x}\leq\set{B}$} ($(b) + (-1,-1.5)$);
-    \draw (b) -- node[above right,pos=0.5] {$\set{x}>\set{B}$} (c);
-    \draw[edge,boxdgray] (b) edge[bend right=15] (c);
-    \draw (c) -- node[above left,pos=0.5] {$\set{x}\leq\set{C}$} (l1);
-    \draw (c) -- node[above right,pos=0.5] {$\set{x}>\set{C}$} (l2);
-    \draw[edge,boxdgray] (c) edge[bend left=15] (l1);
-
-    \newSumNode[fill=boxblue!80,label=above left:{$\set{A}$}]{a}{$(a) + (0,-6.0)$};
-    \newSumNode[fill=boxgreen!80,label=above left:{$\set{B}$}]{b}{$(a) + (-1,-1.5)$};
-    \newSumNode[fill=boxpurple!60,label=above right:{$\set{C}$}]{c}{$(b) + (1,-1.5)$};
-    \newGaussNode[fill=boxpink!30,label=below:{$\Leaf_1\cdot\liv\set{x}\in\Leaf_1\riv$}]{l1}{$(c) + (-1.5,-1.5)$};
-    \newGaussNode[fill=boxgoldenrod!40,label=below:{$\Leaf_2\cdot\liv\set{x}\in\Leaf_2\riv$}]{l2}{$(c) + (1,-1.5)$};
-    \draw[edge] (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}>\set{A}$} ($(a) + (1,-1.5)$);
-    \draw[edge] (a) -- node[above left,pos=0.5] {$\set{x}\leq\set{A}$} (b);
-    \draw[edge,boxdgray] (a) edge[bend left=15] (b);
-    \draw[edge] (b) -- node[below,pos=1] {$\vdots$} node[above left,pos=0.5] {$\set{x}\leq\set{B}$} ($(b) + (-1,-1.5)$);
-    \draw[edge] (b) -- node[above right,pos=0.5] {$\set{x}>\set{B}$} (c);
-    \draw[edge,boxdgray] (b) edge[bend right=15] (c);
-    \draw[edge] (c) -- node[above left,pos=0.5] {$\set{x}\leq\set{C}$} (l1);
-    \draw[edge] (c) -- node[above right,pos=0.5] {$\set{x}>\set{C}$} (l2);
-    \draw[edge,boxdgray] (c) edge[bend left=15] (l1);
-
-    \newSumNode[fill=boxteal]{r}{$(a) + (-0.5,-6.5)$};
-    \newGaussNode[fill=boxpink!30,label=below:{$\Leaf_1\cdot\liv\set{x}\in\Leaf_1\riv$}]{l1}{$(r) + (-1.5,-1.5)$};
-    \newGaussNode[fill=boxgoldenrod!40,label=below:{$\Leaf_2\cdot\liv\set{x}\in\Leaf_2\riv$}]{l2}{$(r) + (1.5,-1.5)$};
-    \node at ($(r) + (0,-1.5)$) {$\cdots$};
-    \draw[edge] (r) -- node[above left,pos=0.5] {$w_{\Leaf_1}$} (l1);
-    \draw[edge] (r) -- node[above right,pos=0.5] {$w_{\Leaf_2}$} (l2);
-  \end{tikzpicture}
-\end{example}
 
 The notion of a vtree (or compatibility for that matter) is key to more complex queries. For
 instance, given two probabilistic circuits $\mathcal{C}_1$ and $\mathcal{C}_2$, computing cross
