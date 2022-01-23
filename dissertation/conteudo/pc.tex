@@ -1128,7 +1128,7 @@ tractably computing the \map{}.
       \node (iny2) at ($(y2) + (0,-1.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathstrut y=-1$}};
       \node (ina) at ($(a) + (0,-1.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathstrut a=1.2$}};
       \node (inb) at ($(b) + (0,-1.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathstrut b=3.6$}};
-      \node (out) at ($(r) + (0,0.9)$) {\scriptsize\colorbox{boxgreen}{\color{white}$.09$}};
+      \node (out) at ($(r) + (0,0.9)$) {\scriptsize\colorbox{boxgreen}{\color{white}$.089$}};
       \draw[edge,boxdgray] (inx1) -- ($(x1) + (0,-0.75)$);
       \draw[edge,boxdgray] (inx2) -- ($(x2) + (0,-0.75)$);
       \draw[edge,boxdgray] (iny1) -- ($(y1) + (0,-0.75)$);
@@ -1291,7 +1291,7 @@ tractably computing the \map{}.
     \caption{}
   \end{subfigure}
   \caption{The computation, on a smooth, decomposable and deterministic probabilistic circuit, of
-    \evi{} $p(a=1.2,b=3.6,x=1,y=-1)\approx 0.09$ \uncaption{(a)}, \map{}
+    \evi{} $p(a=1.2,b=3.6,x=1,y=-1)\approx 0.089$ \uncaption{(a)}, \map{}
     $\max_{b,y}p(b,y|a=1.2,x=1)\approx 0.183$ via \textup{\textproc{MaxProduct}} \uncaption{(b)},
     and $\argmax_{b,y}p(b,y|a=1.2,x=1)=\{b=3,y\leq 0\}$ by backtracking the values set by
     \textup{\textproc{MaxProduct}} \uncaption{(c)}. \inode{\newMaxNode} nodes signal the
@@ -1711,7 +1711,7 @@ conjunctions and disjunctions as operators are known as Logic Circuits (LCs). In
 formally yet briefly define LCs and more precisely show the connection between PCs and LCs.
 
 \subsection{From Certainty...}
-\label{subsection:fromcertainty}
+\label{sec:fromcertainty}
 
 Logic circuits are computational graphs just like PCs, but whose input are always Booleans (and as
 such the scope is over propositional variables) and computational units define either a
@@ -2020,7 +2020,7 @@ on logic circuits.
 \end{example}
 
 \subsection{...to Uncertainty}
-\label{subsection:touncertainty}
+\label{sec:touncertainty}
 
 Logic circuits are easily extensible to probabilistic circuits. In fact, if we think of an LC as
 the support of a PC the connections between the two come naturally. Suppose a 2-standard smooth,

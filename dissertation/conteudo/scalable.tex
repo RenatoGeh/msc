@@ -167,7 +167,7 @@ Recall that the conjunction between a prime and sub is called an \emph{element},
 \end{figure}
 
 \subsection{\textproc{SamplePSDD}}
-\label{subsection:samplepsdd}
+\label{sec:samplepsdd}
 
 We now describe how to efficiently learn PSDDs by sampling and averaging. The procedure takes
 inspiration from \divclass{} algorithms in the sense that we construct a PSDD structure top-down by
@@ -1319,7 +1319,7 @@ evaluated.
 When evaluating the performance of \textproc{LearnRP}, we did not see a significant difference
 between \textproc{SplitSID} and \textproc{SplitMax}, and so we only report figures for the latter.
 When the domain is discrete, the vtree was learned by the top-down pairwise mutual information
-algorithm discussed in \Cref{subsection:learnpsdd}; when in the continuous, we replace mutual
+algorithm discussed in \Cref{sec:learnpsdd}; when in the continuous, we replace mutual
 information for Pearson's correlation. We use Gaussian mixture models as input nodes and fine-tune
 the parameters of the resulting structure by standard batch EM. Experiments were carried out on a
 single computer with a 12-core Intel i7 3.7GHz processor and 64GB RAM.

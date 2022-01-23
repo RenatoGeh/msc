@@ -3,7 +3,7 @@
 
 As we have seen in \Cref{ch:pc}, inference in probabilistic circuits is, for the most part,
 straightforward.  This is not so much the case when \emph{learning} PCs. Despite the uncomplicated
-syntax, learning sufficiently expressive PCs in a principled way is comparatively harder to, say
+syntax, learning sufficiently expressive PCs in a principled way is comparatively harder than, say
 the usual neural network. For a start, we are usually required to comply with smoothness and
 decomposability to ensure marginalization at the least. This restriction excludes the possibility
 of adopting any of the most popular neural network patterns or architectures used in deep learning
@@ -30,17 +30,77 @@ characterized by recursive calls over (usually mutually exclusive) subsets of da
 divide-and-conquer fashion. This kind of procedure is more clearly visualized by
 \textproc{LearnSPN}, the first, most well-known, and perhaps most archetypal of its class.
 
-Before we start however, we must first address how we denote data. Data is commonly represented as
-a matrix where rows are assignments (of all variables), and columns are the values that each variable
-takes at each assignment. Let $\set{D}\in\mathbb{R}^{n \times m}$ be a matrix with $n$ rows and $m$
-columns. We use $\set{D}_{i,j}$ to access an element of $\set{D}$ at the $i$-th row, $j$-th column
-of matrix $\set{D}$. We denote by $\set{D}_{\set{i},\set{j}}$, where $\set{i}\subseteq
-\left[1..n\right]$ and $\set{j}\subseteq\left[1..m\right]$ are sets of indices, a submatrix from
-the extraction of the $\set{i}$ rows and $\set{j}$ columns of $\set{D}$. We use a colon as a
-shorthand for selecting all rows or columns, e.g.\ $\set{D}_{:,:}=\set{D}$, $\set{D}_{:,j}$ is the
-$j$-th column and $\set{D}_{i,:}$ is the $i$-th row.
+Before we explain \textproc{LearnSPN} however, we must first address how we denote data. Data is
+commonly represented as a matrix where rows are assignments (of all variables), and columns are the
+values that each variable takes at each assignment. Let $\set{D}\in\mathbb{R}^{n \times m}$ be a
+matrix with $n$ rows and $m$ columns. We use $\set{D}_{i,j}$ to access an element of $\set{D}$ at
+the $i$-th row, $j$-th column of matrix $\set{D}$. We denote by $\set{D}_{\set{i},\set{j}}$, where
+$\set{i}\subseteq \left[1..n\right]$ and $\set{j}\subseteq\left[1..m\right]$ are sets of indices, a
+submatrix from the extraction of the $\set{i}$ rows and $\set{j}$ columns of $\set{D}$. We use a
+colon as a shorthand for selecting all rows or columns, e.g.\ $\set{D}_{:,:}=\set{D}$,
+$\set{D}_{:,j}$ is the $j$-th column and $\set{D}_{i,:}$ is the $i$-th row.
 
 \subsection{\textproc{LearnSPN}}
+\label{sec:learnspn}
+
+Recall the semantics of sum and product nodes in a smooth and decomposable probabilistic circuit.
+A sum node encodes a mixture of distributions $p(\set{X})=\sum_{i=1}^m w_i\cdot p_i(\set{X})$ whose
+children scopes are all the same. A product node encodes a factorization
+$p(\set{X}_1,\ldots,\set{X}_m)=\prod_{i=1}^m p(\set{X}_i)$, implying that
+$\set{X}_i\indep\set{X}_j$ for $i,j\in [m]$ and $i\neq j$. \textproc{LearnSPN} \citep{gens13}
+exploits these semantics in an intuitive and uncomplicated manner: sum children are defined by
+sub-PCs learned from similar (by some arbitrary metric) assignments, and product children are
+sub-PCs learned from data conditioned on the variables defined by their scope. In practice, this
+means that, for a dataset $\set{D}\in\mathbb{R}^{n\times m}$, sums assign rows to their children,
+while product children are assigned columns. This procedures continues recursively until data are
+reduced to a $k\times 1$ matrix, in which case a univariate distribution acting as input node is
+learned from it. This recursive procedure is shown more formally in \Cref{alg:learnspn}.
+
+\begin{algorithm}[t]
+  \caption{\textproc{LearnSPN}}\label{alg:learnspn}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
+    \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
+    \IIf{$|\set{X}|=1$}{\textbf{return} an input node learned from $\set{D}$}
+    \NIElse
+      \State Find scope partitions $\set{X}_1,\ldots,\set{X}_t\subseteq\set{X}$ st
+        $\set{X}_i\indep\set{X}_j$ for $i\neq j$
+      \IIf{$k>1$}{\textbf{return} $\prod_{j=1}^t \textproc{LearnSPN}(\set{D}_{:,\set{X}_j},
+        \set{X}_j)$}
+      \NIElse
+        \State Find subsets of data $\set{x}_1,\ldots,\set{x}_k\subseteq\set{D}$ st all assignments
+          within $\set{x}_i$ are all similar
+        \State \textbf{return} $\sum_{i=1}^k \frac{|\set{x}_i|}{|\set{D}|}\cdot
+          \textproc{LearnSPN}(\set{x}_i,\set{X})$
+      \EndNIElse
+    \EndNIElse
+  \end{algorithmic}
+\end{algorithm}
+
+Notably, \citep{gens13} purposely does not strictly specify which techniques should be used for
+assigning rows and columns, although they do provide empirical results on a particular form of
+\textproc{LearnSPN} where row assignments are computed through EM clustering and products by
+pairwise G-testing. Instead, they call the algorithm a \emph{schema} that incorporates several
+actual learning algorithms whose concrete form depends on the choice of how to split data.
+
+\subsubsection{Complexity}
+
+To be able to analyze the complexity of \textproc{LearnSPN}, we assume a common implementation
+where sums are learned from $k$-means clustering, and products through pairwise G-testing. We know
+learning sums is efficient: $k$-means takes $\bigo(n\cdot k\cdot m\cdot c)$ time, where $k$ is the
+number of clusters and $c$ the number of iterations to be run. Products, on the other hand, are
+much more costly. The naïve approach would be to find every possible combination of variable
+partitions of any size and compute statistical independence tests over these subsets of variables,
+which would take superexponential time on the number of variables. Instead, \textproc{LearnSPN}
+proposes the faster approach of testing for pairwise independence $X_i\indep X_j$ for every
+possible combination. This is clearly quadratic on the number of variables
+$\bigo\left(\binom{m}{2}=\frac{m!}{2(m-2)!}\right)$ assuming an $\bigo(1)$ oracle for independence
+testing. In reality, G-test takes $\bigo(n\cdot m)$ time, as we must compute a ratio of observed
+versus expected values for each cell in the contingency table. This brings the total runtime for
+products to a whopping $\bigo\left(n\cdot m^3\right)$, prohibitive to any reasonably large dataset.
+In terms of space, independence tests most commonly used require either a correlation (for
+continuous data) or contingency (for discrete data) matrix that takes up $\bigo(m^2)$ space,
+another barrier for scaling up to high dimensional data.
 
 \begin{figure}[t]
   \begin{subfigure}[t]{0.48\textwidth}
@@ -130,69 +190,23 @@ $j$-th column and $\set{D}_{i,:}$ is the $i$-th row.
   \label{fig:learnspn}
 \end{figure}
 
-Recall the semantics of sum and product nodes in a smooth and decomposable probabilistic circuit.
-A sum is a mixture of distributions $p(\set{X})=\sum_{i=1}^m w_i\cdot p_i(\set{X})$ whose children
-scopes are all the same. A product is a factorization $p(\set{X}_1,\ldots,\set{X}_m)=\prod_{i=1}^m
-p(\set{X}_i)$, implying that $\set{X}_i\indep\set{X}_j$ for $i,j\in [m]$ and $i\neq j$.
-\textproc{LearnSPN} \citep{gens13} exploits these semantics in an intuitive and uncomplicated
-manner: sum children are defined by sub-PCs learned from similar (by some arbitrary metric)
-assignments, and product children are sub-PCs learned from data conditioned on the variables
-defined by their scope. In practice, this means that, for a dataset $\set{D}\in\mathbb{R}^{n\times
-m}$, sums assign rows to their children, while product children are assigned columns. This
-procedures continues recursively until data are reduced to a $k\times 1$ matrix, in which case a
-univariate distribution acting as input node is learned from it. This recursive procedure is shown
-more formally in \Cref{alg:learnspn}.
-
-\begin{algorithm}[t]
-  \caption{\textproc{LearnSPN}}\label{alg:learnspn}
-  \begin{algorithmic}[1]
-    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
-    \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
-    \IIf{$|\set{X}|=1$}{\textbf{return} an input node learned from $\set{D}$}
-    \NIElse
-      \State Find scope partitions $\set{X}_1,\ldots,\set{X}_t\subseteq\set{X}$ st
-        $\set{X}_i\indep\set{X}_j$ for $i\neq j$
-      \IIf{$k>1$}{\textbf{return} $\prod_{j=1}^t \textproc{LearnSPN}(\set{D}_{:,\set{X}_j},
-        \set{X}_j)$}
-      \NIElse
-        \State Find subsets of data $\set{x}_1,\ldots,\set{x}_k\subseteq\set{D}$ st all assignments
-          within $\set{x}_i$ are all similar
-        \State \textbf{return} $\sum_{i=1}^k \frac{|\set{x}_i|}{|\set{D}|}\cdot
-          \textproc{LearnSPN}(\set{x}_i,\set{X})$
-      \EndNIElse
-    \EndNIElse
-  \end{algorithmic}
-\end{algorithm}
-
-Notably, \citep{gens13} purposely does not strictly specify which techniques should be used for
-assigning rows and columns, although they do provide empirical results on a particular form of
-\textproc{LearnSPN} where row assignments are computed through EM clustering and products by
-pairwise G-testing. Instead, they call the algorithm a \emph{schema} that incorporates several
-actual learning algorithms whose concrete form depends on the choice of how to split data.
-
-\subsubsection{Complexity}
-
-To be able to analyze the complexity of \textproc{LearnSPN}, we assume a common implementation
-where sums are learned from $k$-means clustering, and products through pairwise G-testing. We know
-learning sums is efficient: $k$-means takes $\bigo(n\cdot k\cdot m\cdot c)$ time, where $k$ is the
-number of clusters and $c$ the number of iterations to be run. Products, on the other hand, are
-much more costly. The naïve approach would be to compute whether $X_i\indep X_j$ for every possible
-combination. This is clearly quadratic on the number of variables
-$\bigo\left(\binom{m}{2}=\frac{m!}{2(m-2)!}\right)$ assuming an $\bigo(1)$ oracle for independence
-testing. In reality, G-test takes $\bigo(n\cdot m)$ time, as we must compute a ratio of observed
-versus expected values for each cell in the contingency table. This brings the total runtime for
-products to a whopping $\bigo\left(n\cdot m^3\right)$, prohibitive to any reasonably large dataset.
-In terms of space, independence tests most commonly used require either a correlation (for
-continuous data) or contingency (for discrete data) matrix that takes up $\bigo(m^2)$ space,
-another barrier for scaling up to high dimensional data.
-
 Alternatively, instead of computing the G-test for every possible combination of variables,
 \citep{gens13} constructs an independence graph $\mathcal{G}$ whose nodes are variables and edges
 indicate whether two variables are statistically dependent. Within this context, the variable
 partitions we attribute to product children are exactly the connected components of $\mathcal{G}$,
-meaning it suffices testing only some combinations. Even so, this heuristic is still quadratic
-worst case. \Cref{fig:indepgraph} shows $\mathcal{G}$, the spanning forest resulted from the
-connected component heuristic, and the equivalent product node from this decomposition.
+meaning it suffices testing only some combinations. This is made clear by the following example:
+suppose we have an incomplete independence graph $\mathcal{G}$ where, at a certain point in the
+process of finding the (independent) variable partitions, we know there to be two components
+$\set{X}$ and $\set{Y}$; by hypothesis there is no edge connecting any variable in $\set{X}$ to any
+other variable in $\set{Y}$. The task of determining whether $\set{X}$ and $\set{Y}$ are, truly, a single
+component boils down to finding a pair of variables $X\in\set{X}$ and $Y\in\set{Y}$ such that the
+independence tests on the two returns that $X\not\indep Y$. If, at the next iteration, we luckily choose
+such a pair, no other pair of $\set{X}$ and $\set{Y}$ needs to be tested any longer, as we have
+already shown $\set{X}$ and $\set{Y}$ to belong to the same component. Note that, had we not used
+this heuristic, every pair would still need to be tested, even if they are known to be in the same
+component. Even so, this heuristic is still cubic on the number of variables in the worst case.
+\Cref{fig:indepgraph} shows $\mathcal{G}$, the spanning forest resulted from the connected
+component heuristic, and the equivalent product node from this decomposition.
 
 \subsubsection{Pros and cons}
 
@@ -273,18 +287,21 @@ even under completely different data.
 \end{figure}
 
 \subsection{\textproc{ID-SPN}}
+\label{sec:idspn}
 
 A subtle yet effective way of improving the performance of \textproc{LearnSPN} is to consider
 tractable probabilistic models over many variables as input nodes instead of univariate
 distributions. \textproc{ID-SPN} \citep{rooshenas14} does so by assuming that input nodes are
-Markov networks. Further, instead of blindly applying the recursion over subsequent sub-data, it
-attempts to compute some metric of quality from each node. The worst scored node is then replaced
-with a \textproc{LearnSPN}-like tree. This is repeated until no significant increase in likelihood
-is observed. \Cref{alg:idspn} shows the \textproc{ID-SPN} pipeline, where \textproc{ExtendID} is
-used in line \ref{alg:idspn:line:extend} to grow the circuit in a divide-and-conquer fashion. The
-name \textproc{ID-SPN} comes from \emph{direct} variable interactions, meaning the relationships
-modeled through the Markov networks as input nodes; and \emph{indirect} interactions brought from
-the latent variable interpretation of sum nodes.
+tractable Markov networks. Further, instead of blindly applying the recursion over subsequent
+sub-data, it attempts to compute some metric of quality from each node. The worst scored node is
+then replaced with a \textproc{LearnSPN}-like tree. This is repeated until no significant increase
+in likelihood is observed. \Cref{alg:idspn} shows the \textproc{ID-SPN} pipeline, where
+\textproc{ExtendID} is used in line \ref{alg:idspn:line:extend} to grow the circuit in a
+divide-and-conquer fashion. The name \textproc{ID-SPN} comes from \emph{direct} variable
+interactions, meaning the relationships modeled through the Markov networks as input nodes; and
+\emph{indirect} interactions brought from the latent variable interpretation of sum nodes.
+\Cref{fig:idspn} shows two hypothetical iterations of ID-SPN, with each call expanding the
+probabilistic circuit into either a sum or product over Markov networks.
 
 With respect to its implementation, \textproc{ID-SPN} is as modular as \textproc{LearnSPN} in the
 sense that the data partitioning is left as a subroutine. Indeed, even the choice of input
@@ -334,6 +351,24 @@ is a bound on the number of candidate improvements to the circuit, which can gro
 multi-valued variables. Importantly, opposite from \textproc{LearnSPN} where we only learn input
 nodes once per call \emph{if} data is univariate, \textproc{ID-SPN} requires learning multiple
 multivariate inputs for \emph{every} \textproc{ExtendID} call.
+
+\begin{algorithm}[t]
+  \caption{\textproc{ID-SPN}}\label{alg:idspn}
+  \begin{algorithmic}[1]
+    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
+    \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
+    \State Create a single-node PC: $\mathcal{C}\gets\textproc{LearnMarkov}(\set{D},\set{X})$
+    \State Let $\mathcal{M}$ be a memoization function associating a node with a dataset and scope
+    \State Call $\mathcal{C}'$ a copy of $\mathcal{C}$
+    \While{improving $\mathcal{C}$ yields better likelihood}
+      \State Pick worse node $\Node$ from $\mathcal{C}'$
+      \State Extract sub-data $\set{D}'$ and sub-scope $\set{X}'$ from $\mathcal{M}(\Node)$
+      \State Replace $\Node$ with $\textproc{ExtendID}(\set{D}',\set{X}',\mathcal{M})$\label{alg:idspn:line:extend}
+      \IIf{$\mathcal{C}'$ has better likelihood than $\mathcal{C}$}{$\mathcal{C}\gets\mathcal{C}$}
+    \EndWhile
+    \State \textbf{return} $\mathcal{C}$
+  \end{algorithmic}
+\end{algorithm}
 
 \begin{figure}[t]
   \resizebox{\textwidth}{!}{
@@ -412,6 +447,7 @@ multivariate inputs for \emph{every} \textproc{ExtendID} call.
   Markov networks. The red color indicates that a node has been chosen as the best candidate for an
   extension with \textproc{ExtendID}. Although here we only extend input nodes, inner nodes can in
   fact be extended as well.}
+  \label{fig:idspn}
 \end{figure}
 
 \subsubsection{Pros and Cons}
@@ -433,25 +469,8 @@ heavy weight during learning. This, coupled with the fact that hyperparameter tu
 parameter space of \textproc{ID-SPN} must be done by a random search method, can take a heavy price
 in terms of learning time.
 
-\begin{algorithm}[t]
-  \caption{\textproc{ID-SPN}}\label{alg:idspn}
-  \begin{algorithmic}[1]
-    \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
-    \Ensure A smooth and decomposable probabilistic circuit learned from $\set{D}$
-    \State Create a single-node PC: $\mathcal{C}\gets\textproc{LearnMarkov}(\set{D},\set{X})$
-    \State Let $\mathcal{M}$ be a memoization function associating a node with a dataset and scope
-    \State Call $\mathcal{C}'$ a copy of $\mathcal{C}$
-    \While{improving $\mathcal{C}$ yields better likelihood}
-      \State Pick worse node $\Node$ from $\mathcal{C}'$
-      \State Extract sub-data $\set{D}'$ and sub-scope $\set{X}'$ from $\mathcal{M}(\Node)$
-      \State Replace $\Node$ with $\textproc{ExtendID}(\set{D}',\set{X}',\mathcal{M})$\label{alg:idspn:line:extend}
-      \IIf{$\mathcal{C}'$ has better likelihood than $\mathcal{C}$}{$\mathcal{C}\gets\mathcal{C}$}
-    \EndWhile
-    \State \textbf{return} $\mathcal{C}$
-  \end{algorithmic}
-\end{algorithm}
-
 \subsection{\textproc{Prometheus}}
+\label{sec:prometheus}
 
 So far, we have only considered structure learning algorithms that produce tree-shaped circuits.
 Even though \textproc{ID-SPN} \emph{might} produce non-tree graphs at the input nodes depending on
@@ -664,8 +683,9 @@ the MST.
   input nodes. In this remark segment, we briefly discuss other advances in divide-and-conquer PC
   learning.
 
-  As we have previously mentioned, one of the drawbacks of \textproc{LearnSPN} is the sheer volume
-  of hyperparameters involved. \citet{vergari15} suggests simplifying clustering to only binary row
+  As we have previously mentioned, one of the drawbacks of \textproc{LearnSPN} is the possibly
+  large number of hyperparameters involved, usually dependent on the methods chosen for clustering
+  and independence testing. \citet{vergari15} suggests simplifying clustering to only binary row
   splits, while \citet{liu19} proposes clustering methods that automatically decide the number of
   clusters from data. Together with \textproc{Prometheus}, the space of hyperparameters to tune is
   greatly reduced.
@@ -703,10 +723,10 @@ look at two examples of \incrclass{} class learning algorithms: \textproc{LearnP
 \textproc{Strudel}.
 
 \subsection{\textproc{LearnPSDD}}
-\label{subsection:learnpsdd}
+\label{sec:learnpsdd}
 
 As the name suggests, \textproc{LearnPSDD} \citep{liang17} learns a smooth, structure decomposable
-and deterministic probabilistic circuit (see \Cref{subsection:touncertainty}), meaning its
+and deterministic probabilistic circuit (see \Cref{sec:touncertainty}), meaning its
 computational graph must respect a vtree. We therefore must address the issue of learning the vtree
 before we turn to the PC learning algorithm \emph{per se}.
 
@@ -1058,7 +1078,7 @@ growth and how do we know they are good candidates.
   \label{fig:bottomupvtree}
 \end{figure}
 
-\citeauthor{liang17} propose two local transformations for growing a circuit $\mathcal{C}$:
+\citet{liang17} propose two local transformations for growing a circuit $\mathcal{C}$:
 \textproc{Split} and \textproc{Clone}. The first acts by multiplying a sum node's product child
 $\Prod$ into $\Prod_1,\ldots,\Prod_k$ products such that $\pi_1,\ldots,\pi_k$ (primes of
 $\Prod_1,\ldots,\Prod_k$ respectively) are mutually exclusive. This is done by attributing all
@@ -1607,7 +1627,7 @@ two \incrclass{} algorithms, with both reaching multiple digits for each iterati
 sized datasets; though \textproc{LearnPSDD} much sharper and sooner comparatively \citep{dang20}.
 
 \begin{remark}[breakable]{On the choice of initial circuits}{initpc}
-  We only briefly mentioned in \Cref{subsection:learnpsdd} how we might want to start out with an
+  We only briefly mentioned in \Cref{sec:learnpsdd} how we might want to start out with an
   initial PC conveying a specific support and then run an \incrclass{} class algorithm to further
   boost its probabilistic expressiveness without changing the underlying knowledge base. We devote
   this remark segment to discussing several works in literature that construct a so-called
@@ -1617,7 +1637,7 @@ sized datasets; though \textproc{LearnPSDD} much sharper and sooner comparativel
 
   Just like in probabilistic reasoning, the field of knowledge compilation and symbolic reasoning
   is often interested in finding succinct representations capable of tractably computing queries, a
-  subject which we briefly touched in \Cref{subsection:fromcertainty}. For this reason, smooth,
+  subject which we briefly touched in \Cref{sec:fromcertainty}. For this reason, smooth,
   structure decomposable and deterministic logic circuits, who usually go by the name of Sentential
   Decision Diagrams (SDDs, \cite{darwiche11}) have proven to be a useful tool in several
   applications \citep{vlasselaer14,vlasselaer15,lomuscio15,herrmann13}. Fortunately, both
@@ -1637,7 +1657,7 @@ sized datasets; though \textproc{LearnPSDD} much sharper and sooner comparativel
   also widely used in formal methods and program verification, and for which efficient compilation
   from cardinality constraints are available \citep{een06}. Because BDDs are special case SDDs
   whose vtrees are always right-linear \citep{darwiche11,bova16}, their reduced representations
-  \citep{bryant86} are natural initial circuit candidates (see \Cref{subsection:samplepsdd}).
+  \citep{bryant86} are natural initial circuit candidates (see \Cref{sec:samplepsdd}).
 
   We now cover some of the existing literature on producing task specific (P)SDDs. \citet{choi16}
   analyzes the feasibility of compiling LCs (and subsequently producing a PC by parameterizing
@@ -1669,11 +1689,11 @@ modifications to their method.
 A key ingredient to \textproc{RAT-SPN} \citep{peharz20a} is the concept of \emph{region graphs}.
 First introduced in PC literature in \citet{dennis12}, region graphs are tensorized templates for
 PC construction. Informally, a region graph is composed out of \emph{region nodes} and
-\emph{partition nodes}; the former a set of sum or input nodes, and the latter of products. Regions
-can be thought of sets of computational units explaining the same interactions among variables
-\citep{dennis12}, for instance semantically similar pixel regions in an image; while partitions
-define independencies between these regions. Edges coming out of region (resp.\ partition) nodes
-must necessarily connect to a partition (resp.\ region) node.
+\emph{partition nodes}; the former is a set of sum or input nodes, and the latter of products.
+Regions can be thought of sets of computational units explaining the same interactions among
+variables \citep{dennis12}, for instance semantically similar pixel regions in an image; while
+partitions define independencies between these regions. Edges coming out of region (resp.\
+partition) nodes must necessarily connect to a partition (resp.\ region) node.
 
 \begin{definition}[Region graph]
   A \emph{region graph} is a rooted connected DAG whose nodes are either \emph{regions} or
@@ -1767,8 +1787,8 @@ descent optimizers and GPU parallelization.
 To ensure that the compiled PC is smooth and decomposable, the region graph must also be so. We
 extend the definition of scope function to region graphs. As long as leaf region nodes are assigned
 the correct scope, the PC is by construction smooth (every region is fully connected to their
-children) and decomposable (every partition splits variables into two regions). Function
-\textproc{CreateLayer} in \Cref{alg:ratspn} does exactly that, making sure each partition
+children) and decomposable (every partition splits variables into two nonoverlapping regions).
+Function \textproc{CreateLayer} in \Cref{alg:ratspn} does exactly that, making sure each partition
 decomposes into two distinct variable splits down to leaf region nodes. How deep the region graph
 (and consequentially the resulting PC) goes depends on a parameter $d$, which corresponds to half
 the true depth, as each \textproc{CreateLayer} call produces a partition and their children. After
@@ -2075,6 +2095,44 @@ are translated into products of (degenerate) Bernoullis. Determinism can be rela
 form of regularization, for instance Laplace smoothing, both on CLTs and on the products of
 Bernoullis.
 
+Following the footsteps of \textproc{RAT-SPN}, they generate a tree-shaped random region graph and
+produce a PC from it. Despite both employing region graphs, the graph in \citet{dimauro21} is only
+used as an artifice for formalizing the structure construction: their process for reconstructing a
+PC from a region graph boils down to replacing an inner region with a single sum, a leaf region
+with a single input and a partition with a single product. Although one \emph{could} generate a
+non-tree shaped PC by setting $s>1$ and $l>1$ (i.e.\ number of sums and inputs per inner and leaf
+region respectively), the resulting circuit could be reduced to a tree, since both sums (and
+inputs) coming from the same region would be syntatically the same\footnote{Whether this
+``expanded'' circuit could have its performance improved if one were to run, say EM, to exploit
+this increase in capacity is an interesting question that unfortunately was left unexplored in
+\citet{dimauro21}.}.
+
+A critical step to efficiently ensuring consistency with the logical restrictions is to assign only
+consistent subsets of data to subcircuits. Just like in \divclass{} class algorithms, partition
+(i.e.\ product) nodes in the region graph define column splits over data and regions (i.e.\ sums
+and inputs) correspond to row splits. The algorithm then associates a node with a portion of data
+according to its scope and logical constraint. More specifically, when the $i$-th prime defines a
+conjunction of literals $\alpha_i$, only assignments $\set{x}$ whose application
+$\alpha_i(\set{x})$ are true are transferred down, effectively splitting data row-wise. To ensure
+that the resulting circuit is also decomposable, only $\Sc(\alpha_i)$ variables are passed to
+primes, with the remaining variables going to the subs. This way, sum weights can be estimated as
+the subdata size ratios just like in \textproc{LearnSPN}, as \Cref{fig:xpcs} shows. Each subdata
+$\set{D}_{\alpha_i}$ corresponds to joining all assignments consistent with $\alpha_i$, as shown
+through matching colors on the table on the right. Data is divided by rows according to the
+satisfiability of each prime $\alpha_i$ and by column according to the scope of each prime.
+
+At each iteration of \Cref{alg:xpcs}, sub leaf region nodes, denoted here as $\mathcal{S}$ regions,
+are randomly selected for further expansion. \Cref{alg:xpcs-expand} takes a candidate region
+$\Region$ and samples $k$ conjunctions $\alpha_1,\ldots,\alpha_k$ of length $t$ that appear at
+least $\delta$ times in the subdata associated with $\Region$. If no such constraint has been
+found, $\Region$ is discarded as a candidate for expansion. Otherwise, another layer of partitions
+and regions similar to \Cref{fig:xpcs} is constructed, making sure that data splits obey both scope
+and constraints $\alpha_i$. Once no more candidates are available or a limit on the number of
+expansions has been reached, the region graph is translated into a probabilistic circuit by
+replacing leaf region nodes of type $\mathcal{Q}$ into products of Bernoullis, type $\mathcal{S}$'s
+into CLTs and inner regions as sums whose weights are the proportions of (row-wise) split data;
+partitions are replaced with product nodes.
+
 \begin{figure}[t]
   \newcolumntype{x}{>{\columncolor{boxolive}}c}
   \newcolumntype{y}{>{\columncolor{boxmunsel}}c}
@@ -2183,43 +2241,12 @@ Bernoullis.
   \label{fig:xpcs}
 \end{figure}
 
-Following the footsteps of \textproc{RAT-SPN}, they generate a tree-shaped random region graph and
-produce a PC from it. Despite both employing region graphs, the graph in \citet{dimauro21} is only
-used as an artifice for formalizing the structure construction: their process for reconstructing a
-PC from a region graph boils down to replacing an inner region with a single sum, a leaf region
-with a single input and a partition with a single product. Although one \emph{could} generate a
-non-tree shaped PC by setting $s>1$ and $l>1$ (i.e.\ number of sums and inputs per inner and leaf
-region respectively), the resulting circuit could be reduced to a tree, since both sums (and
-inputs) coming from the same region would be syntatically the same\footnote{Whether this
-``expanded'' circuit could have its performance improved if one were to run, say EM, to exploit
-this increase in capacity is an interesting question that unfortunately was left unexplored in
-\citet{dimauro21}.}.
-
-A critical step to efficiently ensuring consistency with the logical restrictions is to assign only
-consistent subsets of data to subcircuits. Just like in \divclass{} class algorithms, partition
-(i.e.\ product) nodes in the region graph define column splits over data and regions (i.e.\ sums
-and inputs) correspond to row splits. The algorithm then associates a node with a portion of data
-according to its scope and logical constraint. More specifically, when the $i$-th prime defines a
-conjunction of literals $\alpha_i$, only assignments $\set{x}$ whose application
-$\alpha_i(\set{x})$ are true are transferred down, effectively splitting data row-wise. To ensure
-that the resulting circuit is also decomposable, only $\Sc(\alpha_i)$ variables are passed to
-primes, with the remaining variables going to the subs. This way, sum weights can be estimated as
-the subdata size ratios just like in \textproc{LearnSPN}, as \Cref{fig:xpcs} shows. Each subdata
-$\set{D}_{\alpha_i}$ corresponds to joining all assignments consistent with $\alpha_i$, as shown
-through matching colors on the table on the right. Data is divided by rows according to the
-satisfiability of each prime $\alpha_i$ and by column according to the scope of each prime.
-
-At each iteration of \Cref{alg:xpcs}, sub leaf region nodes, denoted here as $\mathcal{S}$ regions,
-are randomly selected for further expansion. \Cref{alg:xpcs-expand} takes a candidate region
-$\Region$ and samples $k$ conjunctions $\alpha_1,\ldots,\alpha_k$ of length $t$ that appear at
-least $\delta$ times in the subdata associated with $\Region$. If no such constraint has been
-found, $\Region$ is discarded as a candidate for expansion. Otherwise, another layer of partitions
-and regions similar to \Cref{fig:xpcs} is constructed, making sure that data splits obey both scope
-and constraints $\alpha_i$. Once no more candidates are available or a limit on the number of
-expansions has been reached, the region graph is translated into a probabilistic circuit by
-replacing leaf region nodes of type $\mathcal{Q}$ into products of Bernoullis, type $\mathcal{S}$'s
-into CLTs and inner regions as sums whose weights are the proportions of (row-wise) split data;
-partitions are replaced with product nodes.
+Determinism is not the only constraint that can be enforced. In fact, since every product is by
+construction 2-standardized, the circuit is structure decomposable if not only the scopes of
+$\mathcal{Q}$ regions follow a vtree, but the CLTs in $\mathcal{S}$ regions do as well. This forces
+the sampling done in line \ref{alg:xpcs-expand:line:sample} to instead deterministically assign
+$\set{Y}$ the scope of $\Sc(v^\gets)$, where $v$ is the vtree node associated with the product
+splitting $\set{X}$.
 
 \begin{algorithm}[t]
   \caption{\textproc{ExpandXPC}}\label{alg:xpcs-expand}
@@ -2256,13 +2283,6 @@ partitions are replaced with product nodes.
     \EndNIElse
   \end{algorithmic}
 \end{algorithm}
-
-Determinism is not the only constraint that can be enforced. In fact, since every product is by
-construction 2-standardized, the circuit is structure decomposable if not only the scopes of
-$\mathcal{Q}$ regions follow a vtree, but the CLTs in $\mathcal{S}$ regions do as well. This forces
-the sampling done in line \ref{alg:xpcs-expand:line:sample} to instead deterministically assign
-$\set{Y}$ the scope of $\Sc(v^\gets)$, where $v$ is the vtree node associated with the product
-splitting $\set{X}$.
 
 \subsubsection{Complexity}
 
@@ -2337,3 +2357,29 @@ and whether to produce deterministic and/or structure decomposable PCs), a grid-
 parameters is necessary to produce optimal results. Although this is generally faster than other
 structure learning algorithms, the sheer size of all generated circuits from every hyperparameter
 combination can easily overwhelm memory space.
+
+\section{A Summary}
+
+To finish this review of structure learning algorithms in probabilistic circuits, we summarize all
+the important points raised throughout this chapter in \Cref{tab:learning}.
+
+\begin{sidewaystable}
+  \begin{tabular}{c|clc|cccc|c}
+    \hline
+    \textbf{Name} & \textbf{Class} & \textbf{Time Complexity} & \textbf{\# hyperparams} & \textbf{Smooth?} &
+    \textbf{Dec?} & \textbf{Det?} & \textbf{Str. Dec?} & \textbf{Reference}\\
+    \hline
+    \textproc{LearnSPN} & \divclass{} & $\bigo(nkmc+nm^3)$ per call & $\geq 2$ & \cmark & \cmark & \xmark &
+      \xmark & \Cref{sec:learnspn}\\
+    \textproc{ID-SPN} & \divclass{} & $
+    \begin{cases}
+      \bigo(nkmc+nm^3) & \text{, if inner node}\\
+      \bigo(ic(kn+m))  & \text{, if input node}
+    \end{cases}
+    $ & $\geq 3$ & \cmark & \cmark & \xmark & \xmark &
+      \Cref{sec:idspn}\\
+    \textproc{Prometheus} & \divclass{} & $\bigo(nkmc+m(\log m)^2)$ per call & $\geq 2$ & \cmark & \cmark &
+      \xmark & \xmark & \Cref{sec:prometheus}\\
+  \end{tabular}
+  \label{tab:learning}
+\end{sidewaystable}
