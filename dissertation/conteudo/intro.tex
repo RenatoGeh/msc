@@ -90,10 +90,10 @@ three classes: divide-and-conquer learning (\Cref{sec:divconq}), incremental lea
 (\Cref{sec:incremental}) and random learning (\Cref{sec:random}). For each, we give a brief
 analysis on their complexity and discuss their advantages and disadvantages.
 
-In \Cref{ch:scalable}, we propose the two scalable structural learning algorithms for probabilistic
-circuits that are especially suited for large data and fast deployment.  The final chapter
-(\Cref{ch:conclusion}) is dedicated to summarizing our research contributions and pointing to
-potential future work in learning PCs.
+In \Cref{ch:logical} and \Cref{ch:data}, we propose the two scalable structural learning algorithms
+for probabilistic circuits that are especially suited for large data and fast deployment.  The
+final chapter (\Cref{ch:conclusion}) is dedicated to summarizing our research contributions and
+pointing to potential future work in learning PCs.
 
 \section{Contributions}
 
@@ -115,13 +115,13 @@ background knowledge in the form of logical constraints. The algorithm samples a
 distribution of possible PSDDs that are weakly consistent with the logical formula. How weak
 consistency is depends on a parameter that trades permission of false statements as non zero
 probability events with circuit complexity. We provide the algorithm and empirical results in
-\Cref{sec:logical}.
+\Cref{ch:logical}.
 
 \newCTitle{boxgray}{Using ensembles to strengthen consistency}
 
 The PC sampler given by \citet{geh21a} produces competitive probabilistic models (in terms of
 likelihood), albeit weak logical models in the sense that it possibly assigns non-zero probability
-to false variable assignments -- as we discuss in \Cref{sec:logical}, it never assigns zero
+to false variable assignments -- as we discuss in \Cref{ch:logical}, it never assigns zero
 probability to true statements. By producing many weak models, we not only gain in terms of data
 fitness, but also consistency: if any one component in the ensemble returns an assignment to be
 impossible, the whole model should return false.
@@ -130,5 +130,5 @@ impossible, the whole model should return false.
 
 Usual methods often employ clustering algorithms for constructing convex combinations of
 computational units. These can take many iterations to converge or require space quadratic in the
-number of data points. Instead, in \Cref{sec:data} we present linear alternatives based on random
+number of data points. Instead, in \Cref{ch:data} we present linear alternatives based on random
 projections \citep{dasgupta08a,dasgupta08b}.

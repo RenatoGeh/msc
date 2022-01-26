@@ -345,8 +345,8 @@ As \textproc{ID-SPN} is a special case of \textproc{LearnSPN}, the analysis for 
 products subroutines holds. The only difference is on the runtime complexity for learning input
 nodes and the convergence rate for \textproc{ID-SPN}. Assuming input nodes are learned from the
 method suggested by \citet{rooshenas14}, which involves learning a probabilistic circuit from a
-Markov network \citep{lowd13a}, then each ``input'' node takes time $\bigo(i\cdot c(k\cdot n+m))$,
-where $i$ is the number of iterations to run, $c$ is the size of the generated PC, and constant $k$
+Markov network \citep{lowd13a}, then each ``input'' node takes time $\bigo(i\cdot c(r\cdot n+m))$,
+where $i$ is the number of iterations to run, $c$ is the size of the generated PC, and constant $r$
 is a bound on the number of candidate improvements to the circuit, which can grow exponentially for
 multi-valued variables. Importantly, opposite from \textproc{LearnSPN} where we only learn input
 nodes once per call \emph{if} data is univariate, \textproc{ID-SPN} requires learning multiple
@@ -736,14 +736,14 @@ $p_\mathcal{C}(\set{X},\set{Y})=p_\mathcal{C}(\set{X}) p_\mathcal{C}(\set{Y})$ f
 $\mathcal{C}$. This means that a PC's vtree is pivotal in embedding the independencies of the
 circuit's distribution. With this in mind, \citet{liang17} propose two approaches to inducing
 vtrees from data, both of which use mutual information
-\begin{equation*}
+\begin{equation}
   \mutualinf(\set{X},\set{Y})=\sum_{\set{X}=\set{x}}\sum_{\set{Y}=\set{y}}p(\set{x},\set{y})\log\frac{p(\set{x},\set{y})}{p(\set{x})p(\set{y})}
-\end{equation*}
+\end{equation}
 for deciding independence. To avoid computing an exponential number of MI terms, an approximation
 based on the average pairwise MI is computed instead
-\begin{equation*}
+\begin{equation}
   \pairmi(\set{X},\set{Y})=\frac{1}{|\set{X}||\set{Y}|}\cdot\sum_{X\in\set{X}}\sum_{Y\in\set{Y}}\mutualinf(X,Y).
-\end{equation*}
+\end{equation}
 The first approach learns vtrees in a top-down fashion, starting with a full scope and recursively
 partitioning down to the unit set. The second learns bottom-up, starting with singletons and
 joining sets of variables up to full scope.
@@ -1228,10 +1228,10 @@ performance. While it is true that the application of \textproc{Split} to any pr
 \textproc{Clone} to any sum node strictly increases expressivity, it is more meaningful to choose
 candidates whose growth carries a bigger impact on the overall fit relative to the training data.
 \textproc{LearnPSDD} searches for reasonable candidates by computing
-\begin{equation*}
+\begin{equation}
   \score(\set{D}, \mathcal{C}, \mathcal{C}')=\frac{\log\mathcal{C}'(\set{D})-\log
   \mathcal{C}(\set{D})}{|\mathcal{C}'|-|\mathcal{C}|},
-\end{equation*}
+\end{equation}
 where $\mathcal{C}$ and $\mathcal{C}'$ are, respectively, the PCs before and after the application
 of any of the two operations. In other words, the algorithm randomly evaluates applying
 \textproc{Split} and/or \textproc{Clone} and ultimately chooses the one candidate that maximizes
@@ -1535,20 +1535,20 @@ The circuit flow of deterministic PCs helps us understand how to efficiently com
 circuits of that nature. As we briefly mentioned before, for any assignment $\set{x}$ in a smooth,
 decomposable and deterministic PC $\mathcal{C}$, there exists a unique circuit flow $\mathcal{F}$
 that encodes the log-likelihood computation
-\begin{equation*}
+\begin{equation}
   \mathcal{C}(\set{x})=\mathcal{F}_\mathcal{C}(\set{x})=\prod_{(\Sum,\Child)\in
   \FEdges(\mathcal{F}_\mathcal{C})}w_{\Sum,\Child}\prod_{\Leaf\in\FInputs(\mathcal{F}_\mathcal{C})}
   p_{\Leaf}(\set{x}),
-\end{equation*}
+\end{equation}
 where $\FInputs(\cdot)$ returns the set of input nodes of a circuit. When inputs are all binary,
 then one might encode $\mathcal{F}_\mathcal{C}$ as a mapping $f_\mathcal{C}:\mathcal{X}\to
 \{0,1\}^{|\mathcal{W}_\mathcal{C}|}$, here $\mathcal{W}_\mathcal{C}$ denoting the set of all
 parameters (i.e.\ sum node weights) of $\mathcal{C}$, which ``activates'' edge
 $w\in\mathcal{W}_\mathcal{C}$ under assignment $\set{x}$. With this, the above operation under
 log-space is reduced to a vector multiplication
-\begin{equation*}
+\begin{equation}
   \log\mathcal{C}(\set{x})=f_\mathcal{C}(\set{x})^\intercal\cdot\log\left(\mathcal{W}_\mathcal{C}\right).
-\end{equation*}
+\end{equation}
 
 Importantly, by aggregating circuit flows through counting the number of activations of each
 parameter $w_{\Sum,\Child}$ in the entire training dataset $\set{D}$, we get a sense of the number
@@ -1561,16 +1561,16 @@ only \textproc{Split} to reduce the search space, looking at performing the sear
 of exhaustively and exploiting the efficiency of aggregate circuit flows as a fast heuristic in
 place of computing the whole likelihood. Searching is done by finding the edge to \textproc{Split}
 whose aggregate circuit flow is maximal
-\begin{equation*}
+\begin{equation}
   \score_{\textsf{eFlow}}(w_{\Sum,\Child}|\mathcal{C},\set{D})=\sum_{\set{x}\in\set{D}}f_{\mathcal{C}}(\set{x})\left[w_{\Sum,\Child}\right],
-\end{equation*}
+\end{equation}
 while the choice of which variable to condition \textproc{Split} on is done by selecting the
 variable $X$ that shares the most dependencies (and thus the higher pairwise mutual information)
 with other variables within the scope of that edge, estimated from the aggregate flows
-\begin{equation*}
+\begin{equation}
   \score_{\textsf{vMI}}(X,w_{\Sum,\Child}|\mathcal{C},\set{D})=\sum_{\substack{Y\in\Sc(\Sum)\\Y\neq
     X}}\mutualinf(X,Y).
-\end{equation*}
+\end{equation}
 The entire algorithm for \textproc{Strudel} is showcased in \Cref{alg:strudel}.
 
 \begin{algorithm}[t]
@@ -2020,12 +2020,12 @@ $d<|\set{X}|$ and $\bigo\left(r\cdot\log_2 |\set{X}|(s+l)\right)$ otherwise, mak
 extremely fast, it does not paint the whole picture. The main bulk of the complexity when learning
 \textproc{RAT-SPN} comes from parameter learning. \citet{peharz20a} calculate the number of sum
 weights to be
-\begin{equation*}
+\begin{equation}
   |\mathcal{W}_\mathcal{C}|=\begin{cases}
     r\cdot k\cdot l^2 & \quad\text{if $d=1$,}\\
     r\cdot\left(k\cdot s^2+(2^{d-1}-2)s^3+2^{d-1}\cdot s\cdot l^2\right) & \quad\text{if $d>1$};
   \end{cases}
-\end{equation*}
+\end{equation}
 if we assume that the number of children of partitions is at most two. This means that learning
 only the non-input parameters of \textproc{RAT-SPN} takes time $\bigo\left( \left(r\cdot 2^d
 \cdot\left(s^3+s\cdot l^2\right)+r\cdot k\cdot s^2\right)\cdot|\set{D}|\right)$. However, given
@@ -2360,26 +2360,106 @@ combination can easily overwhelm memory space.
 
 \section{A Summary}
 
-To finish this review of structure learning algorithms in probabilistic circuits, we summarize all
-the important points raised throughout this chapter in \Cref{tab:learning}.
+We finish this review of structure learning algorithms in probabilistic circuits by summarizing
+some of the more important points raised throughout this chapter in \Cref{tab:learning}. We list
+each algorithm seen in \Cref{ch:learning}, describing their class, time complexity of learning the
+probabilistic circuit and any other auxiliary data structure, number of hyperparameters needed
+during learning, which structural constraints are guaranteed to hold in the resulting PCs, and
+which data (binary $\{0,1\}$, discrete $\mathbb{N}$ or continuous $\mathbb{R}$) are supported. We
+use the same notation used throughout this section for data dimensions: $n$ is the number of
+examples in a dataset and $m$ is the number of variables of dataset. Other variable names differ in
+their meaning depending on each learning technique. We next describe some of the assumptions made
+in order to more concisely summarize the information set in \Cref{tab:learning}.
+
+For \textproc{LearnSPN}, we assume sums to be learned by $c$ iterations of $k$-means and products
+through the G-test. We call $k$ the number of clusters to be learned, and only assume the bare
+minimum as hyperparameters: $k$ and the G-test $p$-value, giving a lower bound of $2$ on the number
+of hyperparameters. \textproc{LearnSPN} is easily extensible to continuous data by replacing the
+G-test with any other continuous alternative, such as mutual information, and learning continuous
+univariate distributions as inputs.
+
+Recall that \textproc{ID-SPN} learns Markov networks as inputs. If we assume this process to follow
+the same procedure proposed in \citet{rooshenas14}, then the number of hyperparameters needed for
+just learning the structure of the Markov network inputs is at least three (per-edge penalty,
+per-split penalty and score tolerance heuristic\footnote{See the Libra Toolkit manual for more
+information \citep{libra}.}). Just like in \textproc{LearnSPN}, we also assume sums and products to
+be learned from $k$-means and the G-test for \textproc{ID-SPN}, raising the number of
+hyperparameters to 5, 2 for sums and products and 3 for inputs. We use the same notation as
+\Cref{sec:idspn}: $i$ is the number of iterations for learning the Markov networks, $c$ is the size
+of the Markov network being learned, $r$ is a constant bounding the number of improvements, and $k$
+is the number of clusters used for sums.
+
+We assume \textproc{Prometheus} to use its more scalable version of learning products by sampling
+edges from the correlation graph and sums learned from $k$-means. Because the procedure for
+learning products is parameterless, we are left with only $k$ as a hyperparameter for sums. We use
+the same variable notation as the other \divclass{} algorithms.
+
+For both \textproc{LearnPSDD} and \textproc{Strudel}, we consider only the maximum depth $m$ when
+partially copying the circuit during a local transformation as a hyperparameter. We do not consider
+the maximum number of iterations $i$ as a hyperparameter, as it acts more like a time constraint
+rather than a parameter to be optimized. We denote $\mathcal{C}$ as the probabilistic circuit
+being learned.
+
+When describing \textproc{RAT-SPN}, we denote $r$, $d$, $s$ and $l$ as the number of subcircuits
+learned, maximum depth of the generated region graph, number of sums per inner region node, and
+number of inputs per leaf region node, all of which are accounted as hyperparameters in
+\Cref{tab:learning}.
+
+In the case of \textproc{XPC}, we call $i$ the number of expansions to carry out in total, $t$ the
+length of sampled conjunctions of literals and $k$ the number of conjunctions to be sampled per
+region. Of these, $t$ and $k$, together with the number of assignments per partition $\delta$, are
+considered \textproc{XPC} hyperparameters, bringing the total number to three.
 
 \begin{sidewaystable}
-  \begin{tabular}{c|clc|cccc|c}
+  \resizebox{\textheight}{!}{
+    \begin{tabular}{c|clc|cccc|ccc|c}
     \hline
-    \textbf{Name} & \textbf{Class} & \textbf{Time Complexity} & \textbf{\# hyperparams} & \textbf{Smooth?} &
-    \textbf{Dec?} & \textbf{Det?} & \textbf{Str. Dec?} & \textbf{Reference}\\
+    \textbf{Name} & \textbf{Class} & \multicolumn{1}{c}{\textbf{Time Complexity}} & \textbf{\# hyperparams}
+    & \textbf{Smooth?} & \textbf{Dec?} & \textbf{Det?} & \textbf{Str. Dec?} &
+    \textbf{$\mathbf{\{0,1\}}$?} & $\mathbb{N}$\textbf{?} & $\mathbb{R}$\textbf{?} & \textbf{Reference}\\
     \hline
-    \textproc{LearnSPN} & \divclass{} & $\bigo(nkmc+nm^3)$ per call & $\geq 2$ & \cmark & \cmark & \xmark &
-      \xmark & \Cref{sec:learnspn}\\
+    \textproc{LearnSPN} & \divclass{} & $
+    \begin{cases}
+      \bigo\left(nkmc\right) & \text{, if sum}\\
+      \bigo\left(nm^3\right) & \text{, if product}
+    \end{cases}
+    $ & $\geq 2$ & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:learnspn}\\
     \textproc{ID-SPN} & \divclass{} & $
     \begin{cases}
-      \bigo(nkmc+nm^3) & \text{, if inner node}\\
-      \bigo(ic(kn+m))  & \text{, if input node}
+      \bigo\left(nkmc\right) & \text{, if sum}\\
+      \bigo\left(nm^3\right) & \text{, if product}\\
+      \bigo\left(ic(rn+m)\right)  & \text{, if input}
     \end{cases}
-    $ & $\geq 3$ & \cmark & \cmark & \xmark & \xmark &
-      \Cref{sec:idspn}\\
-    \textproc{Prometheus} & \divclass{} & $\bigo(nkmc+m(\log m)^2)$ per call & $\geq 2$ & \cmark & \cmark &
-      \xmark & \xmark & \Cref{sec:prometheus}\\
+    $ & $\geq 2+3$ & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \xmark & \Cref{sec:idspn}\\
+    \textproc{Prometheus} & \divclass{} & $
+    \begin{cases}
+      \bigo\left(nkmc\right) & \text{, if sum}\\
+      \bigo\left(m(\log m)^2\right) & \text{, if product}
+    \end{cases}
+    $ & $\geq 1$ & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:prometheus}\\
+    \hline
+    \textproc{LearnPSDD} & \incrclass{} & $
+    \begin{cases}
+      \bigo\left(m^2\right) & \text{, top-down vtree}\\
+      \bigo\left(m^4\right) & \text{, bottom-up vtree}\\
+      \bigo\left(i|\mathcal{C}|^2\right) & \text{, circuit structure}
+    \end{cases}
+    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:learnpsdd}\\
+    \textproc{Strudel} & \incrclass{} & $
+    \begin{cases}
+      \bigo\left(m^2 n\right) & \text{, CLT + vtree}\\
+      \bigo\left(i\left(|\mathcal{C}|n+m^2\right)\right) & \text{, circuit structure}
+    \end{cases}
+    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:strudel}\\
+    \hline
+    & & & & & & & & & & & \\
+    \textproc{RAT-SPN} & \randclass{} & $\phantom{\{}\bigo\left(rd(s+l)\right)$ & $4$ & \cmark & \cmark
+                       & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:ratspn}\\
+    & & & & & & & & & & & \\
+    \textproc{XPC} & \randclass{} & $\phantom{\{}\bigo\left(i(t+kn)+ikm^2n\right)$ & $3$ & \cmark & \cmark
+                   & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:xpcs}\\[5pt]
+    \hline
   \end{tabular}
+  }
   \label{tab:learning}
 \end{sidewaystable}

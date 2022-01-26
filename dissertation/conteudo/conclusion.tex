@@ -19,21 +19,21 @@ circuits either from knowledge or completely random (\Cref{sec:random}).
 
 We follow this literature review and taxonomy on structure learning by addressing two cases of
 \randclass{} algorithms, both of which draw inspiration from \divclass{} and \incrclass{}
-(\Cref{ch:scalable}). Each tackles the problem of learning PCs from distinct point of views: we
-first propose \textproc{SamplePSDD} to learn a circuit from certain knowledge, constructing a
+(\Cref{ch:logical,ch:data}). Each tackles the problem of learning PCs from distinct point of views:
+we first propose \textproc{SamplePSDD} to learn a circuit from certain knowledge, constructing a
 smooth, structure decomposable and deterministic PC (i.e.\ a PSDD) from both logical formula and
 data. To scale up to the hundreds of variables we restrict the PSDD's support to only a relaxation
 of the formula, showing that by aggregating several sampled circuits into an ensemble we achieve
-competitive performance against the state-of-the-art (\Cref{sec:logical}). Next, we describe a very
+competitive performance against the state-of-the-art (\Cref{ch:logical}). Next, we describe a very
 simple \randclass{} structure learning algorithm based on random projections, which we call
 \textproc{LearnRP}, for producing smooth and structure decomposable PCs solely from data. We show
 that our approach is orders of magnitude faster compared to competitors, achieving relatively
-competitive performance on binary data (\Cref{sec:data}).
+competitive performance on binary data (\Cref{ch:data}).
 
 \section{Discussion and Future Work}
 
-Despite the interesting results reported in \Cref{ch:scalable}, there is much room for improvement.
-We end this dissertation by addressing the flaws of both \textproc{SamplePSDD} and
+Despite the interesting results reported in \Cref{ch:logical,ch:data}, there is much room for
+improvement. We end this dissertation by addressing the flaws of both \textproc{SamplePSDD} and
 \textproc{LearnRP}, pointing to their weaknesses and suggesting possible ideas for further work.
 
 \subsection{\textproc{SamplePSDD}}
