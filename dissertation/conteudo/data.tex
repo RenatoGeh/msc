@@ -5,7 +5,7 @@ We now turn our attention to scalably learning a PC purely from data. In this ch
 PCs solely from the perspective of data fitness; we exploit the connection between PCs and
 generative random forests \citep{correia20,ho95} and revisit a well-known technique based on random
 projections for constructing random trees \citep{dasgupta08a,dasgupta08b}, presenting a simple and
-fast yet effective way of learning PCs. This approach learns smooth and structure decomposable
+fast yet effective way of learning PCs. This approach learns smooth and structured decomposable
 circuits by randomly partitioning the data space with random projections in a \divclass{} class
 fashion. We show that our method produces competitive PCs at a fraction of the time. The
 contributions in this chapter come, in part, from \citet{geh21b}.
@@ -18,7 +18,7 @@ decisions behind our structure learning algorithm. We begin by re-emphasizing th
 between probabilistic circuits and density estimation trees briefly discussed in \Cref{eg:det}. We
 follow by revisiting \emph{random projections} \citep{dasgupta08a,dasgupta08b}, a well-known
 technique for hierarchically partitioning data through oblique hyperplanes. Next, we present in
-detail a very fast structure learning algorithm for quickly generating smooth and structure
+detail a very fast structure learning algorithm for quickly generating smooth and structured
 decomposable circuits. Despite their simplicity, we empirically show their competitive performance
 compared to state-of-the-art.
 
@@ -269,13 +269,13 @@ this way defines a latent variable corresponding to a hyperplane, giving some in
 (akin to decision trees) to the model. From a more practical point of view, we point to the work
 of \citet{vergari15}, showing that binary partitions (both row-wise and column-wise) favor a deeper
 architecture and produce smaller models. We further strengthen this last point by restricting the
-learned structure to a vtree, effectively constructing smooth and structure decomposable PCs.
+learned structure to a vtree, effectively constructing smooth and structured decomposable PCs.
 
 \begin{algorithm}[t]
   \caption{\textproc{LearnRP}}\label{alg:learnrp}
   \begin{algorithmic}[1]
     \Require Dataset $\set{D}$, variables $\set{X}$, vtree $\vtree$ and $k$ projection tryouts
-    \Ensure A smooth and structure decomposable probabilistic circuit
+    \Ensure A smooth and structured decomposable probabilistic circuit
     \IIf{$|\set{X}|=1$}{\textbf{return} an input node learned from $\set{D}$}\label{alg:learnrp:line:input}
     \NIElse
       \State Sample $k$ projections and call $f$ the one which minimizes the avg. diameter of $\set{D}$
@@ -383,7 +383,7 @@ the source was not made public and no working implementation was found.
 
 \Cref{tab:binary} shows benchmark results for binary data. For fairness, we report results for best
 ensembles of \textproc{XPC}, \textproc{Strudel} and \textproc{LearnPSDD} so that all models
-compared are smooth and structure decomposable (with the exception of \textproc{LearnSPN} and
+compared are smooth and structured decomposable (with the exception of \textproc{LearnSPN} and
 \textproc{Prometheus} which are only decomposable) but nondeterministic. Columns
 \textproc{LearnRP}-10, \textproc{LearnRP}-20, \textproc{LearnRP}-30 and \textproc{LearnRP}-F
 correspond to runs of a single \textproc{LearnRP} circuit where we optimize the learned structure

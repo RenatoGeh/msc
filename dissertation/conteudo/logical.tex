@@ -3,20 +3,18 @@
 
 Considering the many benefits and drawbacks of the current state-of-the-art learning algorithms
 addressed in \Cref{ch:learning}, and emphasizing the need for scalability and accessibility, we now
-present one of the main contributions of this dissertation, proposing the first of two novel
-structure learning algorithms for probabilistic circuits, the second of which is touched on in
-\Cref{ch:data}. We approach the problem of learning scalable PCs from two distinct points of view.
-In this chapter, we are interested in PCs whose support encodes a given logical constraint as
-certain knowledge; we show how both the probabilistic issue of data fitness, as well as the logical
-question of whether the circuit successfully compiles a knowledge base can be accomplished by
-aggregating PC samples into ensembles of models. The contents of this chapter come from our
-contributions in \citet{geh21a}.
+present the main contributions of this dissertation, proposing the first of two novel structure
+learning algorithms for probabilistic circuits. In this chapter, we are interested in PCs whose
+support encodes a given logical constraint as certain knowledge; we show how both the probabilistic
+issue of data fitness, as well as the logical question of whether the circuit successfully compiles
+a knowledge base can be accomplished by aggregating PC samples into ensembles of models. The
+contents of this chapter come from our contributions in \citet{geh21a}.
 
 \section{Sampling PSDDs}
 \label{sec:sampling}
 
 \Cref{rem:initpc} briefly mentioned the question of compiling logical constraints into smooth,
-structure decomposable and deterministic logic circuits (i.e.\ (P)SDDs \cite{darwiche11,kisa14}).
+structured decomposable and deterministic logic circuits (i.e.\ (P)SDDs \cite{darwiche11,kisa14}).
 Indeed, although there are many existing approaches to learning circuits from logical formulae,
 most are only useful for specific tasks \citep{choi16,choi15,shen17,choi17}. Although there are
 more generalistic ways of producing circuits, namely from CNFs and DNFs \citep{oztok15,choi13};
@@ -44,6 +42,37 @@ diversify sampling, local transformations similar in spirit to \incrclass{} algo
 Of worth, we found that not only is this process incredibly fast even under intricate logical
 formulae, but by combining samples into an ensemble we achieve competitive results against the
 state-of-the-art.
+
+Before we address our contributions, we should first fix some notation on the issue of
+propositional logic. We treat propositional variables as 0/1-valued random variables and use them
+interchangeably. Given a Boolean formula, we write $\langle f\rangle$ to denote its semantics,
+i.e.\ the Boolean function represented by $f$. For Boolean formulas $f$ and $g$, we write $f\equiv
+g$ if they are logically equivalent, i.e.\ if $\langle f\rangle=\langle g\rangle$; we abuse
+notation and write $\phi\equiv f$ to indicate that $\phi=\langle f\rangle$ for a Boolean function
+$\phi$. We overload the scope function once again for logical formulae: $\Sc(f)$ denotes the set of
+variables that appear in $f$. We say that the restriction of $f$ to an assignment
+$\set{X}=\set{x}$, where $\set{X}\subseteq\Sc(f)$, is a Boolean function resulting from setting all
+literal nodes to the corresponding values of $\set{x}$; we denote this operation as $f|_\set{x}$.
+As an example, consider $f(A,B,C,D)=(A\vee\neg B)\wedge(\neg C\vee\neg D)$ and say we wish to
+restrict $f$ to $\set{x}=\{A=0,C=1\}$, then $f|_\set{x}=B\wedge\neg D$. At times, we might wish to
+restrict a function to a conjunction of literals consistent with an assignment. When this happens,
+we overload the function to return the restriction to the equivalent assignment. For instance,
+given the same function as the previous example, and calling $g(A,C)=\neg A\wedge C$, we use $f|_g$
+to mean the restriction of $f$ to $g$'s equivalent assignment $(A=0,C=1)$, that is, the only
+assignment where $g$ would return true.
+
+Because we are only interested in smooth, structured decomposable and deterministic PCs whose
+support is defined by a logical formula, we shall adopt the usual notation of PSDDs, which we
+present next.
+
+\begin{definition}[Partition]\label{def:partition}
+  Let $\phi(\set{x},\set{y})$ be a Boolean function over disjoint sets of variables $\set{X}$ and
+  $\set{Y}$, and $\mathcal{D}=\{(p_i,s_i)\}_{i=1}^k$ be a set of tuples where $p_i$ (the prime) and
+  $s_i$ (the sub) are formulae over $\set{X}$ and $\set{Y}$ respectively, satisfying $p_i\wedge
+  p_j\equiv\bot$ for each $i\neq j$ and $\bigvee_{i=1}^k p_i\equiv\top$. We say that $\mathcal{D}$
+  is an ($\set{X}$, $\set{Y}$)-partition of $\phi$ if and only if
+  $\phi\equiv\bigvee_{i=1}^k(p_i\wedge s_i)$.
+\end{definition}
 
 \begin{figure}[t]
   \begin{tikzpicture}
@@ -121,42 +150,11 @@ state-of-the-art.
   \label{fig:psdd}
 \end{figure}
 
-Before we address our contributions, we should first fix some notation on the issue of
-propositional logic. We treat propositional variables as 0/1-valued random variables and use them
-interchangeably. Given a Boolean formula, we write $\langle f\rangle$ to denote its semantics,
-i.e.\ the Boolean function represented by $f$. For Boolean formulas $f$ and $g$, we write $f\equiv
-g$ if they are logically equivalent, i.e.\ if $\langle f\rangle=\langle g\rangle$; we abuse
-notation and write $\phi\equiv f$ to indicate that $\phi=\langle f\rangle$ for a Boolean function
-$\phi$. We overload the scope function once again for logical formulae: $\Sc(f)$ denotes the set of
-variables that appear in $f$. We say that the restriction of $f$ to an assignment
-$\set{X}=\set{x}$, where $\set{X}\subseteq\Sc(f)$, is a Boolean function resulting from setting all
-literal nodes to the corresponding values of $\set{x}$; we denote this operation as $f|_\set{x}$.
-As an example, consider $f(a,b,c,d)=(a\vee\neg b)\wedge(\neg c\vee\neg d)$ and say we wish to
-restrict $f$ to $\set{x}=\{a=0,c=1\}$, then $f|_\set{x}=b\wedge\neg d$. At times, we might wish to
-restrict a function to a conjunction of literals consistent with an assignment. When this happens,
-we overload the function to return the restriction to the equivalent assignment. For instance,
-given the same function as the previous example, and calling $p(a,c)=\neg a\wedge c$, we use $f|_p$
-to mean the restriction of $f$ to $p$'s equivalent assignment $(a=0, c=1)$, that is, the only
-assignment where $p$ would return true.
-
-Because we are only interested in smooth, structure decomposable and deterministic PCs whose
-support is defined by a logical formula, we shall adopt the usual notation of PSDDs, which we
-present next.
-
-\begin{definition}[Partition]\label{def:partition}
-  Let $\phi(\set{x},\set{y})$ be a Boolean function over disjoint sets of variables $\set{X}$ and
-  $\set{Y}$, and $\mathcal{D}=\{(p_i,s_i)\}_{i=1}^k$ be a set of tuples where $p_i$ (the prime) and
-  $s_i$ (the sub) are formulae over $\set{X}$ and $\set{Y}$ respectively, satisfying $p_i\wedge
-  p_j\equiv\bot$ for each $i\neq j$ and $\bigvee_{i=1}^k p_i\equiv\top$. We say that $\mathcal{D}$
-  is an ($\set{X}$, $\set{Y}$)-partition of $\phi$ if and only if
-  $\phi\equiv\bigvee_{i=1}^k(p_i\wedge s_i)$.
-\end{definition}
-
 An (exact) partition\footnote{The naming \emph{partition} is unfortunate. The nomenclature in
 probabilistic circuits is full of many other partitions, either using the term to conjure meaning
 from set theory when dealing with data splits (see \Cref{sec:divconq}), partition nodes in region
 graphs (see \Cref{sec:random}) or in PSDD literature in this section. Here (and only here),
-partitions will mean stricly the latter.} is no more than a smooth, structure decomposable and
+partitions will mean stricly the latter.} is no more than a smooth, structured decomposable and
 deterministic circuit rooted at a sum (or disjunction) node whose children are products (or
 conjunctions); the primes of these products must necessarily be mutual exclusive (formally,
 $p_i\wedge p_j\equiv\bot$) and exhaustive (formally, $\bigvee_{i=1}^k p_i\equiv\top$).
@@ -370,13 +368,13 @@ $\Sc(1^\gets)=\{A,B,C\}$, with $\Sc(1^\to)=\{D,E\}$ for subs; so sampled primes 
 $p_2=A\wedge\neg B$ and $p_3=\neg A$ must come from $\Sc(1^\gets)$. However, because
 $s_1=\phi|_{p_1}=\neg C\wedge D$ and $s_3=\phi|_{p_3}=B\wedge\neg C \wedge D$, meaning that
 $\Sc(s_1)\not\subseteq\Sc(1^\to)$ and $\Sc(s_3)\not\subseteq\Sc(1^\to)$, subs violate the
-factorization imposed by the vtree $\mathcal{V}$, making the circuit non-structure decomposable
+factorization imposed by the vtree $\mathcal{V}$, making the circuit non-structured decomposable
 (albeit decomposable). Here, we point out that the scope of the formula needs to be a subset of the
-scope of its corresponding vtree for the PC to be structure decomposable, and not necessarily
+scope of its corresponding vtree for the PC to be structured decomposable, and not necessarily
 the set itself, as variables that do not appear in the formula yet are part of the vtree's scope
 play a \emph{probabilistic} role in the PSDD.
 
-For these circuits to both preserve structure decomposability \emph{and} have tractable
+For these circuits to both preserve structured decomposability \emph{and} have tractable
 representation, we resort to a weaker definition of a partition that relaxes the logical
 constraints.
 
@@ -425,14 +423,14 @@ probabilities provide an upper bound independent of the actual probabilities.
 \end{algorithm}
 
 Looking back to the issue of bounding the number of elements per partition, a solution to the
-problem of tractability and structure decomposability comes by employing \emph{partial} partitions
+problem of tractability and structured decomposability comes by employing \emph{partial} partitions
 instead of \emph{exact} partitions. Let $\Sum$ be a sum node, and call $s_i$ one of its sub and $v$
 the vtree node for $\Sum$; denote by $\set{F}=\Sc(s_i)\setminus\Sc(v^\to)$, that is, the variables
 in $s_i$ which should \emph{not} have been in the sub. We already know that $\Sum$ cannot be turned
 into an exact partition unless it has an exponential number of elements, and so we look to
 \emph{partial} partitions. The \emph{forget} operation takes a formula $\psi$ and marginalizes
 variable $X$: $\Forget(\psi, X)=\psi|_X\vee\psi|_{\neg X}$; by construction $\Forget(\psi,X)\geq
-\psi$. By forgetting all variables in $\set{F}$, we secure structure decomposability and produce a
+\psi$. By forgetting all variables in $\set{F}$, we secure structured decomposability and produce a
 relaxation of the original formula. To do this efficiently, we make use of a BDD for representing
 formulae, as reduced BDDs are canonical and permit polynomial time restricting and forgetting.
 
@@ -443,7 +441,7 @@ Elements whose subs are $\bot$ are removed, as their probability is always zero.
 recursively call the same procedure on their formulae. Just like in most \divclass{} class
 algorithms, if $|\set{X}|=1$, then we either return a literal node consistent with $\phi$, or a
 Bernoulli distribution input node over $\set{X}$'s only variable. Another special case arises when
-$\phi\equiv\top$, in which case any smooth, structure decomposable and deterministic PC will do.
+$\phi\equiv\top$, in which case any smooth, structured decomposable and deterministic PC will do.
 This PC can either be learned purely from data or generated from a template. Alternatively, we
 might even choose to continue sampling partitions as before, except in this case all partial
 partitions are also exact partitions. \Cref{alg:samplepsdd} shows the entire recursive procedure
@@ -458,7 +456,7 @@ of \textproc{SamplePSDD}.
       \IIf{$\phi$ is a literal}{\textbf{return} $\phi$ as a literal node}
       \IElse{\textbf{return} a Bernoulli distribution input node over variable $\Sc(v)$}
     \ElsIf{$\phi\equiv\top$}
-      \State \textbf{return} any smooth, structure decomposable and deterministic PC over $\Sc(v)$
+      \State \textbf{return} any smooth, structured decomposable and deterministic PC over $\Sc(v)$
       \label{alg:samplepsdd:line:top}
     \EndIf
     \State $\set{E}\gets\Call{SamplePartialPartition}{\phi,\Sc(v^\gets),k}$
@@ -619,7 +617,7 @@ the sub. Compression is the exact inverse of \textproc{Split}, seen in \Cref{sec
 \Cref{fig:splitclone}). Apart from compression, we propose \emph{merging} two equivalent subs into
 the same circuit as shown in \Cref{fig:merge}. Merging is a common (previously nameless) operation
 in PC literature and is the inverse of \textproc{Clone} (cf.\ \Cref{fig:splitclone}). In both
-cases, shrinking local transformations preserve smoothness, structure decomposability, determinism
+cases, shrinking local transformations preserve smoothness, structured decomposability, determinism
 and the circuit's formula, although they change the PSDD's underlying distribution by reducing the
 number of parameters.
 
@@ -632,7 +630,126 @@ every partition in subcircuits rooted at primes is exact (here denoted by the fu
 \textproc{SampleExactPartition}). If we bound the number of primes to a constant $k$, these exact
 subcircuits will never suffer from an exponential blow-up, as all subsequent (exact) partitions
 contain primes with at most $\left\lceil\log_2(k)\right\rceil$ variables and thus at most
-$2^{\left\lceil\log_2(k)\right\rceil}$ elements are constructed at each call.
+$2^{\left\lceil\log_2(k)\right\rceil}$ elements are constructed at each call. Note that this
+analysis is only true if we assume primes to be sampled with \Cref{alg:samplepartial}. The
+nature of \textproc{SamplePartialPartition}, where we expand variables in a breadth-first search
+fashion, makes sure that no one conjunction of literals has length much greater than the other
+primes, and so the number of literals will be at most $\left\lceil\log_2(k)\right\rceil$.
+Nonetheless, even if we sample primes by a depth-first search-like expansion, the total number of
+literals in a prime will still be bounded to at most $k-1$, as \Cref{fig:expansion} shows.
+
+\begin{figure}
+  \begin{subfigure}[t]{\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \newNamedOrNode[fill=boxgreen,inputs=nnnnn]{r}{0,0}{1};
+      \newNamedAndNode[fill=boxblue,inputs=nn]{a1}{$(r) + (-3.0,-1.25)$}{$e_1$};
+      \newNamedAndNode[fill=boxorange,inputs=nn]{a2}{$(r) + (-1.5,-1.75)$}{$e_2$};
+      \newNamedAndNode[fill=boxpink!80,inputs=nn]{a3}{$(r) + (0.0,-1.25)$}{$e_3$};
+      \newNamedAndNode[fill=boxgoldenrod!80,inputs=nn]{a4}{$(r) + (1.5,-1.75)$}{$e_4$};
+      \newNamedAndNode[fill=boxgray,inputs=nn]{a5}{$(r) + (3.0,-1.25)$}{$e_5$};
+
+      \node (p1) at ($(a1.input 1) + (-0.6,-1.25)$) {\color{pviolet}$A\wedge B$};
+      \node (p2) at ($(a2.input 1) + (-0.6,-1.25)$) {\color{pviolet}$A\wedge\neg B\wedge C$};
+      \node (p3) at ($(a3.input 1) + (-0.6,-1.25)$) {\color{pviolet}$\neg A\wedge B$};
+      \node (p4) at ($(a4.input 1) + (-0.6,-1.25)$) {\color{pviolet}$A\wedge\neg B\wedge\neg C$};
+      \node (p5) at ($(a5.input 1) + (-0.6,-1.25)$) {\color{pviolet}$\neg A\wedge\neg B$};
+      \node (s1) at ($(a1.input 2) + (0,-0.75)$) {$\vdots$};
+      \node (s2) at ($(a2.input 2) + (0,-0.75)$) {$\vdots$};
+      \node (s3) at ($(a3.input 2) + (0,-0.75)$) {$\vdots$};
+      \node (s4) at ($(a4.input 2) + (0,-0.75)$) {$\vdots$};
+      \node (s5) at ($(a5.input 2) + (0,-0.75)$) {$\vdots$};
+
+      \draw[edge] (r.input 1) -- ++(0,-0.2) -| (a1);
+      \draw[edge] (r.input 2) -- ++(0,-0.4) -| (a2);
+      \draw[edge] (r.input 3) -- ++(0,-0.0) -| (a3);
+      \draw[edge] (r.input 4) -- ++(0,-0.4) -| (a4);
+      \draw[edge] (r.input 5) -- ++(0,-0.2) -| (a5);
+      \draw[edge] (a1.input 1) -- ++(0,-0.3) -| (p1);
+      \draw[edge] (a2.input 1) -- ++(0,-0.3) -| (p2);
+      \draw[edge] (a3.input 1) -- ++(0,-0.3) -| (p3);
+      \draw[edge] (a4.input 1) -- ++(0,-0.3) -| (p4);
+      \draw[edge] (a5.input 1) -- ++(0,-0.3) -| (p5);
+      \draw[edge] (a1.input 2) -- ++(0,-0.4) -| (s1);
+      \draw[edge] (a2.input 2) -- ++(0,-0.4) -| (s2);
+      \draw[edge] (a3.input 2) -- ++(0,-0.4) -| (s3);
+      \draw[edge] (a4.input 2) -- ++(0,-0.4) -| (s4);
+      \draw[edge] (a5.input 2) -- ++(0,-0.4) -| (s5);
+
+      \tikzstyle{dec} = [draw,circle,inner sep=1pt,fill=pyellow!70];
+      \node[dec] (root) at (7.25,0.25) {A};
+      \node[dec] (n1) at ($(root) + (+1.5,-0.75)$) {B};
+      \node[dec] (n2) at ($(root) + (-1.5,-0.75)$) {B};
+      \node[dec] (n3) at ($(n2) + (+0.75,-1)$) {C};
+      \node[dec] (n4) at ($(n2) + (-0.75,-1)$) {C};
+      \node[dec] (n5) at ($(n1) + (+0.75,-1)$) {C};
+      \node[dec] (n6) at ($(n1) + (-0.75,-1)$) {C};
+      \node[dec] (n7) at ($(n3) + (+1.0,-1)$) {$\emptyset$};
+      \node[dec] (n8) at ($(n3) + (-1.0,-1)$) {$\emptyset$};
+      \draw (root) edge node[right,pos=0.4] {$-$} (n1);
+      \draw (root) edge node[left,pos=0.4] {$+$} (n2);
+      \draw (n2) edge node[right,pos=0.4] {$-$} (n3);
+      \draw (n2) edge node[left,pos=0.4] {$+$} (n4);
+      \draw (n1) edge node[right,pos=0.4] {$-$} (n5);
+      \draw (n1) edge node[left,pos=0.4] {$+$} (n6);
+      \draw (n3) edge node[right,pos=0.4] {$-$} (n7);
+      \draw (n3) edge node[left,pos=0.4] {$+$} (n8);
+      \node at ($(n4) + (0,-0.5)$) {\color{pviolet}\small$A\wedge B$};
+      \node at ($(n5) + (0,-0.5)$) {\color{pviolet}\small$\neg A\wedge\neg B$};
+      \node at ($(n6) + (0,-0.5)$) {\color{pviolet}\small$\neg A\wedge B$};
+      \node at ($(n7) + (0,-0.5)$) {\color{pviolet}\small$A\wedge\neg B\wedge\neg C$};
+      \node at ($(n8) + (0,-0.5)$) {\color{pviolet}\small$A\wedge\neg B\wedge C$};
+    \end{tikzpicture}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \newNamedOrNode[fill=boxgreen,inputs=nnnnn]{r}{0,0}{1};
+      \newNamedAndNode[fill=boxblue,inputs=nn]{a1}{$(r) + (-3.0,-1.25)$}{$e_1$};
+      \newNamedAndNode[fill=boxorange,inputs=nn]{a2}{$(r) + (-1.5,-1.75)$}{$e_2$};
+      \newNamedAndNode[fill=boxpink!80,inputs=nn]{a3}{$(r) + (0.0,-1.25)$}{$e_3$};
+      \newNamedAndNode[fill=boxgoldenrod!80,inputs=nn]{a4}{$(r) + (1.5,-1.75)$}{$e_4$};
+      \newNamedAndNode[fill=boxgray,inputs=nn]{a5}{$(r) + (3.0,-1.25)$}{$e_5$};
+
+      \node (p1) at ($(a1.input 1) + (-0.6,-1.25)$) {\color{pviolet}$A\wedge B$};
+      \node (p2) at ($(a2.input 1) + (-0.6,-1.25)$) {\color{pviolet}$A\wedge\neg B\wedge C$};
+      \node (p3) at ($(a3.input 1) + (-0.6,-1.25)$) {\color{pviolet}$\neg A\wedge B$};
+      \node (p4) at ($(a4.input 1) + (-0.6,-1.25)$) {\color{pviolet}$A\wedge\neg B\wedge\neg C$};
+      \node (p5) at ($(a5.input 1) + (-0.6,-1.25)$) {\color{pviolet}$\neg A\wedge\neg B$};
+      \node (s1) at ($(a1.input 2) + (0,-0.75)$) {$\vdots$};
+      \node (s2) at ($(a2.input 2) + (0,-0.75)$) {$\vdots$};
+      \node (s3) at ($(a3.input 2) + (0,-0.75)$) {$\vdots$};
+      \node (s4) at ($(a4.input 2) + (0,-0.75)$) {$\vdots$};
+      \node (s5) at ($(a5.input 2) + (0,-0.75)$) {$\vdots$};
+
+      \draw[edge] (r.input 1) -- ++(0,-0.2) -| (a1);
+      \draw[edge] (r.input 2) -- ++(0,-0.4) -| (a2);
+      \draw[edge] (r.input 3) -- ++(0,-0.0) -| (a3);
+      \draw[edge] (r.input 4) -- ++(0,-0.4) -| (a4);
+      \draw[edge] (r.input 5) -- ++(0,-0.2) -| (a5);
+      \draw[edge] (a1.input 1) -- ++(0,-0.3) -| (p1);
+      \draw[edge] (a2.input 1) -- ++(0,-0.3) -| (p2);
+      \draw[edge] (a3.input 1) -- ++(0,-0.3) -| (p3);
+      \draw[edge] (a4.input 1) -- ++(0,-0.3) -| (p4);
+      \draw[edge] (a5.input 1) -- ++(0,-0.3) -| (p5);
+      \draw[edge] (a1.input 2) -- ++(0,-0.4) -| (s1);
+      \draw[edge] (a2.input 2) -- ++(0,-0.4) -| (s2);
+      \draw[edge] (a3.input 2) -- ++(0,-0.4) -| (s3);
+      \draw[edge] (a4.input 2) -- ++(0,-0.4) -| (s4);
+      \draw[edge] (a5.input 2) -- ++(0,-0.4) -| (s5);
+
+      \tikzstyle{dec} = [draw,circle,inner sep=1pt,fill=pyellow!70];
+      \node[dec] (root) at (7.25,0.0) {A};
+      %\node[dec] (n1) at ($(root) + (+1.5,-0.75)$) {B};
+      %\draw (n2) edge node[right,pos=0.4] {$-$} (n3);
+      %\node at ($(n8) + (0,-0.5)$) {\small$A\wedge\neg B\wedge C$};
+    \end{tikzpicture}
+    \caption{}
+  \end{subfigure}
+  \caption{}
+  \label{fig:expansion}
+\end{figure}
 
 \section{Experiments}
 

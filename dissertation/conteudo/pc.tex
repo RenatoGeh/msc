@@ -1304,15 +1304,16 @@ tractably computing the \map{}.
 As \Cref{thm:det}'s proof on \cpageref{proof:det} suggests, the \map{} on a smooth, decomposable
 and deterministic PC can be easily computed by simply replacing sum nodes with a max operation and
 performing a bottom-up \evi{} pass. This is commonly called the Max-Product algorithm, shown more
-formally in \Cref{alg:map}. To find the assignment $\set{y}$ that maximizes \Cref{eq:map} in a
-given circuit $\mathcal{C}$, we first compute the \map{} probabilities through the usual bottom-up
-pass, and then find the maximum (in terms of probability) induced tree $\mathcal{M}$ rooted at
-$\mathcal{C}$ by backtracking the graph to the most probable assignments. This maximum induced tree
-can be retrieved by a top-down pass selecting the most probable sum child nodes according to the
-probabilities set by \map{}. Since $\mathcal{C}$ is decomposable, there cannot exist a node in
-$\mathcal{M}$ with more than one parent, meaning it is by construction a tree whose leaves are
-input nodes with scopes whose union is the scope of $\mathcal{C}$. This reduces the problem to a
-divide-and-conquer approach where each input node is individually maximized.
+formally in \Cref{alg:map} and visually exemplified in \Cref{fig:map}. To find the assignment
+$\set{y}$ that maximizes \Cref{eq:map} in a given circuit $\mathcal{C}$, we first compute the
+\map{} probabilities through the usual bottom-up pass, and then find the maximum (in terms of
+probability) induced tree $\mathcal{M}$ rooted at $\mathcal{C}$ by backtracking the graph to the
+most probable assignments. This maximum induced tree can be retrieved by a top-down pass selecting
+the most probable sum child nodes according to the probabilities set by \map{}. Since $\mathcal{C}$
+is decomposable, there cannot exist a node in $\mathcal{M}$ with more than one parent, meaning it
+is by construction a tree whose leaves are input nodes with scopes whose union is the scope of
+$\mathcal{C}$. This reduces the problem to a divide-and-conquer approach where each input node is
+individually maximized.
 
 Many known probabilistic models can be subsumed as smooth, decomposable and deterministic PCs, such
 Markov networks \citep{lowd13a}, naïve Bayes, thin junction trees \citep{bach01}, and more
@@ -1391,7 +1392,7 @@ naïve Bayes model as a probabilistic circuit.
 Although we have only covered the most basic queries so far, more complex tasks involving
 information-theoretic measures, logical queries or distributional divergences are also (tractably)
 computable in PCs under the right conditions. Particularly, we are interested in a key component
-for tractability in all these tasks: the notion of \emph{vtrees} and \emph{structure
+for tractability in all these tasks: the notion of \emph{vtrees} and \emph{structured
 decomposability}, a stronger variant of decomposability where variable partitionings on product
 nodes follow a hierarchy. This hierarchy is easily visualized through a \emph{vtree} (variable
 tree), a data structure that defines a (partial) ordering of variables.
@@ -1529,7 +1530,7 @@ computational graph without adhering to the left-right convention in favor of re
     \caption{}
     \label{fig:norespect}
   \end{subfigure}
-  \caption{A vtree \uncaption{(a)} defining an order $(A,B,C,D)$, a 2-standard structure
+  \caption{A vtree \uncaption{(a)} defining an order $(A,B,C,D)$, a 2-standard structured
     decomposable probabilistic circuit that respects the vtree \uncaption{(b)}, and a 2-standard
     decomposable probabilistic circuit that does not \uncaption{(c)}.}
   \label{fig:vtreeresp}
@@ -1542,7 +1543,7 @@ Similarly, a vtree is said to be left- (resp. right) leaning if the number of le
 vtree. The variable order of a vtree is the sequence of leaf nodes (i.e.\ variables) read from left
 to right. \Cref{fig:vtree} shows a balanced vtree with order $(A,B,C,D)$.
 
-Now that we understand what a vtree is, we can properly introduce \emph{structure decomposability},
+Now that we understand what a vtree is, we can properly introduce \emph{structured decomposability},
 a stronger variant of decomposability. We say that a PC is \emph{2-standard} if it is standard and
 all of its product nodes have exactly two children. Further, we call the $i$-th layer of a PC or a
 vtree as the set of all nodes that are at depth $i$ (i.e.\ the shortest connected path from the
@@ -1551,13 +1552,13 @@ root to the node has size $i$).
 \begin{definition}[Structure decomposability]
   \label{def:sdec}%
   Let $\mathcal{C}$ be a 2-standard probabilistic circuit and $\vtree$ a vtree with same scope as
-  $\mathcal{C}$. $\mathcal{C}$ is said to be \emph{structure decomposable} if every $i$-th product
+  $\mathcal{C}$. $\mathcal{C}$ is said to be \emph{structured decomposable} if every $i$-th product
   layer of $\mathcal{C}$ respects every $i$-th inner node layer of $\vtree$.
 \end{definition}
 
 Although we assume a 2-standard PC in \Cref{def:sdec}, this assumption was only for convenience,
 and does not imply in a loss of expressivity; as a matter of fact, any PC can be 2-standardized
-(see \Cref{thm:2standard}). Intuitively, structure decomposability merely states that every two
+(see \Cref{thm:2standard}). Intuitively, structured decomposability merely states that every two
 product nodes whose scopes are the same must partition their scopes (between their two children)
 exactly the same (and according to their corresponding vtree node). Semantically speaking, a
 vtree's inner node $v$ defines a context-specific independence relationship between $\Sc(v^\gets)$
@@ -1572,18 +1573,18 @@ of these, their children \inode[fill=boxbrown!60]{\newProdNode} also respect $\v
 encode he same split as $2$ or as $3$, depending on whether they are descendants from the sub or
 prime of $1$. Although $\mathcal{C}_2$ is decomposable, it does \emph{not} respect $\vtree$, as
 \inode[fill=boxred!70]{\newProdNode} encode different variable partionings ($(\{A\},\{B,C,D\})$ and
-$(\{A,B,C\},\{D\}))$. In fact, it is not structure decomposable, as it does not respect any vtree.
-\Cref{eg:hmm} shows a Hidden Markov model as a smooth, deterministic and structure decomposable PC
+$(\{A,B,C\},\{D\}))$. In fact, it is not structured decomposable, as it does not respect any vtree.
+\Cref{eg:hmm} shows a Hidden Markov model as a smooth, deterministic and structured decomposable PC
 whose sums describe the latent variables and products partition observable variables according to
 the vtree.
 
-Despite our structure decomposability definition relying on a vtree, there is at least one
+Despite our structured decomposability definition relying on a vtree, there is at least one
 alternative definition that defines it in terms of \emph{circuit compatibility}. Essentially, a
 circuit $\mathcal{C}_1$ is \emph{compatible} with $\mathcal{C}_2$ if they can be 2-standardized (in
 polynomial time) in such a way that any two products with same scope, one from $\mathcal{C}_1$ and
 the other $\mathcal{C}_2$, partition the scope into the same decompositions \citep{vergari21}. A
-structure decomposable PC is then defined as a PC that is compatible with a copy of itself. In
-summary, the two definitions of structure decomposability are equivalent, except compatibility
+structured decomposable PC is then defined as a PC that is compatible with a copy of itself. In
+summary, the two definitions of structured decomposability are equivalent, except compatibility
 implicitly assumes an arrangement of product scopes that is analogous to a vtree.
 
 Probabilistic circuits appear in literature under many names. A PC which is both smooth and
@@ -1593,7 +1594,7 @@ sometimes used as a synonym for probabilistic circuits. Smooth, decomposable and
 often appear as Arithmetic Circuits (ACs, \cite{darwiche03}) or Cutset Networks (CNets,
 \cite{rahman14}). Probabilistic Sentential Decision Diagrams (PSDDs, \cite{kisa14}), Probabilistic
 Decision Graphs (PDGs, \cite{jaeger04}) and And/Or-Graphs (AOGs, \cite{dechter07}) can all be
-described as smooth, deterministic and structure decomposable PCs.
+described as smooth, deterministic and structured decomposable PCs.
 
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Hidden Markov models as probabilistic circuits}{hmm}
   Say we wish to model a sequential structured dependence between three latent binary variables, for
@@ -1610,7 +1611,7 @@ described as smooth, deterministic and structure decomposable PCs.
   $p(X_1)$, and each $p(X_i|X_{i-1})$ translates into the other matched color sum weights. Further,
   every product follows the partitionings imposed by the vtree, with
   \inode[fill=boxgray!80]{\newProdNode} decomposing into $(\emptyset,\{Y_3\})$. This means that
-  this PC is not only smooth, but structure decomposable and deterministic.
+  this PC is not only smooth, but structured decomposable and deterministic.
   \tcblower
   \begin{center}
     \begin{tikzpicture}
@@ -1677,13 +1678,13 @@ described as smooth, deterministic and structure decomposable PCs.
   \end{center}
 \end{example}
 
-The notion of structure decomposability (or compatibility for that matter) is key to more complex
+The notion of structured decomposability (or compatibility for that matter) is key to more complex
 queries. For instance, given two probabilistic circuits $\mathcal{C}_1$ and $\mathcal{C}_2$,
 computing cross entropy between the two is $\bigo\left(|\mathcal{C}_1||\mathcal{C}_2|\right)$ as
 long as both have the same vtree and the circuit that needs to come inside the $\log$ is also
 deterministic. Likewise, computing the Kullback-Leibler (KL) divergence between $\mathcal{C}_1$ and
 $\mathcal{C}_2$ requires that the two share the same vtree and both be deterministic. Mutual
-Information (MI), in turn, calls for the circuit to be smooth, structure decomposable and an even
+Information (MI), in turn, calls for the circuit to be smooth, structured decomposable and an even
 stronger version of determinism known as \emph{marginal determinism} where sums can only have one
 nonnegative valued child for any \emph{partial} assignment at a time. In fact, when a PC is smooth,
 decomposable and marginal deterministic, marginal \map{}, i.e. \map{} over partial assignments
@@ -1691,7 +1692,7 @@ becomes linear time computable. For a more detailed insight on the tractability 
 other) queries, as well as proofs on these results, we point to the comprehensive study of
 \citet{vergari21}.
 
-A particularly interesting class of queries that becomes tractable when circuits are structure
+A particularly interesting class of queries that becomes tractable when circuits are structured
 decomposable is the expectation (\expc{}) of a circuit with respect to another \citep{choi20},
 defined as
 \begin{equation}
@@ -1873,7 +1874,7 @@ $X$ and $\neg X$ for literal nodes.
     \caption{}
     \label{fig:lc2}
   \end{subfigure}
-  \caption{Two smooth, structure decomposable and deterministic logic circuits encoding the same
+  \caption{Two smooth, structured decomposable and deterministic logic circuits encoding the same
     logic constraint $\phi\equiv(A\wedge B)\vee(\neg C\wedge D)$ for a balanced \uncaption{(a)} and a
     right-linear \uncaption{(b)} vtree. In \uncaption{(a)}, a circuit evaluation for an assignment,
     with each node value in the bottom-up evaluation pass shown inside nodes.}
@@ -1894,7 +1895,7 @@ definitions are not coincidence: much of the literature on PCs have their origin
 most structural constraints in PCs are the exact same (up to even their names\footnote{There are
 some exceptions. Smoothness is sometimes referred to as \emph{completeness} in PCs, while
 determinism has the alternative name of \emph{selectivity}.}) as their LC analogues. In this
-dissertation, we are particularly interested in the specific subset of smooth, structure
+dissertation, we are particularly interested in the specific subset of smooth, structured
 decomposable and deterministic LCs, known as Sentential Decision Diagrams (SDDs,
 \cite{darwiche11}). \Cref{fig:logic} shows two SDDs encoding the same knowledge base but under
 different vtrees. The one on the left respects a balanced vtree and the one on the right a
@@ -1905,7 +1906,7 @@ knowledge compilation community under the title of Negated Normal Form (NNF)
 \citep{darwiche01b,darwiche99}, a superset of other propositional compilation languages such as
 Binary Decision Diagrams (BDDs, \cite{bryant86}), Propositional DAGs (PDAGs, \cite{wachter06}),
 Sentential Decision Diagrams (SDDs, \cite{darwiche11}), DNFs and CNFs. \Cref{eg:bdd} shows a
-smooth, structure decomposable and deterministic logic circuit as a BDD. Although no structural
+smooth, structured decomposable and deterministic logic circuit as a BDD. Although no structural
 constraint is required for model verification in logic circuits, the same properties defined in the
 past section have come up in LCs to enable other more complex queries like equivalence,
 implication, sentential entailment and model counting, as well as transformations such as closed
@@ -1916,7 +1917,7 @@ on logic circuits.
 
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{BDDs as logic circuits}{bdd}
   A Binary Decision Diagram (BDD, \cite{bryant86}) defines a Boolean function over binary variables
-  as a rooted DAG. BDDs are a subset of smooth, structure decomposable and deterministic LCs (i.e.\
+  as a rooted DAG. BDDs are a subset of smooth, structured decomposable and deterministic LCs (i.e.\
   SDDs) whose vtrees are always right-linear.
   \begin{center}
     \begin{tikzpicture}
@@ -2024,7 +2025,7 @@ on logic circuits.
 
 Logic circuits are easily extensible to probabilistic circuits. In fact, if we think of an LC as
 the support of a PC the connections between the two come naturally. Suppose a 2-standard smooth,
-structure decomposable and deterministic probabilistic circuit $\mathcal{C}$ over binary variables.
+structured decomposable and deterministic probabilistic circuit $\mathcal{C}$ over binary variables.
 We can construct an identically structured logic circuit (up to input nodes) $\mathcal{L}$ with
 same vtree as $\mathcal{C}$ whose underlying Boolean function encodes $\phi(\set{x})=
 \left\liv\mathcal{C}(\set{x})>0\right\riv$. Since sums act exactly like disjunctions and products
@@ -2126,7 +2127,7 @@ weighted sum (resp. disjunction) is known in PC and LC literature as a \emph{par
 This compatibility between logic and probabilistic circuits allows certain knowledge to be embedded
 into an uncertain model by constructing a computational graph whose underlying logic circuit
 correctly attributes positive values only to the support of the distribution. When such a
-computational graph is also smooth, structure decomposable and deterministic, then it belongs to a
+computational graph is also smooth, structured decomposable and deterministic, then it belongs to a
 special subclass of PCs called Probabilistic Sentential Decision Diagrams (PSDDs, \cite{kisa14}).
 An alternative use case for logic circuits within the context of probabilistic reasoning is
 querying for the probability of logical events, i.e.\ the expectation of a logic query with respect
@@ -2142,7 +2143,7 @@ vtree and $\mathcal{C}$ is smooth, as \Cref{thm:expc} shows.
 \begin{algorithm}[t]
   \caption{\expc}\label{alg:expc}
   \begin{algorithmic}[1]
-    \Require A smooth, structure decomposable PC $\mathcal{C}$ and LC $\mathcal{L}$, both with vtree
+    \Require A smooth, structured decomposable PC $\mathcal{C}$ and LC $\mathcal{L}$, both with vtree
       $\vtree$
       \Ensure The expectation $\mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]=\int_\set{x}\mathcal{C}(\set{x})
       \mathcal{L}(\set{x})\dif\set{x}$
@@ -2174,13 +2175,13 @@ vtree and $\mathcal{C}$ is smooth, as \Cref{thm:expc} shows.
 \end{algorithm}
 
 \begin{restatable}[\cite{choi20}]{theorem}{expcthm}\label{thm:expc}
-  If $\mathcal{C}$ is a smooth and structure decomposable probabilistic circuit with vtree
-  $\vtree$, and $\mathcal{L}$ a structure decomposable logic circuit also respecting $\vtree$, then
+  If $\mathcal{C}$ is a smooth and structured decomposable probabilistic circuit with vtree
+  $\vtree$, and $\mathcal{L}$ a structured decomposable logic circuit also respecting $\vtree$, then
   $\mathbb{E}_\mathcal{C}\left[\mathcal{L}\right]$ is polynomial time computable (in the number of
   edges).
 \end{restatable}
 
-Let $\mathcal{C}$ be a smooth and structure decomposable circuit with vtree $\vtree$, and
+Let $\mathcal{C}$ be a smooth and structured decomposable circuit with vtree $\vtree$, and
 $\mathcal{L}$ a logic circuit representing a logical query whose vtree is also $\vtree$. Computing
 the probability of $\mathcal{L}$ with respect to the distribution encoded by $\mathcal{C}$ is done
 by a bottom-up evaluation over both circuits at the same time. \Cref{alg:expc} shows the procedure
