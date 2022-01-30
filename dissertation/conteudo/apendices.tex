@@ -129,7 +129,7 @@ Any probabilistic circuit $\mathcal{C}$ can be transformed into a circuit where 
 contains only products or inputs and every product node contains only \emph{two} sums or inputs.
 \end{theorem}
 \begin{proof}
-  For sums, apply the same standardization procedure as \cref{thm:standard}. Let $\Prod$ a product
+  For sums, apply the same standardization procedure as \Cref{thm:standard}. Let $\Prod$ a product
   and call $n=|\Ch(\Prod)|$. If $n=1$ and $\Ch(\Prod)$ is a product, then remove $\Prod$ and
   connect all previous parents of $\Prod$ with its child. If $n=1$ and $\Ch(\Prod)$ is not a
   product, remove $\Prod$ and apply the standardization procedure for sums on all of $\Pa(\Prod)$.
@@ -293,3 +293,225 @@ contains only products or inputs and every product node contains only \emph{two}
   Therefore, if expectation is tractable for input nodes, then expectation is tractable for the
   whole circuit.
 \end{proof}
+
+\section{\textproc{SamplePSDD}}
+\label{sec:samplepsdd-app}
+
+We now transcribe the supplemental material found in \citet{geh21a}. In this section, we describe a
+fast implementation of \textproc{SamplePSDD} that avoids the use of the costly Forget operation. We
+then show additional experiments with \num{1000} iterations of \textproc{LearnPSDD} and
+\textproc{Strudel}, followed by the complete log-likelihood results in table form. Finally, we list
+in more detail the logical constraints used in each of the domains described in
+\Cref{sec:logical-exp}.
+
+\subsection{Fast implementation of \textsc{SamplePSDD}}
+
+In order to produce valid (partial) partitions, \textsc{SamplePSDD} requires that the
+\textsc{Forget} operation be called for every sub lest the scope of the formula contradicts the
+respective scope in vtree. Despite \textsc{Forget} taking polynomial time in the size of the BDD,
+we can make sampling more efficient by directly ``forgetting''  a variable when returning a PSDD
+structure. \Cref{alg:fastsamplepsdd} modifies \Cref{alg:samplepsdd} to handle variables not
+appearing in the formula $\phi$. Lines 2 -- 7 ensure that the formula correctly accounts for the
+forgetting of variables not in the scope of the vtree. Hence, we can omit the \textsc{Forget}
+operation in \Cref{alg:samplepartial}, resulting in \Cref{alg:samplepartial-fast}. Since the
+restricion $\psi|X$ is linearithmic in the size of the BDD, and constructing a conjunction of
+literals $\alpha$ is linear in $|\Sc(\alpha)|$, the algorithm is highly efficient.
+
+\setcounter{algorithm}{20}
+\begin{algorithm}
+  \caption{\textproc{FastSamplePSDD}}\label{alg:fastsamplepsdd}
+  \begin{algorithmic}[1]
+    \Require BDD $\phi$, vtree node $v$, number of primes $k$
+    \Ensure A sampled PSDD structure
+    \If{$v$ is a leaf}
+      \If{$v\in\phi$}
+        \IIf{$\phi$ is a literal}{\textbf{return} $\phi$ as a literal node}
+        \IIf{$\phi|_v\equiv\top$}{\textbf{return} $v$ as a literal node}
+        \IIf{$\phi|_{\neg v}\equiv\top$}{\textbf{return} $\neg v$ as a literal node}
+      %\Else \textbf{ return} a Bernoulli over $v$ 
+      \EndIf
+        \State \textbf{return} a Bernoulli over $v$
+    \ElsIf{$\phi\equiv\top$}
+      \State \textbf{return} a fully factorized circuit over $\Sc(v)$
+    \EndIf
+    \State $\set{E}\gets\Call{FastSamplePartialPartition}{\phi,\Sc(v^{\gets}),k}$
+    \State Create an OR gate $\Sum$
+    \State Randomly compress elements in $\set{E}$ with equal subs
+    \State Randomly merge elements in $\set{E}$ with equal subs
+    \For{each element $(p,s)\in\set{E}$}
+      \State $l\gets\Call{SampleExactPSDD}{p,v^\gets,k}$
+      \State $r\gets\Call{FastSamplePSDD}{s,v^\to,k}$
+      \State Add an AND gate with inputs $l$ and $r$ as a child of $\Sum$
+    \EndFor
+    \State \textbf{return} $\Sum$
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+  \caption{\textproc{FastSamplePartialPartition}}\label{alg:samplepartial-fast}
+  \begin{algorithmic}[1]
+    \Require BDD $\phi$, vtree node $v$, number of primes $k$
+    \Ensure A set of sampled elements
+    \State Define $\set{E}$ as an empty collection of sampled elements
+    \State Sample an ordering $X_1,\dotsc,X_m$ of $\Sc(v^\gets)\cap\Sc(\phi)$
+    \State Let $\set{Q}$ be a queue initially containing $(\phi,1,\{\})$
+    \State $j\gets 1$ \Comment{Counter of sampled elements}
+    \While{$|\set{E}|<k$}
+      \State Pop top item $(\psi,i,p)$ from $\set{Q}$
+      \If{$j\geq k$ or $i>m$ or $\psi\equiv\top$}
+%        \State Define $e\gets\left(\bigwedge_{X\in\set{V}}X,\Forget(\phi|_{\set{V}},\Sc(v^\gets))\right)$
+ %       \State Add new element $e$ to $\set{E}$
+        \State Add $\left(p,\phi|_{p}\right)$ to $\set{E}$
+        \State \textbf{continue}
+      \EndIf
+      %\State Let $X$ be the $i$-th variable in $\set{O}$
+      \State $\alpha\gets\psi|_{X_i}$, $\beta\gets\psi|_{\neg X_i}$
+      \If{$\alpha \equiv \beta$} enqueue $(\psi,i+1,p)$ in $\set{Q}$
+      \Else
+        \IIf{$\alpha\not\equiv\bot$}{push $(\alpha,i+1,p \wedge X_i)$ to $\set{Q}$}
+        \IIf{$\beta\not\equiv\bot$}{push $(\beta,i+1,p\wedge\neg X_i)$ to $\set{Q}$}
+        \State $j\gets j+1$
+      \EndIf
+    \EndWhile
+    \State \textbf{return} $\set{E}$
+  \end{algorithmic}
+\end{algorithm}
+
+\subsection{Additional Experiments}
+
+We repeat the accuracy vs.\  sample size plots including the results of running \textsc{Strudel}
+and \textsc{MixStrudel} for 1000 iterations, as used in the original paper. \Cref{fig:performance}
+shows all results with the added Strudel and MixStrudel with 1000 iterations curves.
+
+\begin{figure*}
+  \begin{subfigure}[b]{0.495\textwidth}
+    \centering\includegraphics[width=\textwidth]{supplementary/all_ll_led_ensembles.pdf}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.495\textwidth}
+    \centering\includegraphics[width=\textwidth]{supplementary/all_ll_led_pixels_ensembles.pdf}
+    \caption{}
+  \end{subfigure}\\ 
+  \begin{subfigure}[b]{0.495\textwidth}
+    \centering\includegraphics[width=\textwidth]{supplementary/all_ll_sushi_choose_ensembles.pdf}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.495\textwidth}
+    \centering\includegraphics[width=\textwidth]{supplementary/all_ll_sushi_ranking_ensembles.pdf}
+    \caption{}
+  \end{subfigure}\\
+  \begin{subfigure}[t]{0.495\textwidth}
+    \centering\includegraphics[width=\textwidth]{supplementary/all_ll_dota_ensembles.pdf}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.495\textwidth}
+    \centering\includegraphics[width=0.9\columnwidth]{supplementary/all_sushi_time.pdf}
+    \caption{}
+  \end{subfigure}
+  \caption{\uncaption{(a)} Log-likelihoods for the unpixelized \texttt{led}, \uncaption{(b)}
+    \texttt{led-pixels}, \uncaption{(c)} \texttt{sushi} $10$-choose-$5$, \uncaption{(d)}
+    \texttt{sushi} ranking, and \uncaption{(e)} \texttt{dota} datasets. \uncaption{(f)} Mean
+    average in seconds of each PSDD learning algorithm.}
+  \label{fig:performance}
+\end{figure*}
+
+\subsection{Tables with all results}
+
+Tables \ref{tab:all-led} through \ref{tab:all-led-pixels} show all log-likelihood values for all learned
+circuits mentioned in the article.
+
+\input{supplementary/all_tables}
+
+\newpage
+
+\subsection{Logic constraints}
+
+We next show all the logic constraints used for each dataset.
+
+\subsubsection{LED}
+
+\begin{figure}
+  \resizebox{\columnwidth}{!}{
+  \begin{tikzpicture}
+    \node at (0, 0) {\sevensegnum{4}};
+    \node at (0, 1) {1};
+    \node at (0.75, 0.3) {2};
+    \node at (0.75, -0.3) {3};
+    \node at (0, -1) {4};
+    \node at (-0.75, -0.3) {5};
+    \node at (-0.75, 0.3) {6};
+    \node at (0, 0.25) {7};
+    \node at (5.0, 0.25) {$d_4=\neg X_1\wedge X_2\wedge X_3\wedge\neg X_4\wedge\neg X_5\wedge X_6\wedge X_7$};
+    \node at (2.525, -0.5) {$\phi=\bigvee_{i=0}^9 d_i$};
+  \end{tikzpicture}
+  }
+  \caption{LED segment numbering (left), and the corresponding formula for that digit (right).}
+\end{figure}
+
+Let $Y_1,Y_2,\ldots,Y_7$ be the observable segments of a 7-segment LED display, with each $Y_i$
+representing whether the $i$-th segment (read from the top segment clockwise with the middle
+segment last) is observably on (true/1) or off (false/0). We assign a latent variable for each
+segment $i$ and call it $X_i$. The latent variable indicates the true intent of the segment (i.e.
+whether it was supposed to be on or off regardless of technical problems). For each digit $d_i$, we
+add a positive literal if it is supposedly on, and a negative literal if it is supposedly off.
+Observable variables are free variables with no constraints. The final formula is given by a
+disjunction over all digits, as shown below.
+
+\begin{align*}
+\phi=
+&\phantom{\neg}X_1 \wedge \phantom{\neg}X_2 \wedge \phantom{\neg}X_3 \wedge \phantom{\neg}X_4 \wedge \phantom{\neg}X_5 \wedge \phantom{\neg}X_6 \wedge \neg X_7 \vee\\
+&\neg X_1 \wedge \phantom{\neg}X_2 \wedge \phantom{\neg}X_3 \wedge \neg X_4 \wedge \neg X_5 \wedge \neg X_6 \wedge \neg X_7 \vee\\
+&\phantom{\neg}X_1 \wedge \phantom{\neg}X_2 \wedge \neg X_3 \wedge \phantom{\neg}X_4 \wedge \phantom{\neg}X_5 \wedge \neg X_6 \wedge \phantom{\neg}X_7 \vee\\
+&\phantom{\neg}X_1 \wedge \phantom{\neg}X_2 \wedge \phantom{\neg}X_3 \wedge \phantom{\neg}X_4 \wedge \neg X_5 \wedge \neg X_6 \wedge \phantom{\neg}X_7 \vee\\
+&\neg X_1 \wedge \phantom{\neg}X_2 \wedge \phantom{\neg}X_3 \wedge \neg X_4 \wedge \neg X_5 \wedge \phantom{\neg}X_6 \wedge \phantom{\neg}X_7 \vee\\
+&\phantom{\neg}X_1 \wedge \neg X_2 \wedge \phantom{\neg}X_3 \wedge \phantom{\neg}X_4 \wedge \neg X_5 \wedge \phantom{\neg}X_6 \wedge \phantom{\neg}X_7 \vee\\
+&\phantom{\neg}X_1 \wedge \neg X_2 \wedge \phantom{\neg}X_3 \wedge \phantom{\neg}X_4 \wedge \phantom{\neg}X_5 \wedge \phantom{\neg}X_6 \wedge \phantom{\neg}X_7 \vee\\
+&\phantom{\neg}X_1 \wedge \phantom{\neg}X_2 \wedge \phantom{\neg}X_3 \wedge \neg X_4 \wedge \neg X_5 \wedge \neg X_6 \wedge \neg X_7 \vee\\
+&\phantom{\neg}X_1 \wedge \phantom{\neg}X_2 \wedge \phantom{\neg}X_3 \wedge \phantom{\neg}X_4 \wedge \phantom{\neg}X_5 \wedge \phantom{\neg}X_6 \wedge \phantom{\neg}X_7 \vee\\
+&\phantom{\neg}X_1 \wedge \phantom{\neg}X_2 \wedge \phantom{\neg}X_3 \wedge \phantom{\neg}X_4 \wedge \neg X_5 \wedge \phantom{\neg}X_6 \wedge \phantom{\neg}X_7
+\end{align*}
+
+\subsubsection{LED Pixels}
+
+The LED with pixels dataset follows the same idea as LED, but with added pixels as latent variables
+instead of observable segments. We manually observed critical key pixels for each segment (i.e.
+pixels which are often set to true/1 if the segment is on. We count pixels row-wise from top left
+to bottom right. The following are the critical key pixels for each segment:
+
+\begin{align*}
+  S_1&=\{24, 25, 26, 27, 15, 16, 28, 35, 36\}\\
+  S_2&=\{27, 28, 37, 38, 47, 48, 57, 58, 49, 59, 69\}\\
+  S_3&=\{77, 78, 87, 88, 109, 98, 99, 108, 118\}\\
+  S_4&=\{124, 125, 126, 127, 128, 135, 136, 114, 115, 116\}\\
+  S_5&=\{93, 94, 103, 104, 113, 114, 124, 82, 92, 83\}\\
+  S_6&=\{33, 34, 43, 53, 52, 63, 73\}\\
+  S_7&=\{64, 65, 66, 67, 75, 76, 85, 86, 95, 96, 94\}
+\end{align*}
+
+Each $S_i$ corresponds to the critical key pixels of segment $i$. The formula for the key pixels
+is then set to
+\begin{equation*}
+  \alpha=\bigvee_{i=1}^7\left(\bigwedge_{p\in S_i}p\right)\wedge X_i.
+\end{equation*}
+
+We also add a constraint for pixels which are never on for a given digit. Let $f(i)$ a function
+that maps a digit $i$ to the set of all pixels which are always off when $d_i$ is true. We set
+\begin{equation*}
+  \beta=\bigvee_{i=0}^9 d_i\wedge\left(\bigwedge_{p\in f(i)}\neg p\right).
+\end{equation*}
+
+The final constraint is then $\phi=\alpha\wedge\beta$.
+
+\subsubsection{Sushi}
+
+For the sushi ranking dataset, we used the same constraints as \citep{choi15}. For the sushi
+10-choose-5, we used the same constraints as \citep{shen17}.
+
+\subsubsection{Dota 2}
+
+To model the constraints, we used a cardinality constraint of $\text{Exactly}(5, 113)$ for the
+first and equivalently for the second team. To do this, each character $i$ had a pair of variables
+$(X_i,Y_i)$, where $X_i$ attributed the character for the first team, and $Y_i$ to the second. A
+cardinality constraint $\sum_{X_i}x_i=5$ was set to the first team, and $\sum_{Y_i}y_i=5$ to the
+second.
+

@@ -684,8 +684,8 @@ literals in a prime will still be bounded to at most $k-1$, as \Cref{fig:expansi
       \node[dec] (n4) at ($(n2) + (-0.75,-1)$) {C};
       \node[dec] (n5) at ($(n1) + (+0.75,-1)$) {C};
       \node[dec] (n6) at ($(n1) + (-0.75,-1)$) {C};
-      \node[dec] (n7) at ($(n3) + (+1.0,-1)$) {$\emptyset$};
-      \node[dec] (n8) at ($(n3) + (-1.0,-1)$) {$\emptyset$};
+      \node[dec] (n7) at ($(n3) + (+1.0,-1)$) {$D$};
+      \node[dec] (n8) at ($(n3) + (-1.0,-1)$) {$D$};
       \draw (root) edge node[right,pos=0.4] {$-$} (n1);
       \draw (root) edge node[left,pos=0.4] {$+$} (n2);
       \draw (n2) edge node[right,pos=0.4] {$-$} (n3);
@@ -700,28 +700,28 @@ literals in a prime will still be bounded to at most $k-1$, as \Cref{fig:expansi
       \node at ($(n7) + (0,-0.5)$) {\color{pviolet}\small$A\wedge\neg B\wedge\neg C$};
       \node at ($(n8) + (0,-0.5)$) {\color{pviolet}\small$A\wedge\neg B\wedge C$};
     \end{tikzpicture}
-    \caption{}
+    \caption{Breadth-first search-like expansion}
   \end{subfigure}
   \begin{subfigure}[t]{\textwidth}
     \centering
     \begin{tikzpicture}
       \newNamedOrNode[fill=boxgreen,inputs=nnnnn]{r}{0,0}{1};
-      \newNamedAndNode[fill=boxblue,inputs=nn]{a1}{$(r) + (-3.0,-1.25)$}{$e_1$};
-      \newNamedAndNode[fill=boxorange,inputs=nn]{a2}{$(r) + (-1.5,-1.75)$}{$e_2$};
-      \newNamedAndNode[fill=boxpink!80,inputs=nn]{a3}{$(r) + (0.0,-1.25)$}{$e_3$};
-      \newNamedAndNode[fill=boxgoldenrod!80,inputs=nn]{a4}{$(r) + (1.5,-1.75)$}{$e_4$};
-      \newNamedAndNode[fill=boxgray,inputs=nn]{a5}{$(r) + (3.0,-1.25)$}{$e_5$};
+      \newNamedAndNode[fill=boxblue,inputs=nn]{a1}{$(r) + (-3.0,-1.0)$}{$e_1$};
+      \newNamedAndNode[fill=boxorange,inputs=nn]{a2}{$(r) + (-1.5,-1.2)$}{$e_2$};
+      \newNamedAndNode[fill=boxpink!80,inputs=nn]{a3}{$(r) + (0.0,-1.5)$}{$e_3$};
+      \newNamedAndNode[fill=boxgoldenrod!80,inputs=nn]{a4}{$(r) + (1.5,-2.0)$}{$e_4$};
+      \newNamedAndNode[fill=boxgray,inputs=nn]{a5}{$(r) + (3.0,-2.5)$}{$e_5$};
 
-      \node (p1) at ($(a1.input 1) + (-0.6,-1.25)$) {\color{pviolet}$A\wedge B$};
-      \node (p2) at ($(a2.input 1) + (-0.6,-1.25)$) {\color{pviolet}$A\wedge\neg B\wedge C$};
-      \node (p3) at ($(a3.input 1) + (-0.6,-1.25)$) {\color{pviolet}$\neg A\wedge B$};
-      \node (p4) at ($(a4.input 1) + (-0.6,-1.25)$) {\color{pviolet}$A\wedge\neg B\wedge\neg C$};
-      \node (p5) at ($(a5.input 1) + (-0.6,-1.25)$) {\color{pviolet}$\neg A\wedge\neg B$};
-      \node (s1) at ($(a1.input 2) + (0,-0.75)$) {$\vdots$};
-      \node (s2) at ($(a2.input 2) + (0,-0.75)$) {$\vdots$};
-      \node (s3) at ($(a3.input 2) + (0,-0.75)$) {$\vdots$};
-      \node (s4) at ($(a4.input 2) + (0,-0.75)$) {$\vdots$};
-      \node (s5) at ($(a5.input 2) + (0,-0.75)$) {$\vdots$};
+      \node (p1) at ($(a1.input 1) + (-0.6,-1.0)$) {\color{pviolet}$\neg A$};
+      \node (p2) at ($(a2.input 1) + (-0.6,-1.0)$) {\color{pviolet}$A\wedge\neg B$};
+      \node (p3) at ($(a3.input 1) + (-0.6,-1.0)$) {\color{pviolet}$A\wedge B\wedge\neg C$};
+      \node (p4) at ($(a4.input 1) + (-0.6,-1.0)$) {\color{pviolet}$A\wedge B\wedge C\wedge\neg D$};
+      \node (p5) at ($(a5.input 1) + (-0.6,-1.0)$) {\color{pviolet}$A\wedge B\wedge C\wedge D$};
+      \node (s1) at ($(a1.input 2) + (0.75,-0.3)$) {$\cdots$};
+      \node (s2) at ($(a2.input 2) + (0.75,-0.3)$) {$\cdots$};
+      \node (s3) at ($(a3.input 2) + (0.75,-0.3)$) {$\cdots$};
+      \node (s4) at ($(a4.input 2) + (0.75,-0.3)$) {$\cdots$};
+      \node (s5) at ($(a5.input 2) + (0.75,-0.3)$) {$\cdots$};
 
       \draw[edge] (r.input 1) -- ++(0,-0.2) -| (a1);
       \draw[edge] (r.input 2) -- ++(0,-0.4) -| (a2);
@@ -733,42 +733,119 @@ literals in a prime will still be bounded to at most $k-1$, as \Cref{fig:expansi
       \draw[edge] (a3.input 1) -- ++(0,-0.3) -| (p3);
       \draw[edge] (a4.input 1) -- ++(0,-0.3) -| (p4);
       \draw[edge] (a5.input 1) -- ++(0,-0.3) -| (p5);
-      \draw[edge] (a1.input 2) -- ++(0,-0.4) -| (s1);
-      \draw[edge] (a2.input 2) -- ++(0,-0.4) -| (s2);
-      \draw[edge] (a3.input 2) -- ++(0,-0.4) -| (s3);
-      \draw[edge] (a4.input 2) -- ++(0,-0.4) -| (s4);
-      \draw[edge] (a5.input 2) -- ++(0,-0.4) -| (s5);
+      \draw[edge] (a1.input 2) -- ++(0,-0.3) -- (s1.west);
+      \draw[edge] (a2.input 2) -- ++(0,-0.3) -- (s2.west);
+      \draw[edge] (a3.input 2) -- ++(0,-0.3) -- (s3.west);
+      \draw[edge] (a4.input 2) -- ++(0,-0.3) -- (s4.west);
+      \draw[edge] (a5.input 2) -- ++(0,-0.3) -- (s5.west);
 
       \tikzstyle{dec} = [draw,circle,inner sep=1pt,fill=pyellow!70];
-      \node[dec] (root) at (7.25,0.0) {A};
-      %\node[dec] (n1) at ($(root) + (+1.5,-0.75)$) {B};
-      %\draw (n2) edge node[right,pos=0.4] {$-$} (n3);
-      %\node at ($(n8) + (0,-0.5)$) {\small$A\wedge\neg B\wedge C$};
+      \node[dec] (root) at (6,0.25) {A};
+      \node[dec] (n1) at ($(root) + (1,0)$) {B};
+      \node[dec] (n2) at ($(root) + (0,-1)$) {B};
+      \draw (root) -- node[above,pos=0.5] {$-$} (n1);
+      \draw (root) -- node[left,pos=0.5] {$+$} (n2);
+      \node[anchor=west] at ($(n1) + (0.5,0)$) {\color{pviolet}$\neg A$};
+      \node[dec] (n3) at ($(n2) + (1,0)$) {C};
+      \node[dec] (n4) at ($(n2) + (0,-1)$) {C};
+      \draw (n2) -- node[above,pos=0.5] {$-$} (n3);
+      \draw (n2) -- node[left,pos=0.5] {$+$} (n4);
+      \node[anchor=west] at ($(n3) + (0.5,0)$) {\color{pviolet}$A\wedge\neg B$};
+      \node[dec] (n5) at ($(n4) + (1,0)$) {D};
+      \node[dec] (n6) at ($(n4) + (0,-1)$) {D};
+      \draw (n4) -- node[above,pos=0.5] {$-$} (n5);
+      \draw (n4) -- node[left,pos=0.5] {$+$} (n6);
+      \node[anchor=west] at ($(n5) + (0.5,0)$) {\color{pviolet}$A\wedge B\wedge\neg C$};
+      \node[dec] (n7) at ($(n6) + (1,0)$) {$\emptyset$};
+      \node[dec] (n8) at ($(n6) + (0,-1)$) {$\emptyset$};
+      \draw (n6) -- node[above,pos=0.5] {$-$} (n7);
+      \draw (n6) -- node[left,pos=0.5] {$+$} (n8);
+      \node[anchor=west] at ($(n7) + (0.5,0)$) {\color{pviolet}$A\wedge B\wedge C\wedge\neg D$};
+      \node[anchor=west] at ($(n8) + (0.5,0)$) {\color{pviolet}$A\wedge B\wedge C\wedge D$};
     \end{tikzpicture}
-    \caption{}
+    \caption{Depth-first search-like expansion}
   \end{subfigure}
-  \caption{}
+  \caption{When expanding variables breadth-wise \uncaption{(a)}, there can be at most $\left\lceil
+    \log_2(k)\right\rceil$ variables in each conjunction of primes; whereas in depth-wise
+    expansion (\uncaption{b}), we can have primes with at most $k-1$ literals.}
   \label{fig:expansion}
 \end{figure}
 
-\section{Experiments}
+\section{Ensembles of \textproc{SamplePSDD}s}
 
 Just like in \textproc{Strudel} and \textproc{LearnPSDD}, to boost the performance of our approach
 we resort to mixtures of PSDDs. We separately sample $t$ models in parallel with
 \textproc{SamplePSDD}, learn their parameters through closed-form smoothed MLE \citep{kisa14} and
-then learn only mixture weights in five different approaches: (1) likelihood weighting (LLW), where
-each component's weight is proportional to its train likelihood; (2) uniform weights, (3)
-Expectation-Maximization, (4) stacking \citep{smyth98}, and (5) Bayesian Model Combination (BMC,
-\cite{monteith11}).
+then aggregate the $t$ components as a sum node whose weights are exactly the weights of the
+mixture model. We then learn only mixture weights in five different approaches. In the first,
+simplest approach, we set all weights uniformly among all components, calling this the
+\textproc{SamplePSDD} Uniform strategy. For a second approach, we assign weights as proportional to
+the training dataset likelihood, calling this \textproc{SamplePSDD} LLW (for likelihood weighting);
+let $\mathcal{L}_i(\set{D})$ the likelihood of component $i$ on dataset $\set{D}$, we set each
+component weight $w_i$ in $\{w_i\}_{i=1}^t$ as the ratio
+\begin{equation}
+  w_i=\frac{\mathcal{L}_i(\set{D})}{\sum_{i=1}^t\mathcal{L}_i(\set{D})}.
+\end{equation}
+Our third strategy employs Expectation-Maximization (\textproc{SamplePSDD} EM), only optimizing the
+component weights.
+%We
+%do this by first computing the likelihood of each component on each datapoint in the training
+%dataset, producing an $n\times t$ matrix $\set{L}$, where $n=|\set{D}|$ and each entry
+%$\set{L}_{ij}$ is the likelihood of sampled PSDD $j$ on data point $i$. The E-step is then
+%\begin{equation}
+  %\frac{w_j\cdot\set{L}_{ij}}
+%\end{equation}
+%Each mixture weight $w_i$
+%is then updated by computing
+%\begin{equation}
+
+%\end{equation}
+
+As a forth strategy, we implement stacking for density estimation \citep{smyth98}. This is done by
+first partitioning the training dataset $\set{D}$ into $k$ parts, exactly like in $k$-fold
+cross-validation. Then, for each $i$-th fold $(\set{T}_i,\set{R}_i)$ holding
+$\left\lceil\frac{|\set{D}|}{k}\right\rceil$ assignments in $\set{R}_i$ and
+$|\set{D}|-\left\lceil\frac{|\set{D}|}{k}\right\rceil$ in $\set{T}_i$, we learn the parameters of
+the $t$ sampled PSDDs by closed-form MLE on data $\set{R}_i$, followed by evaluating and storing
+the likelihood of each data point in $\set{T}_i$. This gives us a matrix $\set{O}$ of size $n\times
+t$, where $n=|\set{R}_i|$ and each entry in the matrix $\set{O}_{ij}$ is the likelihood of the
+$j$-th model on data point $i$ stored for each of the $\set{T}_i$ portions of each fold. With this,
+we then learn the mixture weights $w_i$ through EM, using $\set{O}$ as the component
+log-likelihoods. Finally, we re-train the parameters of each of the $t$ PSDDs, this time using all
+of the training dataset $\set{D}$.
+
+Lastly, we implement Bayesian Model Combination (BMC, \cite{monteith11}) to construct $c$
+combinations of $h$ PSDDs each. Our BMC is constructed as follows. First, we construct $c$ mixtures
+of $h$ components each and whose component weights are sampled from a Dirichlet distribution
+initially with uniform $\alpha$ values. For each of these $c$ mixtures, we compute their likelihood
+over the entire training dataset, which gives us the quantity $p(\Sum_i|\set{D})$, where $\Sum_i$
+is the $i$-th mixture out of the $c$ we construct. We then assume a uniform prior so that the
+maximization equivalence
+\begin{equation}
+  \max p(\Sum_i|\set{D})p(\Sum_i)=\max p(\Sum_i|\set{D})
+\end{equation}
+holds, meaning that it suffices to take the best combination in terms of likelihood
+$p(\Sum_i|\set{D})$ out of all the $c$ for updating the new Dirichlet $\alpha$ values
+\begin{equation}
+  \alpha\gets\alpha + \set{w}^\ast,
+\end{equation}
+where $\set{w}^\ast$ is a vector of the mixture weights whose likelihood was the highest. We
+iterate through this process of sampling mixtures and updating $\alpha$ up to a number of maximum
+iterations $t$. Once we are done, we select the last $c$ mixture samples and construct a mixture
+out of these mixtures, setting their weights proportional to their likelihoods in the training
+dataset.
+
+\section{Experiments}
+\label{sec:logical-exp}
 
 We compare our results against \textproc{Strudel}, mixtures of 10 \textproc{Strudel}s,
 \textproc{LearnPSDD} and \textproc{LearnSPN}. We used existing implementations coming from the
 Juice probabilistic circuits library \citep{dang21} for the first two, while \textproc{LearnPSDD}
 and \textproc{SamplePSDD} were implemented into the library. For \textproc{LearnSPN}, we used the
 PySPN library\footnote{\url{https://gitlab.com/pgm-usp/pyspn}} whose implementation uses $k$-means
-for learning sums and G-test for products. We look at four different datasets that contain some
-kind of structure to them, modeling them as logical formulae. We observe the impact of this prior
-knowledge by learning PCs both under low data regimes and lots of data. For \textproc{Strudel}, as
+for learning sums and G-test for products. We look at four different domains that contain some
+kind of logical structure to them, modeling them as logical formulae. We observe the impact of this prior
+knowledge by learning PCs both under low data regimes and abundant data. For \textproc{Strudel}, as
 proposed in \citet{dang20}, we used an initial PC compiled from a CLT learned purely from data (see
 \Cref{sec:strudel}). Initial circuits for \textproc{LearnPSDD} were compiled into canonical logic
 circuits from either a CNF or DNF when the logical restrictions permitted a tractable
@@ -777,26 +854,36 @@ instead. For the resulting initial circuit to contain variables not present in t
 product node whose children were the compiled PC and a fully factorized circuit over absent
 variables was created and set as root.
 
+In all runs of \textproc{SamplePSDD}, we randomly generate vtrees instead of optimizing them
+through the vtree learning algorithms mentioned in \Cref{sec:incremental}. We found that, not only
+was the overall process of learning much faster when randomly generating them, but sampling from a
+much more diverse space of vtrees proved to produce PSDD ensembles just as good, if not better,
+compared to vtrees learned from data. In all but a few settings throughout this section, vtrees are
+uniformly generated by randomly choosing a variable decomposition at each vtree node. The only
+exception to this rule are the vtrees in \Cref{sec:samplebias}, whose sampling is explicitly
+defined with some bias for purposes of empirical analysis.
+
 All experiments were run on an Intel i7-8700K 3.70 GHz machine with 12 cores and 64GB. We limited
 \textproc{LearnPSDD} and \textproc{Strudel} both to 100 iterations, although runs with 1000
-iterations can be found in the supplementary material of \Cref{sec:samplepsdd-article}. For all
-experiments with \textproc{SamplePSDD}, when $\phi\equiv\top$ (line \ref{alg:samplepsdd:line:top}
-of \Cref{alg:samplepsdd}) we produced a fully factorized circuit. In the remaining part of this
+iterations can be found in \Cref{sec:samplepsdd-app}. For all experiments with
+\textproc{SamplePSDD}, when $\phi\equiv\top$ (line \ref{alg:samplepsdd:line:top} of
+\Cref{alg:samplepsdd}) we produced a fully factorized circuit. In the remaining part of this
 section, we first address the performance of our proposed approach compared to the state-of-the-art
 and then provide an empirical analysis on the impact of vtrees and parameter choice for ensembles
 of \textproc{SamplePSDD}
 
 \subsection{LED Display}
 
-A seven-segment LED display consists of LED light segments which are separately turned on or off in
-order to represent a digit. \Cref{fig:led} shows some digits represented by a seven-segment
-display. Each digit is associated with a local constraint on the values of each segment. We adapt
-the approach by \citet{mattei20a} and generate a \texttt{led} dataset of faulty observations of the
-segments as follows. Each segment is represented by a pair of variables $(X_i,Y_i)$, where $Y_i$ is
-the observable state of segment $i$ (i.e.\ whether the segment is on or off) and $X_i$ is the
-latent state of $i$. We randomly sampled a PSDD over variables $X_i$ and $Y_i$ whose support are
-the valid configurations of segments $X_i$ representing the digits, and use that model to generate
-a dataset of \num{5000} training instances and \num{10000} test instances.
+A seven-segment LCD display consists of seven opaque segments behind a light background which are
+separately turned on or off in order to represent a digit. \Cref{fig:led} shows some digits
+represented by a seven-segment display. Each digit is associated with a local constraint on the
+values of each segment. We adapt the approach by \citet{mattei20a} and generate a \texttt{led}
+dataset of faulty observations of the segments as follows. Each segment is represented by a pair of
+variables $(X_i,Y_i)$, where $Y_i$ is the observable state of segment $i$ (i.e.\ whether the
+segment is on or off) and $X_i$ is the latent state of $i$. We randomly sampled a PSDD over
+variables $X_i$ and $Y_i$ whose support are the valid configurations of segments $X_i$ representing
+the digits, and use that model to generate a dataset of \num{5000} training instances and
+\num{10000} test instances.
 
 \begin{figure}[t]
   \begin{tikzpicture}
@@ -838,7 +925,7 @@ for each the ten digits; each instance from the dataset is a $10\times 15$ black
 In this pixelized version, we do not explicitly describe, in the form of logical constraints, a
 one-to-one mapping of pixel regions as segments; instead, we visually identify key points where
 pixels most often activated given a segment's value. Let $\set{R}_s$ be pixel variables which are
-most oftn set to 1 when a segment $s$ is on. We build a constraint for each segment: $\psi(s)=s\to
+most often set to 1 when a segment $s$ is on. We build a constraint for each segment: $\psi(s)=s\to
 \bigvee_{r\in\set{R}_s} r$. We futher recognize which pixels are always off given a valid digit
 segment configuraton: $\phi(\set{s})=\left(\bigwedge_{p:p=0|\set{s}} \neg p\right)\wedge\left(
 \bigwedge_{s\in\set{s}} s\right)$. The full logic formula encoding all constraints is the
@@ -966,12 +1053,12 @@ of learning from $\phi$ comes not only from the algorithm itself, but how $\phi$
 fact, any data structure with tractable restriction and reduction (to a canonical form) can be used
 in place of the BDD shown in \Cref{alg:samplepsdd}. We do not require forgetting to be tractable
 due to an implementational ``trick'' in \textproc{SamplePSDD} that allows a fast implementation to
-ignore variables not in the scope of the vtree. More details can be found in the supplemental
-material of \Cref{sec:samplepsdd-article}. Consequently, how scalable our proposed algorithm is
-depends on the representational power of the tool used for manipulating logical formulae. This is
-shown more concretely when we learn from the constraints set by the \texttt{dota} dataset: had we
-tried to manipulate formulae with a CNF, the intractability of cardinality constraints would
-unfortunately impede any progress.
+ignore variables not in the scope of the vtree. More details can be found in
+\Cref{sec:samplepsdd-app}. Consequently, how scalable our proposed algorithm is depends on the
+representational power of the tool used for manipulating logical formulae. This is shown more
+concretely when we learn from the constraints set by the \texttt{dota} dataset: had we tried to
+manipulate formulae with a CNF, the intractability of cardinality constraints would unfortunately
+impede any progress.
 
 We now provide an analysis on the complexity of $\textproc{SamplePSDD}$. We start with the
 $\textproc{SamplePartialPartition}$ subroutine. If we choose a BDD for manipulating formulae, then
@@ -999,6 +1086,7 @@ seconds, \textproc{LearnPSDD} \num{13} minutes and \num{25} seconds, and \textpr
 about \num{2.76} seconds for learning a single PSDD.
 
 \subsection{Performance and Sampling Bias}
+\label{sec:samplebias}
 
 \begin{figure}[t]
   \begin{subfigure}{0.495\textwidth}
@@ -1033,7 +1121,7 @@ structures, we compared the performance of \textsc{SamplePSDD} as we vary the bi
 generation of right-leaning vtrees. Given a parameter $p$, we grow a vtree in a top-down manner
 where at each node we independently assign each variable to the right child with probability $p$.
 Small values of $p$ produce left-leaning vtrees, while vtrees are more likely to lean to the
-right when $p>0.5$. Left leaning vtrees produce especially small networks compared to other vtrees,
+right when $p>0.5$. Left leaning vtrees produce especially small circuits compared to other vtrees,
 as more variables are left unmentioned because of relaxations coming from the need for a bounded
 number of primes. To produce decently sized circuits, we increase the number of sampled primes $k$
 when $p$ is low and decrease $k$ when $p$ is high.
@@ -1086,4 +1174,85 @@ as we clearly see in \Cref{fig:ll-led-all,fig:ll-cardinality,fig:ll-preference}.
   \label{fig:compl-comp}
 \end{figure}
 
+\section{Summarizing \textproc{SamplePSDD}}
 
+In this chapter, we proposed a new approach for learning PSDDs from logical constraints and data by
+a random top-down expansion on a propositional formula. Our method trades-off complexity and
+goodness-of-fit by learning a relaxation of the formula. We then leverage the diversity of samples
+by employing several different ensemble strategies. We empirically showed that this approach
+achieves state-of-the-art performance, often surpassing competitors when under very low data
+regimes. Finally, we reveal that PSDDs sampled from right leaning vtrees are better formula
+approximators and have increased log-likelihood performance, albeit at an increase of circuit
+complexity.
+
+To conclude this chapter, we add a new entry for \textproc{SamplePSDD} to \Cref{tab:learning}
+distiling the information described in this chapter. \Cref{tab:learning-samplepsdd} shows the new
+\textproc{SamplePSDD} row added to \Cref{tab:learning}. Recall that $c$ is the size of the logical
+formula in the canonical BDD format and $k$ is the number of primes to be sampled at each recursive
+call. We do not consider neither the vtree nor the vtree sampling bias as hyperparameters, as all
+experiments in \Cref{sec:logical-exp} assumed uniformly sampled vtrees. Further, although
+\textproc{SamplePSDD} takes inspiration from key components from algorithms from the \divclass{}
+and \incrclass{} classes, it is mostly a \randclass{} class algorithm, and so we classify it as
+such.
+
+\begin{sidewaystable}
+  \resizebox{\textheight}{!}{
+    \begin{tabular}{c|clcc|cccc|ccc|c}
+    \hline
+    \textbf{Name} & \textbf{Class} & \multicolumn{1}{c}{\textbf{Time Complexity}} & \textbf{\# hyperparams}
+    & \textbf{Accepts logic?} & \textbf{Smooth?} & \textbf{Dec?} & \textbf{Det?} & \textbf{Str Dec?} &
+    \textbf{$\mathbf{\{0,1\}}$?} & $\mathbb{N}$\textbf{?} & $\mathbb{R}$\textbf{?} & \textbf{Reference}\\
+    \hline
+    \textproc{LearnSPN} & \divclass{} & $
+    \begin{cases}
+      \bigo\left(nkmc\right) & \text{, if sum}\\
+      \bigo\left(nm^3\right) & \text{, if product}
+    \end{cases}
+    $ & $\geq 2$ & \xmark & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:learnspn}\\
+    \textproc{ID-SPN} & \divclass{} & $
+    \begin{cases}
+      \bigo\left(nkmc\right) & \text{, if sum}\\
+      \bigo\left(nm^3\right) & \text{, if product}\\
+      \bigo\left(ic(rn+m)\right)  & \text{, if input}
+    \end{cases}
+    $ & $\geq 2+3$ & \xmark & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \xmark & \Cref{sec:idspn}\\
+    \textproc{Prometheus} & \divclass{} & $
+    \begin{cases}
+      \bigo\left(nkmc\right) & \text{, if sum}\\
+      \bigo\left(m(\log m)^2\right) & \text{, if product}
+    \end{cases}
+    $ & $\geq 1$ & \xmark & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:prometheus}\\
+    \hline
+    \textproc{LearnPSDD} & \incrclass{} & $
+    \begin{cases}
+      \bigo\left(m^2\right) & \text{, top-down vtree}\\
+      \bigo\left(m^4\right) & \text{, bottom-up vtree}\\
+      \bigo\left(i|\mathcal{C}|^2\right) & \text{, circuit structure}
+    \end{cases}
+    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:learnpsdd}\\
+    \textproc{Strudel} & \incrclass{} & $
+    \begin{cases}
+      \bigo\left(m^2 n\right) & \text{, CLT + vtree}\\
+      \bigo\left(i\left(|\mathcal{C}|n+m^2\right)\right) & \text{, circuit structure}
+    \end{cases}
+    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:strudel}\\
+    \hline
+    & & & & & & & & & & & & \\
+    \textproc{RAT-SPN} & \randclass{} & $\phantom{\{}\bigo\left(rd(s+l)\right)$ & $4$ & \xmark & \cmark & \cmark
+                       & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:ratspn}\\
+    & & & & & & & & & & & & \\
+    \textproc{XPC} & \randclass{} & $\phantom{\{}\bigo\left(i(t+kn)+ikm^2n\right)$ & $3$ & \xmark &\cmark & \cmark
+                   & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:xpcs}\\
+    & & & & & & & & & & & & \\
+    \hline
+    & & & & & & & & & & & & \\
+    \textproc{SamplePSDD} & \randclass{} & $\phantom{\{}\bigo\left(kc\log c+\log_2^2 k\right)$ &
+      $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark &
+      \Cref{ch:logical}\\
+    & & & & & & & & & & & & \\
+    \hline
+  \end{tabular}
+  }
+  \caption{Summary of all structure learning algorithms for probabilistic circuits described so far.}
+  \label{tab:learning-samplepsdd}
+\end{sidewaystable}

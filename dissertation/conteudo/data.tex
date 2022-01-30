@@ -24,7 +24,7 @@ compared to state-of-the-art.
 
 Recently, \citet{correia20} showed that (ensembles of) decision trees (DTs) learned for prediction
 tasks can be easily extended into full probabilistic models represented as probabilistic circuits.
-Besides equipping decision forests with more principles approaches to handling missing data and
+Besides equipping decision forests with more principled approaches to handling missing data and
 diagnosing outliers, this bridge between decision trees and PCs suggests an interesting alternative
 to learning the latter using the efficient inductive algorithms available for the former
 \citep{correia20,ram11,khosravi20}. Despite this, most works addressing such a connection have
@@ -32,11 +32,13 @@ focused on the discriminative side of DTs, with much of the effort put onto clas
 than generative tasks such as density estimation. Here, we explore the generative side of DTs,
 often referred as density estimation trees (DETs, \cite{ram11,hang19,smyth95}), within the framework
 of PCs, taking inspiration from known algorithms for building DTs and DETs, and transplanting them
-to PCs. 
+to PCs.
 
-As shortly discussed in \Cref{eg:det}, a DET can be represented as a smooth and deterministic PC
-with only sums and input nodes, the latter's supports restricted to the data cells induced by the
-partitioning data hyperplanes. The resulting density of this DET PC is given by
+As only shortly discussed in \Cref{eg:det}, yet better formalized by \citet{correia20}, a DET can
+be represented as a smooth and deterministic tree-shaped PC with only sums and input nodes by
+interpreting sum nodes as latent variables describing the partitioning of data, and making sure
+that the supports of input nodes are restricted to the data cells induced by all the partitionings
+done by the sums. The resulting density of this DET PC is given by
 \begin{equation}
   p_\mathcal{C}(\set{x})=\sum_{\Leaf\in\operatorname{Inputs}(\mathcal{C})}w_{\Leaf}\cdot\Leaf(\set{x})\cdot\liv\set{x}\in\Leaf\riv,
 \end{equation}
@@ -89,7 +91,7 @@ approximates a random projection of the data and has the following theoretical g
     \end{tikzpicture}
     \caption{Random projections}
   \end{subfigure}
-  \caption{Two partitionings induced by $k$-d trees: \textbf{(a)} shows axis-aligned splits and
+  \caption{Two partitionings induced by decision trees: \textbf{(a)} shows axis-aligned splits and
     \textbf{(b)} random projection splits. Gray dots are datapoints, dashed lines are (hyper)planes.}
     \label{fig:projections}
 \end{figure}
@@ -109,16 +111,16 @@ regular axis-aligned projections.
 \section{Random Projections}
 \label{sec:rp}
 
-Let $\set{D}$ be a dataset with $\set{X}$ variables. A function $f:\mathcal{X}\to\{0,1\}$ describes a
-hyperplane over variables in $\set{X}$ and is here called a \emph{rule}. A rule partitions data by
-assigning observations to either one, $\set{S}_1=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge
-f(\set{x})=0\}$, or the other, $\set{S}_2=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge
-f(\set{x}=1)\}$, of two data partitions. In $k$-d trees, this partitioning proceeds recursively
-until $|\set{D}|$ is sufficiently small. When employing axis-aligned partitions, $f$ typically
-selects the variable with the largest variance (or some other measure of spread) in $\set{D}$ and
-separates instance according to the median value of that variable. The process is similar to the
-induction of decision trees, except that in this case the rules discriminate against a target
-variable \citep{breiman01}.
+Let $\set{D}$ be a dataset with $\set{X}$ variables. A function $f:\mathcal{X}\to\{0,1\}$ describes
+a binary split of the joint space of variable configurations over variables $\set{X}$ and is here
+called a \emph{rule}. A rule partitions data by assigning observations to either
+$\set{S}_1=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x})=0\}$, or
+$\set{S}_2=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x}=1)\}$. This partitioning proceeds
+recursively until $|\set{D}|$ is sufficiently small. When employing axis-aligned partitions, $f$
+typically selects the variable with the largest variance (or some other measure of spread) in
+$\set{D}$ and separates instances according to the median value of that variable. The process is
+similar to the induction of decision trees, except that in this case the rules discriminate against
+a target variable \citep{breiman01}.
 
 \begin{algorithm}[t]
   \caption{\textproc{SplitSID}}\label{alg:splitsid}
@@ -250,14 +252,14 @@ quite different splits despite using the same random directions.
   \label{fig:rps}
 \end{figure}
 
-Unlike standard $k$-d trees, RPTrees ensure that, for a data with doubling dimension $d$, at most
-$d$ levels are necessary to half the diameter of the data, irrespective of its dimension. This
-leads to improved statistical properties that are connected to that notion of low intrinsic
-dimensionality \citep{dasgupta08b,dhesi10}. Inspired by these findings, we propose a fast
-randomized structure learning algorithm for learning probabilistic circuits by recursively stacking
-random projections in a divide-and-conquer manner similar to what is done in \textproc{LearnSPN}.
-Albeit our contributions are minor, we found that our approach is extremely fast and reaches
-competitive performance in binary benchmark datasets.
+Unlike standard $k$-d trees, RPTrees ensure that, for a data with doubling dimension $d$, with high
+probability at most $d$ levels are necessary to half the diameter of the data. This leads to
+improved statistical properties that are connected to that notion of low intrinsic dimensionality
+\citep{dasgupta08b,dhesi10}. Inspired by these findings, we propose a fast randomized structure
+learning algorithm for learning probabilistic circuits by recursively stacking random projections
+in a divide-and-conquer manner similar to what is done in \textproc{LearnSPN}. Albeit our
+contributions are minor, we found that our approach is extremely fast and reaches competitive
+performance in binary benchmark datasets.
 
 \section{\textproc{LearnRP}}
 
@@ -280,7 +282,7 @@ learned structure to a vtree, effectively constructing smooth and structured dec
     \NIElse
       \State Sample $k$ projections and call $f$ the one which minimizes the avg. diameter of $\set{D}$
       \State $\set{S}_1\gets\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x})=1\}$,
-        $\set{S}_2=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x})=0\}$
+        $\set{S}_2\gets\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x})=0\}$
         \State Let $v$ the root of $\vtree$ \label{alg:learnrp:line:vtree}
       \State $\Child^{(1)}_1\gets\Call{LearnRP}{\set{S}_1,\Sc(v^\gets),v^\gets,k}$
       \State $\Child^{(1)}_2\gets\Call{LearnRP}{\set{S}_1,\Sc(v^\to),v^\to,k}$
@@ -288,19 +290,19 @@ learned structure to a vtree, effectively constructing smooth and structured dec
       \State $\Child^{(2)}_2\gets\Call{LearnRP}{\set{S}_2,\Sc(v^\to),v^\to,k}$
       \State Construct products $\Prod_1\gets\Child^{(1)}_1\cdot\Child^{(1)}_2$ and
         $\Prod_2\gets\Child^{(2)}_1\cdot\Child^{(2)}_2$\label{alg:learnrp:line:prod}
-      \State \textbf{return} sum $\frac{\set{S}_1}{\set{D}}\cdot\Prod_1+\frac{\set{S}_2}{\set{D}}\cdot\Prod_2$
+      \State \textbf{return} sum node $\frac{|\set{S}_1|}{|\set{D}|}\cdot\Prod_1+\frac{|\set{S}_2|}{|\set{D|}}\cdot\Prod_2$
     \EndNIElse
   \end{algorithmic}
 \end{algorithm}
 
 Of note is the fact that DETs are deterministic by nature, as the leaves of the binary tree are
 constrained to the corresponding cells, meaning that only one path from leaf to root is active at a
-time. Here, determinism could be enforced if, for every input node (line
+time. Determinism could be enforced in RPTrees if, for every input node (line
 \ref{alg:learnrp:line:input} in \Cref{alg:learnrp}) its support is truncated to the cell induced by
 all random projections above it, similar to what is done when representing DETs as PCs. For the
 discrete case, we might attribute zero mass to assignments outside its cell, normalizing the
 distribution with the remaining mass. However, apart from the fact that doing so is not so trivial
-in the general case (i.e.\ in the continuous) as the projections are oblique and the resulting
+in the general case (i.e.\ in continuous domains) as the projections are oblique and the resulting
 truncated distributions must have tractable marginalization, this process also violates
 decomposability: by truncating inputs, we are essentially turning the previously univariate inputs
 from line \ref{alg:learnrp:line:input} into multivariate distributions covering the entire scope,
@@ -318,17 +320,17 @@ estimation \citep{lowd10,haaren12}\footnote{Taken from
 \url{https://github.com/UCLA-StarAI/Density-Estimation-Datasets}.} and compare against reported
 results from \textproc{LearnSPN} \citep{gens13}, \textproc{Strudel}, \textproc{LearnPSDD} (both
 from the benchmarks reported in \cite{dang20}), \textproc{Prometheus} \citep{jaini18a} and
-\textproc{XPC} \citep{dimauro21}. To measure performance in the continuous, we compare
-\textproc{LearnRP} against the performance of \textproc{Prometheus}, deep Boltzmann machines (SRBMs,
-\cite{salakhutdinov09}), an offline version of \citeauthor{hsu17}'s online structure learning with
-Gaussian leaves (oSLRAU, \cite{hsu17}), Gaussian mixture models with Bayesian moment matching
-(GBMMs, \cite{jaini16}) and infinite sum-product trees (iSPTs, \cite{trapp16}) all of which are
-reported in \citet{jaini18a}. We used the same 10 continuous datasets as
-\citet{jaini18a}\footnote{Which we compiled to \url{https://github.com/RenatoGeh/CDEBD}.}, which
-although are reported as coming from the UCI Machine Learning Repository \citep{dua17} and Bilkent
-University's Function Approximation Repository \citep{guvenir00}, are numerically distinct from the
-ones found in these repositories. \Cref{tab:details} shows detailed information of every dataset
-evaluated.
+\textproc{XPC} \citep{dimauro21}. To measure performance in continuous domains, we compare
+\textproc{LearnRP} against the reported performance of \textproc{Prometheus}, deep Boltzmann
+machines (SRBMs, \cite{salakhutdinov09}), an offline version of \citeauthor{hsu17}'s online
+structure learning with Gaussian leaves (oSLRAU, \cite{hsu17}), Gaussian mixture models with
+Bayesian moment matching (GBMMs, \cite{jaini16}) and infinite sum-product trees (iSPTs,
+\cite{trapp16}) all of which are reported in \citet{jaini18a}. We used the same 10 continuous
+datasets as \citet{jaini18a}\footnote{Which we compiled to
+\url{https://github.com/RenatoGeh/CDEBD}.}, which although are reported as coming from the UCI
+Machine Learning Repository \citep{dua17} and Bilkent University's Function Approximation
+Repository \citep{guvenir00}, are numerically distinct from the ones found in these repositories.
+\Cref{tab:details} shows detailed information of every dataset evaluated.
 
 \begin{table}[t]
   \resizebox{\textwidth}{!}{
@@ -362,9 +364,9 @@ evaluated.
 When evaluating the performance of \textproc{LearnRP}, we did not see a significant difference
 between \textproc{SplitSID} and \textproc{SplitMax}, and so we only report figures for the latter.
 When the domain is discrete, the vtree was learned by the top-down pairwise mutual information
-algorithm discussed in \Cref{sec:learnpsdd}; when in the continuous, we replace mutual
+algorithm discussed in \Cref{sec:learnpsdd}; when the domain is continuous, we replace mutual
 information for Pearson's correlation. We use Gaussian mixture models as input nodes and fine-tune
-the parameters of the resulting structure by standard batch EM. Experiments were carried out on a
+the parameters of the resulting structure by minibatch EM. Experiments were carried out on a
 single computer with a 12-core Intel i7 3.7GHz processor and 64GB RAM.
 
 \textproc{LearnRP} was implemented in Julia\footnote{The source code can be found at
@@ -387,9 +389,9 @@ compared are smooth and structured decomposable (with the exception of \textproc
 \textproc{Prometheus} which are only decomposable) but nondeterministic. Columns
 \textproc{LearnRP}-10, \textproc{LearnRP}-20, \textproc{LearnRP}-30 and \textproc{LearnRP}-F
 correspond to runs of a single \textproc{LearnRP} circuit where we optimize the learned structure
-with 10, 20, 30 and 100 iterations of batch EM with a batch size of 500 instances. After this, for
-\textproc{LearnRP}-F, we proceed to run 30 iterations of full EM, a regularization technique
-suggested in \citet{liu21}. The last two rows of \Cref{tab:binary} correspond to the average rank
+with 10, 20, 30 and 100 iterations of minibatch EM with a batch size of 500 instances. After this,
+for \textproc{LearnRP}-F, we proceed to run 30 iterations of full EM, a regularization strategy
+suggested by \citet{liu21}. The last two rows of \Cref{tab:binary} correspond to the average rank
 of each algorithm, with the last one ignoring \textproc{LearnRP}-10, \textproc{LearnRP}-20 and
 \textproc{LearnRP}-30.
 
@@ -491,7 +493,10 @@ find the source code and \citet{jaini18a} do not report circuit sizes.
   \caption{Performance of \textproc{LearnRP} in log-likelihood against state-of-the-art competitors
     in the twenty binary datasets for density estimation. Entries in \textbf{\textup{bold}}
     correspond to best performance, \underline{\textup{underlined}} entries are second best, and
-    $|$\textup{barred}$|$ entries are third place.}
+    $|$\textup{barred}$|$ entries are third place. The last two rows refer to the average ranking
+    of each algorithm across all datasets; the first compares rankings of all variants of
+    \textproc{LearnRP} against competitors, while the last only compares \textproc{LearnRP}-F
+    against the state-of-the-art.}
   \label{tab:binary}
 \end{sidewaystable}
 

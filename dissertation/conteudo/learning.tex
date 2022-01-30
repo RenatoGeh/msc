@@ -2364,7 +2364,8 @@ We finish this review of structure learning algorithms in probabilistic circuits
 some of the more important points raised throughout this chapter in \Cref{tab:learning}. We list
 each algorithm seen in \Cref{ch:learning}, describing their class, time complexity of learning the
 probabilistic circuit and any other auxiliary data structure, number of hyperparameters needed
-during learning, which structural constraints are guaranteed to hold in the resulting PCs, and
+during learning, whether they accept any kind of expert knowledge in the form of logical
+constraints, which structural constraints are guaranteed to hold in the resulting PCs, and
 which data (binary $\{0,1\}$, discrete $\mathbb{N}$ or continuous $\mathbb{R}$) are supported. We
 use the same notation used throughout this section for data dimensions: $n$ is the number of
 examples in a dataset and $m$ is the number of variables of dataset. Other variable names differ in
@@ -2412,10 +2413,10 @@ considered \textproc{XPC} hyperparameters, bringing the total number to three.
 
 \begin{sidewaystable}
   \resizebox{\textheight}{!}{
-    \begin{tabular}{c|clc|cccc|ccc|c}
+    \begin{tabular}{c|clcc|cccc|ccc|c}
     \hline
     \textbf{Name} & \textbf{Class} & \multicolumn{1}{c}{\textbf{Time Complexity}} & \textbf{\# hyperparams}
-    & \textbf{Smooth?} & \textbf{Dec?} & \textbf{Det?} & \textbf{Str. Dec?} &
+    & \textbf{Accepts logic?} & \textbf{Smooth?} & \textbf{Dec?} & \textbf{Det?} & \textbf{Str Dec?} &
     \textbf{$\mathbf{\{0,1\}}$?} & $\mathbb{N}$\textbf{?} & $\mathbb{R}$\textbf{?} & \textbf{Reference}\\
     \hline
     \textproc{LearnSPN} & \divclass{} & $
@@ -2423,20 +2424,20 @@ considered \textproc{XPC} hyperparameters, bringing the total number to three.
       \bigo\left(nkmc\right) & \text{, if sum}\\
       \bigo\left(nm^3\right) & \text{, if product}
     \end{cases}
-    $ & $\geq 2$ & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:learnspn}\\
+    $ & $\geq 2$ & \xmark & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:learnspn}\\
     \textproc{ID-SPN} & \divclass{} & $
     \begin{cases}
       \bigo\left(nkmc\right) & \text{, if sum}\\
       \bigo\left(nm^3\right) & \text{, if product}\\
       \bigo\left(ic(rn+m)\right)  & \text{, if input}
     \end{cases}
-    $ & $\geq 2+3$ & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \xmark & \Cref{sec:idspn}\\
+    $ & $\geq 2+3$ & \xmark & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \xmark & \Cref{sec:idspn}\\
     \textproc{Prometheus} & \divclass{} & $
     \begin{cases}
       \bigo\left(nkmc\right) & \text{, if sum}\\
       \bigo\left(m(\log m)^2\right) & \text{, if product}
     \end{cases}
-    $ & $\geq 1$ & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:prometheus}\\
+    $ & $\geq 1$ & \xmark & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:prometheus}\\
     \hline
     \textproc{LearnPSDD} & \incrclass{} & $
     \begin{cases}
@@ -2444,22 +2445,23 @@ considered \textproc{XPC} hyperparameters, bringing the total number to three.
       \bigo\left(m^4\right) & \text{, bottom-up vtree}\\
       \bigo\left(i|\mathcal{C}|^2\right) & \text{, circuit structure}
     \end{cases}
-    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:learnpsdd}\\
+    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:learnpsdd}\\
     \textproc{Strudel} & \incrclass{} & $
     \begin{cases}
       \bigo\left(m^2 n\right) & \text{, CLT + vtree}\\
       \bigo\left(i\left(|\mathcal{C}|n+m^2\right)\right) & \text{, circuit structure}
     \end{cases}
-    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:strudel}\\
+    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:strudel}\\
     \hline
-    & & & & & & & & & & & \\
-    \textproc{RAT-SPN} & \randclass{} & $\phantom{\{}\bigo\left(rd(s+l)\right)$ & $4$ & \cmark & \cmark
+    & & & & & & & & & & & & \\
+    \textproc{RAT-SPN} & \randclass{} & $\phantom{\{}\bigo\left(rd(s+l)\right)$ & $4$ & \xmark & \cmark & \cmark
                        & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:ratspn}\\
-    & & & & & & & & & & & \\
-    \textproc{XPC} & \randclass{} & $\phantom{\{}\bigo\left(i(t+kn)+ikm^2n\right)$ & $3$ & \cmark & \cmark
+    & & & & & & & & & & & & \\
+    \textproc{XPC} & \randclass{} & $\phantom{\{}\bigo\left(i(t+kn)+ikm^2n\right)$ & $3$ & \xmark &\cmark & \cmark
                    & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:xpcs}\\[5pt]
     \hline
   \end{tabular}
   }
+  \caption{Summary of all structure learning algorithms for probabilistic circuits described so far.}
   \label{tab:learning}
 \end{sidewaystable}
