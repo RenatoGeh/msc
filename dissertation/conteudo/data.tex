@@ -363,9 +363,9 @@ Repository \citep{guvenir00}, are numerically distinct from the ones found in th
 
 When evaluating the performance of \textproc{LearnRP}, we did not see a significant difference
 between \textproc{SplitSID} and \textproc{SplitMax}, and so we only report figures for the latter.
-When the domain is discrete, the vtree was learned by the top-down pairwise mutual information
+When the domain is discrete, the vtree is learned by the top-down pairwise mutual information
 algorithm discussed in \Cref{sec:learnpsdd}; when the domain is continuous, we replace mutual
-information for Pearson's correlation. We use Gaussian mixture models as input nodes and fine-tune
+information with Pearson's correlation. We use Gaussian mixture models as input nodes and fine-tune
 the parameters of the resulting structure by minibatch EM. Experiments were carried out on a
 single computer with a 12-core Intel i7 3.7GHz processor and 64GB RAM.
 
@@ -381,37 +381,23 @@ $k$-means for learning sums and G-test for products, setting $k=2$ for a shorter
 do not report running times for the original \textproc{Prometheus} code since, as far as we know,
 the source was not made public and no working implementation was found.
 
-\subsection{Binary data}
-
-\Cref{tab:binary} shows benchmark results for binary data. For fairness, we report results for best
-ensembles of \textproc{XPC}, \textproc{Strudel} and \textproc{LearnPSDD} so that all models
-compared are smooth and structured decomposable (with the exception of \textproc{LearnSPN} and
-\textproc{Prometheus} which are only decomposable) but nondeterministic. Columns
-\textproc{LearnRP}-10, \textproc{LearnRP}-20, \textproc{LearnRP}-30 and \textproc{LearnRP}-F
-correspond to runs of a single \textproc{LearnRP} circuit where we optimize the learned structure
-with 10, 20, 30 and 100 iterations of minibatch EM with a batch size of 500 instances. After this,
-for \textproc{LearnRP}-F, we proceed to run 30 iterations of full EM, a regularization strategy
-suggested by \citet{liu21}. The last two rows of \Cref{tab:binary} correspond to the average rank
-of each algorithm, with the last one ignoring \textproc{LearnRP}-10, \textproc{LearnRP}-20 and
-\textproc{LearnRP}-30.
-
 \begin{table}[t]
   \resizebox{\textwidth}{!}{
-  \begin{tabular}{c|cccc|cccc}
+  \begin{tabular}{c|cccc|ccccc}
     \hline
     \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
     \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} & \textbf{\textproc{LearnRP}-F} &
-    \textbf{\textproc{LearnRP}-10} & \textbf{\textproc{LearnRP}-20} &
-    \textbf{\textproc{LearnRP}-30}\\
+    \textbf{\textproc{LearnRP}-100} & \textbf{\textproc{LearnRP}-30} &
+    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-10}\\
     \hline
-    \textsc{nltcs}     & 7m & 3m & 6m & 17s & 3m19s & 4s & 8s & 12s\\
-    \textsc{plants}    & 50m & 41m & 26m & 1m3s & 26m & 52s & 1m47s & 2m32s\\
-    \textsc{audio}     & 2h & 33m & 51m & 1m58s & 37m & 1m25s & 2m45s & 4m11s\\
-    \textsc{jester}    & 52m & 24m & 37m & 1m20s & 29m & 1m20s & 2m37s & 3m54s\\
-    \textsc{netflix}   & 1h & 14m & 33m & 2m8s & 46m & 1m40s & 3m22s & 4m48s\\
-    \textsc{accidents} & 47m & 20m & 41m & 1m47s & 33m & 1m30s & 2m45s & 4m10s\\
-    \textsc{book}      & >3h & 8m & 1h22m & 2m26s & 2h & 7m24s & 15m17s & 21m55s\\
-    \textsc{dna}       & >3h & >3h & >3h & 17s & 11m & 1m27s & 2m47s & 3m13s\\
+    \textsc{nltcs}     & 7m   & 3m  & 6m    & 17s   & 3m19s & 15s    & 5s     & 3s     & 4s    \\
+    \textsc{plants}    & 50m  & 41m & 26m   & 1m3s  & 26m   & 2m7s   & 41s    & 28s    & 52s   \\
+    \textsc{audio}     & 2h   & 33m & 51m   & 1m58s & 37m   & 4m3s   & 1m16s  & 52s    & 1m25s \\
+    \textsc{jester}    & 52m  & 24m & 37m   & 1m20s & 29m   & 4m48s  & 1m29s  & 1m1s   & 1m20s \\
+    \textsc{netflix}   & 1h   & 14m & 33m   & 2m8s  & 46m   & 4m36s  & 1m28s  & 1m     & 1m40s \\
+    \textsc{accidents} & 47m  & 20m & 41m   & 1m47s & 33m   & 4m     & 1m20s  & 55s    & 1m30s \\
+    \textsc{book}      & >3h  & 8m  & 1h22m & 2m26s & 2h    & 25m13s & 7m55s  & 5m10s  & 7m24s \\
+    \textsc{dna}       & >3h  & >3h & >3h   & 17s   & 11m   & 7m38s  & 2m20s  & 1m33s  & 1m27s \\
     \hline
   \end{tabular}
   }
@@ -420,12 +406,51 @@ of each algorithm, with the last one ignoring \textproc{LearnRP}-10, \textproc{L
   \label{tab:bintime}
 \end{table}
 
-\Cref{tab:bintime} shows average running time for each learning algorithm to learn a \emph{single}
-circuit for each dataset. Note that the performance reported in \Cref{tab:binary} for
+\subsection{Binary data}
+
+\Cref{tab:binary} shows benchmark results for binary data. For fairness, we report results for best
+ensembles of \textproc{XPC}, \textproc{Strudel} and \textproc{LearnPSDD} so that all models
+compared are smooth and structured decomposable (with the exception of \textproc{LearnSPN} and
+\textproc{Prometheus} which are only decomposable) but nondeterministic. Columns
+\textproc{LearnRP}-10, \textproc{LearnRP}-20, \textproc{LearnRP}-30, \textproc{LearnRP}-100 and
+\textproc{LearnRP}-F correspond to runs of a single \textproc{LearnRP} circuit where we optimize
+the learned structure with 10, 20, 30, and for the last two, 100 iterations of minibatch EM with a
+batch size of 500 instances. After this, for \textproc{LearnRP}-F, we proceed to run 30 iterations
+of full EM, a regularization strategy suggested by \citet{liu21}. The last two rows of
+\Cref{tab:binary} correspond to the average rank of each algorithm followed by their standard
+deviation, with the last row ignoring the ranks for \textproc{LearnRP}-10, \textproc{LearnRP}-20
+and \textproc{LearnRP}-30. We note that our approach, when run with 100 iterations of minibatch EM,
+was able to reach competitive results against the state-of-the-art, reaching second place overall
+in terms of average rank. We also note how \textproc{LearnRP} is consistent in its ranking, as
+their rank standard deviation shows. \Cref{fig:learnrp-curves} shows how much minibatch EM
+improves \textproc{LearnRP} and how many iterations are needed for it to match the performance of
+competitors.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{bins/all.pdf}
+  \caption{Performance of \textproc{LearnRP} under different iterations of minibatch EM. The curve
+    in \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1); shows the test
+    log-likelihood of \textproc{LearnRP} under different iterations of EM. Each horizontal line
+    shows the performance of competitors: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle
+    (0.5,-0.1); for \textproc{XPC}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3] (0,0) rectangle
+    (0.5,-0.1); for \textproc{Strudel}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4] (0,0) rectangle
+    (0.5,-0.1); for \textproc{LearnSPN}, \textproc{LearnPSDD} in
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle (0.5,-0.1); and finally
+    \textproc{Prometheus} in \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots10] (0,0) rectangle (0.5,-0.1);.}
+  \label{fig:learnrp-curves}
+\end{figure}
+
+\Cref{tab:bintime} shows average running time for each learning algorithm to construct a
+\emph{single} circuit for each dataset. Note that the performance reported in \Cref{tab:binary} for
 \textproc{Strudel}, \textproc{LearnPSDD} and \textproc{XPC} correspond to ensemble results, meaning
 that in all but \textproc{Strudel} (where a shared-structure mixture was learned) one has to
 multiply the averages in \Cref{tab:bintime} with the number of components in the ensemble to get a
-better picture of the speed difference.
+better picture of the speed difference. We note how, despite having competitive performance,
+\textproc{LearnRP}-100 is orders of magnitude faster compared to \textproc{LearnSPN},
+\textproc{Strudel} and \textproc{LearnPSDD}. When put against \textproc{XPC}, we note that
+\textproc{LearnRP}-100 is consistently slower, albeit with better overall log-likelihood
+performance as evidenced in \Cref{tab:binary}.
 
 \Cref{tab:binsize} shows circuit sizes for each learning algorithm. All except for
 \textproc{LearnSPN} are reported as in their original works to better reflect the log-likelihood
@@ -435,36 +460,36 @@ find the source code and \citet{jaini18a} do not report circuit sizes.
 
 \begin{sidewaystable}
   \resizebox{\textheight}{!}{
-  \begin{tabular}{c|ccccc|cccc}
+  \begin{tabular}{c|ccccc|ccccc}
     \hline
     \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
     \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} & \textbf{\textproc{Prometheus}} &
-    \textbf{\textproc{LearnRP}-F} & \textbf{\textproc{LearnRP}-10} &
-    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-30}\\
+    \textbf{\textproc{LearnRP}-F} & \textbf{\textproc{LearnRP}-100} & \textbf{\textproc{LearnRP}-30} &
+    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-10}\\
     \hline
-    \textsc{accidents } & -30.03  & $|$-28.73$|$  & -30.16  & -31.02  & \textbf{-27.91}  & \underline{-28.71} & -30.18  & -29.66  & -29.17     \\
-    \textsc{ad        } & -19.73  & \underline{-16.38}  & -31.78  & \textbf{-15.50}  & -23.96  & $|$-19.09$|$ & -22.51  & -20.87  & -20.37     \\
-    \textsc{audio     } & -40.50  & -41.50  & \underline{-39.94}  & -40.91  & \textbf{-39.80}  & $|$-40.16$|$ & -41.05  & -40.66  & -40.68     \\
-    \textsc{bbc       } & $|$-250.68$|$ & -254.41 & -253.19 & \textbf{-248.34} & \underline{-248.50}  & -255.16 & -259.17 & -260.32 & -254.09  \\
-    \textsc{netflix   } & -57.02  & -58.69  & \textbf{-55.71}  & -57.58  & \underline{-56.47}  & $|$-56.97$|$  & -59.91  & -60.06  & -57.60    \\
-    \textsc{book      } & -35.88  & -34.99  & -34.97  & -34.75  & $|$-34.40$|$  & \textbf{-33.51} & -36.15  & -34.45  & \underline{-33.95}     \\
-    \textsc{20-newsgrp} & -155.92 & -154.47 & -155.97 & \underline{-153.75} & $|$-154.17$|$ & \textbf{-152.94} & -158.10 & -156.74 & -154.35   \\
-    \textsc{reuters-52} & $|$-85.06$|$  & -86.22  & -89.61  & -84.70  & \textbf{-84.59}  & -85.56  & -91.61  & -87.73  & -86.62    \\
-    \textsc{webkb     } & -158.20 & -155.33 & -161.09 & \textbf{-153.67} & $|$-155.21$|$ & \underline{-154.33} & -156.40 & -155.70 & -156.40   \\
-    \textsc{dna       } & \textbf{-82.52}  & -86.22  & -88.01  & -86.61  & \underline{-84.45}  & $|$-85.12$|$  & -86.55  & -85.30  & -85.61    \\
-    \textsc{jester    } & -75.98  & -55.03  & \textbf{-51.29}  & -53.43  & \underline{-52.80}  & $|$-52.97$|$  & -53.67  & -53.28  & -53.13    \\
-    \textsc{kdd       } & -2.18   & $|$-2.13$|$   & \textbf{-2.11}   & -2.15   & \underline{-2.12}   & -2.13  & -2.20   & -2.19   & -2.15      \\
-    \textsc{kosarek   } & -10.98  & -10.68  & \textbf{-10.52}  & -10.77  & \underline{-10.59}  & $|$-10.61$|$  & -10.97  & -10.86  & -10.85    \\
-    \textsc{msnbc     } & \underline{-6.11}   & \textbf{-6.04}   & \textbf{-6.04}   & $|$-6.18$|$   & \textbf{-6.04}   & -6.34  & -6.39   & -6.42   & -6.39      \\
-    \textsc{msweb     } & -10.25  & \textbf{-9.71}   & $|$-9.89$|$   & -9.93   & \underline{-9.86}   & $|$-9.89$|$  & -10.23  & -10.17  & -10.10     \\
-    \textsc{nltcs     } & -6.11   & -6.06   & \textbf{-5.99}   & $|$-6.05$|$   & \underline{-6.01}   & -6.22  & -6.30   & -6.29   & -6.37      \\
-    \textsc{plants    } & \underline{-12.97}  & $|$-12.98$|$  & -13.02  & -14.19  & \textbf{-12.81}  & -13.80  & -14.76  & -14.33  & -14.26    \\
-    \textsc{pumsb-star} & $|$-24.78$|$  & \underline{-24.12}  & -26.12  & -26.06  & \textbf{-22.75}  & -26.45  & -27.14  & -26.78  & -26.75    \\
-    \textsc{eachmovie } & -52.48  & -53.67  & -58.01  & -54.82  & $|$-51.49$|$  & \underline{-51.46}  & -52.68  & -52.34  & \textbf{-51.43}    \\
-    \textsc{retail    } & -11.04  & \underline{-10.81}  & \textbf{-10.72}  & -10.94  & -10.87  & $|$-10.83$|$  & -11.08  & -10.98  & -10.95    \\
+    \textsc{accidents } & -30.03 & $|$-28.73$|$ & -30.16 & -31.02 & \textbf{-27.91} & \underline{-28.65} & -28.87 & -29.38 & -29.58 & -29.99\\
+    \textsc{ad        } & -19.73 & \underline{-16.38} & -31.78 & \textbf{-15.50} & -23.96 & $|$-19.20$|$ & -20.32 & -21.42 & -21.44 & -21.94\\
+    \textsc{audio     } & -40.50 & -41.50 & \underline{-39.94} & -40.91 & \textbf{-39.80} & $|$-40.18$|$ & -40.23 & -40.46 & -40.63 & -40.94\\
+    \textsc{bbc       } & $|$-250.68$|$ & -254.41 & -253.19 & \textbf{-248.34} & \underline{-248.50} & -254.97 & -255.55 & -262.35 & -257.67 & -262.39\\
+    \textsc{netflix   } & $|$-57.02$|$ & -58.69 & \textbf{-55.71} & -57.58 & \underline{-56.47} & -57.07 & -57.05 & -57.29 & -57.48 & -57.66\\
+    \textsc{book      } & -35.88 & -34.99 & -34.97 & -34.75 & -34.40 & \underline{-33.57} & \textbf{-33.52} & -34.34 & $|$-34.24$|$ & -34.73\\
+    \textsc{20-newsgrp} & -155.92 & -154.47 & -155.97 & $|$-153.75$|$ & -154.17 & \underline{-152.78} & \textbf{-152.76} & -154.32 & -155.03 & -156.26\\
+    \textsc{reuters-52} & $|$-85.06$|$ & -86.22 & -89.61 & \underline{-84.70} & \textbf{-84.59} & -85.73 & -85.47 & -87.41 & -87.05 & -89.26\\
+    \textsc{webkb     } & -158.20 & -155.33 & -161.09 & \underline{-153.67} & -155.21 & -154.43 & \textbf{-152.60} & -154.83 & $|$-154.33$|$ & -158.01\\
+    \textsc{dna       } & \textbf{-82.52} & -86.22 & -88.01 & -86.61 & -84.45 & \underline{-83.03} & $|$-83.85$|$ & -84.77 & -84.98 & -85.40\\
+    \textsc{jester    } & -75.98 & -55.03 & \textbf{-51.29} & -53.43 & \underline{-52.80} & -52.92 & $|$-52.89$|$ & -53.23 & -53.22 & -53.54\\
+    \textsc{kdd       } & -2.18 & $|$-2.13$|$ & \textbf{-2.11} & -2.15 & \underline{-2.12} & $|$-2.13$|$ & -2.14 & -2.17 & -2.16 & -2.20\\
+    \textsc{kosarek   } & -10.98 & -10.68 & \textbf{-10.52} & -10.77 & \underline{-10.59} & $|$-10.65$|$ & -10.67 & -10.79 & -10.86 & -11.00\\
+    \textsc{msnbc     } & \underline{-6.11} & \textbf{-6.04} & \textbf{-6.04} & $|$-6.18$|$ & \textbf{-6.04} & -6.31 & -6.36 & -6.40 & -6.41 & -6.44\\
+    \textsc{msweb     } & -10.25 & \textbf{-9.71} & -9.89 & -9.93 & $|$-9.86$|$ & \underline{-9.85} & -9.97 & -10.06 & -10.21 & -10.27\\
+    \textsc{nltcs     } & -6.11 & -6.06 & \textbf{-5.99} & $|$-6.05$|$ & \underline{-6.01} & -6.35 & -6.23 & -6.25 & -6.27 & -6.32\\
+    \textsc{plants    } & \underline{-12.97} & $|$-12.98$|$ & -13.02 & -14.19 & \textbf{-12.81} & -13.68 & -14.00 & -14.26 & -14.40 & -14.70\\
+    \textsc{pumsb-star} & $|$-24.78$|$ & \underline{-24.12} & -26.12 & -26.06 & \textbf{-22.75} & -25.88 & -26.19 & -26.36 & -26.54 & -27.17\\
+    \textsc{eachmovie } & -52.48 & -53.67 & -58.01 & -54.82 & $|$-51.49$|$ & \underline{-51.37} & \textbf{-51.06} & -51.55 & -52.86 & -52.21\\
+    \textsc{retail    } & -11.04 & \underline{-10.81} & \textbf{-10.72} & -10.94 & -10.87 & $|$-10.85$|$ & -10.86 & -10.93 & -10.97 & -11.04\\
     \hline
-    \multirow{2}{*}[-0.15em]{\textbf{Avg. Rank}}  & \textbf{4.3}     & $|$4.8$|$     & 5.2     & 4.85    & 4.9     & \underline{4.6}  & 5.95    & 5.45    & 4.95         \\
-                                            & 4.3              & 3.65          & $|$3.55$|$ & 3.9  & \textbf{2.15} & \underline{3.45} &   &         &              \\
+    \multirow{2}{*}[-0.15em]{\textbf{Avg. Rank}} & $6.08\pm 3.03$ & $5.28\pm 2.97$ & $5.20\pm 3.86$ & $5.55\pm 2.76$ & \textbf{2.90}$\bm{\pm}$\textbf{2.07} & \underline{$3.83\pm 1.98$} & $|4.15\pm 2.03|$ & $6.35\pm 1.50$ & $6.95\pm 1.70$ & $8.72\pm 1.50$ \\
+                                                 & $4.80\pm 1.91$ & $4.22\pm 1.81$ & $|4.05\pm 2.56|$ & $4.60\pm 1.93$ & \textbf{2.55}$\bm{\pm}$\textbf{1.43} & \underline{$3.62\pm 1.56$} & $4.15\pm 2.03$ \\
     \hline
   \end{tabular}
   }
@@ -566,7 +591,7 @@ shows the circuit sizes of \textproc{LearnRP}.
   \resizebox{\textwidth}{!}{
   \begin{tabular}{c|cccccc|cc}
     \hline
-    \textbf{Dataset} & \textbf{SRBMs} & \textbf{oSLRAU} & \textbf{GBMMs} & \textbf{GMMs} &
+    \textbf{Dataset} & \textbf{SRBMs} & \textbf{oSLRAU} & \textbf{GBMMs} & \textbf{iGMMs} &
     \textbf{\textproc{Prometheus}} & \textbf{iSPTs} & \textbf{\textproc{LearnRP}} & \textbf{Size} \\
     \hline
     \textsc{abalone}    & -2.28  & -0.94  & -1.17  & ---   & -0.85   & ---   & -6.13  & 317   \\
