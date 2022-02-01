@@ -126,16 +126,18 @@ a target variable \citep{breiman01}.
   \caption{\textproc{SplitSID}}\label{alg:splitsid}
   \begin{algorithmic}[1]
     \Require Dataset $\set{D}\subset\mathbb{R}^m$
-    \Ensure A partition $\set{S}_1,\set{S}_2$ of $\set{D}$
+    \Ensure A partition $(\set{S}_1,\set{S}_2)$ of $\set{D}$
     \State Let $n$ be the number of examples in $\set{D}$
-    \State Sample a random unit direction $\set{w}$
+    \State Sample a random unit direction $\set{a}$
     \State Sort $\set{b}=\set{a}\cdot\set{x}$ for $\set{x}\in\set{D}$ s.t.\ $b_1\leq b_2\leq\dotsb\leq b_n$
+    \label{alg:splitsid:line:sort}
     \For{each $i\in\left[n-1\right]$}
       \State $\mu_1 = \frac{1}{i}\sum_{j=1}^i b_i$, \; $\mu_2 = \frac{1}{n-i}\sum_{j=i+1}^n b_i$
       \State $c_i = \sum_{j=1}^i (b_j - \mu_1)^2 + \sum_{j+1}^n (b_j - \mu_2)^2$
     \EndFor
     \State Find $i$ that minimizes $c_i$ and set $\theta = (b_i + b_{i+1})/2$
     \State $\set{S}_1 \gets \{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge\set{a}\cdot\set{x}\leq\theta\}$
+    \label{alg:splitsid:line:dot}
     \State \textbf{return} $(\set{S}_1,\set{D} \setminus \set{S}_1)$
   \end{algorithmic}
 \end{algorithm}
@@ -143,12 +145,13 @@ a target variable \citep{breiman01}.
 \begin{algorithm}[t]
   \caption{\textproc{SplitMax}}\label{alg:splitmax}
   \begin{algorithmic}[1]
-    \Require Dataset $\set{D} \subset \mathbb{R}^m$ and constant $r$
+    \Require Dataset $\set{D} \subset \mathbb{R}^m$
     \Ensure A partition $(\set{S}_1,\set{S}_2)$ of $\set{D}$
     \State Sample a random unit direction $\set{a}$
-    \State Pick any $\set{x}\in\set{D}$ and let $\set{y}$ be $\set{x}$'s farthest point in $\set{D}$
-    \State Sample $\delta$ uniformly in $[-c,c]$, where ${c=r\cdot\operatorname{dist}(\set{x},\set{y})/\sqrt{m}}$
-    \State $\set{S}_1\gets\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge\set{a}\cdot\set{x}\leq\operatorname{median}(\{\set{z}\cdot\set{a}\,|\,\set{z}\in\set{D}\})+\delta\}$
+    \State Pick any two datapoints $\set{x},\set{y}\in\set{D}$
+    \State Sample $\delta$ uniformly in $[-c,c]$, where
+    $c=\frac{\operatorname{dist}(\set{x},\set{y})}{2\sqrt{m}}$
+    \State $\set{S}_1\gets\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge\set{a}\cdot\set{x}\leq\operatorname{median}(\{\set{a}\cdot\set{z}\,|\,\set{z}\in\set{D}\})+\delta\}$
     \State \textbf{return} $(\set{S}_1,\set{D}\setminus\set{S}_1)$
   \end{algorithmic}
 \end{algorithm}
@@ -164,10 +167,15 @@ the intersection of $\set{D}$ and any ball of radius $r$ centered at $\set{x}\in
 covered by at most $2^d$ balls of radius $\frac{r}{2}$ \citep{dhesi10}.
 
 Random Projection Trees (RPTrees) are a special type of $k$-d trees that split along a random
-direction of the space. Two such splitting rules are given by \Cref{alg:splitsid,alg:splitmax},
-where in the latter $\operatorname{dist}(\set{x},\set{y})$ refers to the Euclidean distance. The
-intuition behind either rule is to generate a random hyperplane (unit direction) and then find a
-threshold projection value that roughly divides dataset $\set{D}$ into two approximately equal
+direction of the space. Two such splitting rules are given by \Cref{alg:splitsid}
+\citep{dasgupta08a} and \ref{alg:splitmax} \citep{dasgupta08b}, where in the latter
+$\operatorname{dist}(\set{x},\set{y})$ refers to the Euclidean distance. We slightly modify
+\textproc{SplitMax} in two ways: first, instead of picking $\set{y}$ as the farthest point in
+$\set{D}$, we simply pick any two data points at random, which we empirically found to not have
+much impact in performance and yet provided a significant boost to learning speed; second, we
+multiply $c$ by $\frac{1}{2}$ instead of $6$, as we found that this yielded better quality splits.
+The intuition behind either rule is to generate a random hyperplane (unit direction) and then find
+a threshold projection value that roughly divides dataset $\set{D}$ into two approximately equal
 sized subsets. More concretely, we wish to find a mapping $f:\set{x}\mapsto\left\liv\sum_{i=1}^d
 x_i\cdot a_i>\theta\right\riv$ that discriminates an assignment $\set{x}$ to one or the other side
 of a hyperplane described as the random unit vector $\set{a}=\left(a_1,\ldots,a_d\right)$.
@@ -313,6 +321,19 @@ a_i>\theta\right\riv$ with $\Sc(f)=\Sc(v)$, where $v$ is the vtree node of line
 $f$, marginalization in this multivariate distribution is not as straightforward. We therefore
 choose not to constraint inputs.
 
+\subsection{Complexity}
+
+The complexity analysis for both \textproc{SplitSID} (\Cref{alg:splitsid}) and \textproc{SplitMax}
+(\Cref{alg:splitmax}) is straightforward. The first is $\bigo\left(n(m+\log n)\right)$ on the
+number of assignments $n$ and number of variables $m$, since line \ref{alg:splitsid:line:sort}
+sorts over all $\{b_i\}_{i=1}^n$ and line \ref{alg:splitsid:line:dot} requires computing the dot
+product of every instance in $\set{D}$. Similarly, \textproc{SplitMax} is $\bigo(n\cdot m)$ because
+of the computation of the dot product, with the rest linear on either $n$ or $m$.
+
+As for \textproc{LearnRP}, its complexity mainly relies on the complexity of its random projection
+sampler. If we assume it to be \textproc{SplitMax}, then each \textproc{LearnRP} call is
+$\bigo\left(k\cdot n\cdot m\right)$, where $k$ is the number of random projection trials.
+
 \section{Experiments}
 
 For binary data, we evaluate \textproc{LearnRP} on the 20 well-known binary datasets for density
@@ -324,13 +345,14 @@ from the benchmarks reported in \cite{dang20}), \textproc{Prometheus} \citep{jai
 \textproc{LearnRP} against the reported performance of \textproc{Prometheus}, deep Boltzmann
 machines (SRBMs, \cite{salakhutdinov09}), an offline version of \citeauthor{hsu17}'s online
 structure learning with Gaussian leaves (oSLRAU, \cite{hsu17}), Gaussian mixture models with
-Bayesian moment matching (GBMMs, \cite{jaini16}) and infinite sum-product trees (iSPTs,
-\cite{trapp16}) all of which are reported in \citet{jaini18a}. We used the same 10 continuous
-datasets as \citet{jaini18a}\footnote{Which we compiled to
-\url{https://github.com/RenatoGeh/CDEBD}.}, which although are reported as coming from the UCI
-Machine Learning Repository \citep{dua17} and Bilkent University's Function Approximation
-Repository \citep{guvenir00}, are numerically distinct from the ones found in these repositories.
-\Cref{tab:details} shows detailed information of every dataset evaluated.
+Bayesian moment matching (GBMMs, \cite{jaini16}), infinite Gaussian mixture models (iGMMs,
+\cite{rasmussen00}), standard GMMs and infinite sum-product trees (iSPTs, \cite{trapp16}) all of
+which are reported in \citet{jaini18a}. We used the same 10 continuous datasets as
+\citet{jaini18a}\footnote{Which we compiled to \url{https://github.com/RenatoGeh/CDEBD}.}, which
+although are reported as coming from the UCI Machine Learning Repository \citep{dua17} and Bilkent
+University's Function Approximation Repository \citep{guvenir00}, are numerically distinct from the
+ones found in these repositories. \Cref{tab:details} shows detailed information of every dataset
+evaluated.
 
 \begin{table}[t]
   \resizebox{\textwidth}{!}{
@@ -363,11 +385,12 @@ Repository \citep{guvenir00}, are numerically distinct from the ones found in th
 
 When evaluating the performance of \textproc{LearnRP}, we did not see a significant difference
 between \textproc{SplitSID} and \textproc{SplitMax}, and so we only report figures for the latter.
-When the domain is discrete, the vtree is learned by the top-down pairwise mutual information
-algorithm discussed in \Cref{sec:learnpsdd}; when the domain is continuous, we replace mutual
-information with Pearson's correlation. We use Gaussian mixture models as input nodes and fine-tune
-the parameters of the resulting structure by minibatch EM. Experiments were carried out on a
-single computer with a 12-core Intel i7 3.7GHz processor and 64GB RAM.
+We set the number of projection tryouts $k$ to 100 and, when the domain is discrete, learn the
+vtree by the top-down pairwise mutual information algorithm discussed in \Cref{sec:learnpsdd}; when
+the domain is continuous, we replace mutual information with Pearson's correlation. We use Gaussian
+mixture models as input nodes and fine-tune the parameters of the resulting structure by minibatch
+EM. Experiments were carried out on a single computer with a 12-core Intel i7 3.7GHz processor and
+64GB RAM.
 
 \textproc{LearnRP} was implemented in Julia\footnote{The source code can be found at
 \url{https://github.com/RenatoGeh/RPCircuits.jl}.}, separately from \textproc{Strudel}'s and
@@ -380,31 +403,6 @@ algorithms. Similarly, we compare runtimes of a Rust implementation\footnote{Sou
 $k$-means for learning sums and G-test for products, setting $k=2$ for a shorter learning time. We
 do not report running times for the original \textproc{Prometheus} code since, as far as we know,
 the source was not made public and no working implementation was found.
-
-\begin{table}[t]
-  \resizebox{\textwidth}{!}{
-  \begin{tabular}{c|cccc|ccccc}
-    \hline
-    \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
-    \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} & \textbf{\textproc{LearnRP}-F} &
-    \textbf{\textproc{LearnRP}-100} & \textbf{\textproc{LearnRP}-30} &
-    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-10}\\
-    \hline
-    \textsc{nltcs}     & 7m   & 3m  & 6m    & 17s   & 3m19s & 15s    & 5s     & 3s     & 4s    \\
-    \textsc{plants}    & 50m  & 41m & 26m   & 1m3s  & 26m   & 2m7s   & 41s    & 28s    & 52s   \\
-    \textsc{audio}     & 2h   & 33m & 51m   & 1m58s & 37m   & 4m3s   & 1m16s  & 52s    & 1m25s \\
-    \textsc{jester}    & 52m  & 24m & 37m   & 1m20s & 29m   & 4m48s  & 1m29s  & 1m1s   & 1m20s \\
-    \textsc{netflix}   & 1h   & 14m & 33m   & 2m8s  & 46m   & 4m36s  & 1m28s  & 1m     & 1m40s \\
-    \textsc{accidents} & 47m  & 20m & 41m   & 1m47s & 33m   & 4m     & 1m20s  & 55s    & 1m30s \\
-    \textsc{book}      & >3h  & 8m  & 1h22m & 2m26s & 2h    & 25m13s & 7m55s  & 5m10s  & 7m24s \\
-    \textsc{dna}       & >3h  & >3h & >3h   & 17s   & 11m   & 7m38s  & 2m20s  & 1m33s  & 1m27s \\
-    \hline
-  \end{tabular}
-  }
-  \caption{Learning time benchmark for a single circuit of \textproc{LearnSPN}, \textproc{Strudel},
-    \textproc{LearnPSDD}, \textproc{XPC} and \textproc{LearnRP}.}
-  \label{tab:bintime}
-\end{table}
 
 \subsection{Binary data}
 
@@ -419,46 +417,15 @@ batch size of 500 instances. After this, for \textproc{LearnRP}-F, we proceed to
 of full EM, a regularization strategy suggested by \citet{liu21}. The last two rows of
 \Cref{tab:binary} correspond to the average rank of each algorithm followed by their standard
 deviation, with the last row ignoring the ranks for \textproc{LearnRP}-10, \textproc{LearnRP}-20
-and \textproc{LearnRP}-30. We note that our approach, when run with 100 iterations of minibatch EM,
-was able to reach competitive results against the state-of-the-art, reaching second place overall
-in terms of average rank. We also note how \textproc{LearnRP} is consistent in its ranking, as
-their rank standard deviation shows. \Cref{fig:learnrp-curves} shows how much minibatch EM
-improves \textproc{LearnRP} and how many iterations are needed for it to match the performance of
-competitors.
+and \textproc{LearnRP}-30. We note that our approach, when run with 100 iterations of minibatch EM
+and later 30 iterations of full EM, was able to reach competitive results against the
+state-of-the-art, reaching second place overall in terms of average rank, with
+\textproc{LearnRP}-100 closely behind. We also note how \textproc{LearnRP} is consistent in its
+ranking, as the rank standard deviation shows. \Cref{fig:learnrp-curves} shows how much minibatch
+EM improves \textproc{LearnRP} and how many iterations are needed for it to match the performance
+of competitors.
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\textwidth]{bins/all.pdf}
-  \caption{Performance of \textproc{LearnRP} under different iterations of minibatch EM. The curve
-    in \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1); shows the test
-    log-likelihood of \textproc{LearnRP} under different iterations of EM. Each horizontal line
-    shows the performance of competitors: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle
-    (0.5,-0.1); for \textproc{XPC}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3] (0,0) rectangle
-    (0.5,-0.1); for \textproc{Strudel}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4] (0,0) rectangle
-    (0.5,-0.1); for \textproc{LearnSPN}, \textproc{LearnPSDD} in
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle (0.5,-0.1); and finally
-    \textproc{Prometheus} in \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots10] (0,0) rectangle (0.5,-0.1);.}
-  \label{fig:learnrp-curves}
-\end{figure}
-
-\Cref{tab:bintime} shows average running time for each learning algorithm to construct a
-\emph{single} circuit for each dataset. Note that the performance reported in \Cref{tab:binary} for
-\textproc{Strudel}, \textproc{LearnPSDD} and \textproc{XPC} correspond to ensemble results, meaning
-that in all but \textproc{Strudel} (where a shared-structure mixture was learned) one has to
-multiply the averages in \Cref{tab:bintime} with the number of components in the ensemble to get a
-better picture of the speed difference. We note how, despite having competitive performance,
-\textproc{LearnRP}-100 is orders of magnitude faster compared to \textproc{LearnSPN},
-\textproc{Strudel} and \textproc{LearnPSDD}. When put against \textproc{XPC}, we note that
-\textproc{LearnRP}-100 is consistently slower, albeit with better overall log-likelihood
-performance as evidenced in \Cref{tab:binary}.
-
-\Cref{tab:binsize} shows circuit sizes for each learning algorithm. All except for
-\textproc{LearnSPN} are reported as in their original works to better reflect the log-likelihood
-results shown in \Cref{tab:binary}. Because \citet{gens13} do not report circuit sizes, we report
-values from our own runs. We do not show circuit sizes for \textproc{Prometheus} since we could not
-find the source code and \citet{jaini18a} do not report circuit sizes.
-
-\begin{sidewaystable}
+\begin{sidewaystable}[ph!]
   \resizebox{\textheight}{!}{
   \begin{tabular}{c|ccccc|ccccc}
     \hline
@@ -525,50 +492,98 @@ find the source code and \citet{jaini18a} do not report circuit sizes.
   \label{tab:binary}
 \end{sidewaystable}
 
-Overall, we found that \textproc{LearnRP} was competitive against the state-of-the-art, often
-reaching second or first place in the case of \textproc{LearnRP}-F. As expected for such a simple
-learning algorithm, it was hardly the best, although even under few EM iterations it was capable of
-producing somewhat competitive models. Arguably, \textproc{LearnRP}'s strengths come from its
-speed, learning circuits in a fraction of the time when compared to \textproc{LearnSPN},
-\textproc{Strudel} and \textproc{LearnPSDD}. Perhaps the more direct competitor of
-\textproc{LearnRP} in terms of scalability is \textproc{XPC}, showing the strengths of \randclass{}
-when it comes to speed. Recall from \Cref{sec:xpcs}, however that \textproc{XPC} requires an
-extensive grid search on the hyperparameters, while the performance of \textproc{LearnRP} mainly
-depends on how much time one is willing to spend to fine-tune weights with parameter learning.
-Notably, we found that \textproc{LearnRP} performs worse on data with fewer variables (e.g.\
-\textsc{nltcs}, \textsc{msnbc}, \textsc{kdd}) and better on data with more variables (e.g.\
-\textsc{20-newsgrp}, \textsc{book}, \textsc{webkb}), which is perhaps correlated with the smaller,
-and respectively larger, circuits from \Cref{tab:binsize}.
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{bins/all.pdf}
+  \caption{Test log-likelihood performance of \textproc{LearnRP} shown as the curve in
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1); under
+    different iterations of minibatch EM. Each horizontal line shows the performance of a different
+    competitor: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle (0.5,-0.1);
+    for \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3] (0,0)
+    rectangle (0.5,-0.1); for \textproc{Strudel},
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4] (0,0) rectangle (0.5,-0.1); for
+    \textproc{LearnPSDD}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle
+    (0.5,-0.1); for \textproc{XPC} and finally
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots6] (0,0) rectangle (0.5,-0.1); for
+    \textproc{Prometheus}}
+  \label{fig:learnrp-curves}
+\end{figure}
+
+\Cref{tab:bintime} shows average running time for each learning algorithm to construct a
+\emph{single} circuit for each dataset. Note that the performance reported in \Cref{tab:binary} for
+\textproc{Strudel}, \textproc{LearnPSDD} and \textproc{XPC} correspond to ensemble results, meaning
+that in all but \textproc{Strudel} (where a shared-structure mixture was learned) one has to
+multiply the averages in \Cref{tab:bintime} with the number of components in the ensemble to get a
+better picture of the speed difference. We note how, despite having competitive performance,
+\textproc{LearnRP}-100 is orders of magnitude faster compared to \textproc{LearnSPN},
+\textproc{Strudel} and \textproc{LearnPSDD}. When put against \textproc{XPC}, we note that
+\textproc{LearnRP}-100 is consistently slower, albeit with better overall log-likelihood
+performance as evidenced in \Cref{tab:binary}. Further, running 30 iterations of full EM boosted
+performance considerably, although at the cost of having an overall learning time comparable to
+more sophisticated algorithms. We also bring attention to the fact that, even though our EM
+implementation makes use of CPU parallelization, there is much room for improvement, such as
+bringing most of the computations to the GPU.
+
+\Cref{tab:binsize} shows circuit sizes for each learning algorithm. All except for
+\textproc{LearnSPN} are reported as in their original works to better reflect the log-likelihood
+results shown in \Cref{tab:binary}. Because \citet{gens13} do not report circuit sizes, we report
+values from our own runs. We do not show circuit sizes for \textproc{Prometheus} since we could not
+find the source code and \citet{jaini18a} do not report circuit sizes.
 
 \begin{table}[t]
   \resizebox{\textwidth}{!}{
-  \begin{tabular}{c|cccc|cccc}
+  \begin{tabular}{c|cccc|ccccc}
+    \hline
+    \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
+    \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} & \textbf{\textproc{LearnRP}-F} &
+    \textbf{\textproc{LearnRP}-100} & \textbf{\textproc{LearnRP}-30} &
+    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-10}\\
+    \hline
+    \textsc{nltcs}     & 7m   & 3m  & 6m    & 17s   & 3m19s & 15s    & 5s     & 3s     & 2s    \\
+    \textsc{plants}    & 50m  & 41m & 26m   & 1m3s  & 26m   & 2m7s   & 41s    & 28s    & 15s   \\
+    \textsc{audio}     & 2h   & 33m & 51m   & 1m58s & 37m   & 4m3s   & 1m16s  & 52s    & 28s   \\
+    \textsc{jester}    & 52m  & 24m & 37m   & 1m20s & 29m   & 4m48s  & 1m29s  & 1m1s   & 31s   \\
+    \textsc{netflix}   & 1h   & 14m & 33m   & 2m8s  & 46m   & 4m36s  & 1m28s  & 1m     & 32s   \\
+    \textsc{accidents} & 47m  & 20m & 41m   & 1m47s & 33m   & 4m     & 1m20s  & 55s    & 31s   \\
+    \textsc{book}      & >3h  & 8m  & 1h22m & 2m26s & 2h    & 25m13s & 7m55s  & 5m10s  & 2m43s \\
+    \textsc{dna}       & >3h  & >3h & >3h   & 17s   & 11m   & 7m38s  & 2m20s  & 1m33s  & 49s   \\
+    \hline
+  \end{tabular}
+  }
+  \caption{Learning time benchmark for a single circuit of \textproc{LearnSPN}, \textproc{Strudel},
+    \textproc{LearnPSDD}, \textproc{XPC} and \textproc{LearnRP}.}
+  \label{tab:bintime}
+\end{table}
+
+\begin{table}[t]
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{c|cccc|ccccc}
     \hline
     \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
     \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} &
-    \textbf{\textproc{LearnRP}-F} & \textbf{\textproc{LearnRP}-10} &
-    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-30}\\
+    \textbf{\textproc{LearnRP}-F} & \textbf{\textproc{LearnRP}-100} & \textbf{\textproc{LearnRP}-30} &
+    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-10}\\
     \hline
-    \textsc{accidents } & 32708   & 75363   & 8418  & 11921   & 17609     & 17693   & 17309   & 17977   \\
-    \textsc{ad        } & 40901   & 13152   & 12238 & 22093   & 89525     & 88877   & 94111   & 87117   \\
-    \textsc{audio     } & 50130   & 55675   & 18208 & 29317   & 17319     & 17457   & 17369   & 17621   \\
-    \textsc{bbc       } & 39389   & 29532   & 12335 & 14578   & 124439    & 124717  & 123765  & 126019  \\
-    \textsc{netflix   } & 36286   & 27173   & 10997 & 39868   & 20663     & 20539   & 20631   & 20447   \\
-    \textsc{book      } & 51493   & 54839   & 10978 & 13678   & 109881    & 108057  & 112303  & 109367  \\
-    \textsc{20-newsgrp} & 119060  & 58749   & 15793 & 65881   & 486105    & 485427  & 485733  & 481613  \\
-    \textsc{reuters-52} & 155191  & 36343   & 10410 & 36440   & 285060    & 286162  & 289292  & 285870  \\
-    \textsc{webkb     } & 223847  & 25406   & 11033 & 17122   & 207462    & 209069  & 205128  & 208299  \\
-    \textsc{dna       } & 12180   & 17507   & 3068  & 2616    & 26567     & 26527   & 26007   & 26495   \\
-    \textsc{jester    } & 25076   & 27713   & 11322 & 20273   & 20679     & 20887   & 21025   & 21065   \\
-    \textsc{kdd       } & 8755    & 6572    & 2915  & 13040   & 5389      & 5219    & 5229    & 5251    \\
-    \textsc{kosarek   } & 19512   & 37583   & 7173  & 20938   & 32357     & 33455   & 33087   & 32993   \\
-    \textsc{msnbc     } & 11606   & 20795   & 5465  & 4887    & 789       & 801     & 765     & 778     \\
-    \textsc{msweb     } & 10743   & 2347    & 6581  & 12135   & 48545     & 48805   & 49715   & 50235   \\
-    \textsc{nltcs     } & 1855    & 4373    & 1304  & 4401    & 515       & 511     & 491     & 519     \\
-    \textsc{plants    } & 36596   & 119194  & 11583 & 13960   & 9335      & 9317    & 9941    & 9655    \\
-    \textsc{pumsb-star} & 26206   & 108876  & 8298  & 8866    & 28725     & 28937   & 27731   & 29930   \\
-    \textsc{eachmovie } & 54184   & 123996  & 20648 & 21369   & 69357     & 67047   & 68623   & 69193   \\
-    \textsc{retail    } & 2158    & 3979    & 2989  & 6651    & 24345     & 24459   & 25031   & 24103   \\
+    \textsc{accidents } & 32708   & 75363   & 8418  & 11921   &  18619 &   19086 &  19053 &  18498 &  18555 \\
+    \textsc{ad        } & 40901   & 13152   & 12238 & 22093   & 100429 &   99807 &  98949 & 101471 & 100435 \\
+    \textsc{audio     } & 50130   & 55675   & 18208 & 29317   &  19233 &   19463 &  19467 &  19249 &  19357 \\
+    \textsc{bbc       } & 39389   & 29532   & 12335 & 14578   & 232199 &  234295 & 233743 & 230965 & 232541 \\
+    \textsc{netflix   } & 36286   & 27173   & 10997 & 39868   &  21731 &   21675 &  21715 &  21719 &  21731 \\
+    \textsc{book      } & 51493   & 54839   & 10978 & 13678   & 118811 &  119847 & 119491 & 118427 & 119511 \\
+    \textsc{20-newsgrp} & 119060  & 58749   & 15793 & 65881   & 532657 &  534801 & 531615 & 536115 & 536709 \\
+    \textsc{reuters-52} & 155191  & 36343   & 10410 & 36440   & 321594 &  320201 & 322981 & 320715 & 321095 \\
+    \textsc{webkb     } & 223847  & 25406   & 11033 & 17122   & 251801 &  256322 & 256033 & 254797 & 256713 \\
+    \textsc{dna       } & 12180   & 17507   & 3068  & 2616    &  37607 &   37399 &  37423 &  37515 &  37741 \\
+    \textsc{jester    } & 25076   & 27713   & 11322 & 20273   &  23275 &   23111 &  23239 &  23363 &  23219 \\
+    \textsc{kdd       } & 8755    & 6572    & 2915  & 13040   &   5251 &    5299 &   5353 &   5399 &   5265 \\
+    \textsc{kosarek   } & 19512   & 37583   & 7173  & 20938   &  34013 &   33379 &  33167 &  33157 &  32865 \\
+    \textsc{msnbc     } & 11606   & 20795   & 5465  & 4887    &    785 &     789 &    781 &    777 &    785 \\
+    \textsc{msweb     } & 10743   & 2347    & 6581  & 12135   &  51239 &   51015 &  51911 &  51197 &  51009 \\
+    \textsc{nltcs     } & 1855    & 4373    & 1304  & 4401    &    531 &     515 &    519 &    535 &    523 \\
+    \textsc{plants    } & 36596   & 119194  & 11583 & 13960   &  10443 &   10711 &  10759 &  10779 &  10213 \\
+    \textsc{pumsb-star} & 26206   & 108876  & 8298  & 8866    &  32332 &   30401 &  32102 &  31429 &  31856 \\
+    \textsc{eachmovie } & 54184   & 123996  & 20648 & 21369   &  77839 &   80189 &  80073 &  78237 &  81705 \\
+    \textsc{retail    } & 2158    & 3979    & 2989  & 6651    &  25578 &   24686 &  25081 &  25174 &  24844 \\
     \hline
   \end{tabular}
   }
@@ -577,33 +592,42 @@ and respectively larger, circuits from \Cref{tab:binsize}.
   \label{tab:binsize}
 \end{table}
 
-\subsection{Continuous data}
+Overall, we found \textproc{LearnRP} to be competitive against the state-of-the-art, often
+reaching second or first place in the case of \textproc{LearnRP}-F and \textproc{LearnRP}-100. As
+expected for such a simple learning algorithm, it was hardly the best, although even under few EM
+iterations it was capable of producing somewhat competitive models. Arguably, \textproc{LearnRP}'s
+strengths come from its speed, learning circuits via minibatch EM in a fraction of the time when
+compared to \textproc{LearnSPN}, \textproc{Strudel} and \textproc{LearnPSDD}. Perhaps the more
+direct competitor of \textproc{LearnRP} in terms of scalability is \textproc{XPC}, showing the
+strengths of \randclass{}-type learners when it comes to speed. Recall from \Cref{sec:xpcs},
+however that \textproc{XPC} requires an extensive grid search on the hyperparameters, while the
+performance of \textproc{LearnRP} mainly depends on how much time one is willing to spend to
+fine-tune weights with parameter learning. Notably, we found that \textproc{LearnRP} performs worse
+on data with fewer variables (e.g.\ \textsc{nltcs}, \textsc{msnbc}, \textsc{kdd}) and better on
+data with more variables (e.g.\ \textsc{20-newsgrp}, \textsc{book}, \textsc{webkb}), which is
+perhaps correlated with the smaller, and respectively larger, circuits from \Cref{tab:binsize}.
 
-\Cref{tab:cont} shows results for continuous data. Note that some entries are positive since the
-log-likelihood of continuous variables can be positive. Because the evaluated continuous datasets
-were small in size, we only show results for \textproc{LearnRP} under 100 iterations of EM. We also
-do not run full EM after the batch variant as we found performance to degrade after doing so. When
-constructing the circuit with \textproc{LearnRP}, we use mixtures of three Gaussians as input
-nodes. We run learn both sum weights and input GMMs through EM. The last column of \Cref{tab:cont}
-shows the circuit sizes of \textproc{LearnRP}.
+\subsection{Continuous data}
+\label{sec:continuous}
 
 \begin{table}[t]
   \resizebox{\textwidth}{!}{
-  \begin{tabular}{c|cccccc|cc}
+  \begin{tabular}{cc|ccccccc|cc}
     \hline
-    \textbf{Dataset} & \textbf{SRBMs} & \textbf{oSLRAU} & \textbf{GBMMs} & \textbf{iGMMs} &
-    \textbf{\textproc{Prometheus}} & \textbf{iSPTs} & \textbf{\textproc{LearnRP}} & \textbf{Size} \\
+    \textbf{Dataset} & \textbf{Vars} & \textbf{SRBMs} & \textbf{oSLRAU} & \textbf{GBMMs} & \textbf{iGMMs} &
+    \textbf{GMMs} & \textbf{\textproc{Prometheus}} & \textbf{iSPTs} & \textbf{\textproc{LearnRP}} &
+    \textbf{Size} \\
     \hline
-    \textsc{abalone}    & -2.28  & -0.94  & -1.17  & ---   & -0.85   & ---   & -6.13  & 317   \\
-    \textsc{ca}         & -4.95  & 21.19  & 3.42   & ---   & 27.82   & ---   & -5.84  & 2765  \\
-    \textsc{quake}      & -2.38  & -1.21  & -3.76  & ---   & -1.50   & ---   & -3.76  & 79    \\
-    \textsc{sensorless} & -26.91 & 60.72  & 8.56   & ---   & 62.03   & ---   & -38.46 & 12589 \\
-    \textsc{banknote}   & -2.76  & -1.39  & -4.64  & ---   & -1.96   & ---   & -6.06  & 79    \\
-    \textsc{flowsize}   & -0.79  & 15.32  & 5.72   & ---   & 18.03   & ---   & 2.20   & 49    \\
-    \textsc{kinematics} & -5.55  & -11.13 & -11.20 & ---   & -11.12  & ---   & -11.02 & 319   \\
-    \textsc{iris}       & ---    & ---    & ---    & -3.94 & -1.06   & -3.74 & -3.47  & 79    \\
-    \textsc{oldfaith}   & ---    & ---    & ---    & -1.73 & -1.48   & -1.70 & -4.33  & 19    \\
-    \textsc{chemdiabet} & ---    & ---    & ---    & -3.02 & -2.59   & -2.88 & -18.68 & 48    \\
+    \textsc{abalone}    & 8  & -2.28  & $|$-0.94$|$  & -1.17  & ---   & \textbf{-0.59}   & \underline{-0.85}   & ---   & -6.13  & 317   \\
+    \textsc{ca}         & 22 & -4.95  & \underline{21.19}  & $|$3.42$|$   & ---   & -1.08   & \textbf{27.82}   & ---   & -5.84  & 2765  \\
+    \textsc{quake}      & 4  & -2.38  & \underline{-1.21}  & -3.76  & ---   & \textbf{-0.58}   & $|$-1.50$|$   & ---   & -3.76  & 79    \\
+    \textsc{sensorless} & 48 & -26.91 & \underline{60.72}  & $|$8.56$|$   & ---   & -1.39   & \textbf{62.03}   & ---   & -38.46 & 12589 \\
+    \textsc{banknote}   & 4  & -2.76  & \underline{-1.39}  & -4.64  & ---   & \textbf{-1.05}   & $|$-1.96$|$   & ---   & -6.06  & 79    \\
+    \textsc{flowsize}   & 3  & -0.79  & \underline{15.32}  & $|$5.72$|$   & ---   & -36.50  & \textbf{18.03}   & ---   & 2.20   & 49    \\
+    \textsc{kinematics} & 8  & \textbf{-5.55}  & -11.13 & -11.20 & ---   & \underline{-6.11}   & -11.12  & ---   & $|$-11.02$|$ & 319   \\
+    \textsc{iris}       & 4  & ---    & ---    & ---    & -3.94 & \textbf{0.20}    & \underline{-1.06}   & -3.74 & $|$-3.47$|$  & 79    \\
+    \textsc{oldfaith}   & 2  & ---    & ---    & ---    & $|$-1.73$|$ & -2.09   & \textbf{-1.48}   & \underline{-1.70} & -4.33  & 19    \\
+    \textsc{chemdiabet} & 3  & ---    & ---    & ---    & -3.02 & \textbf{-0.58}   & \underline{-2.59}   & $|$-2.88$|$ & -18.68 & 48    \\
     \hline
   \end{tabular}
   }
@@ -615,8 +639,109 @@ shows the circuit sizes of \textproc{LearnRP}.
   \label{tab:cont}
 \end{table}
 
-Strangely, we found that \textproc{LearnRP} behaves extremely poorly on continuous datasets. This
-could be both due to the smaller number of variables in these datasets (as evidenced by the reduced
+\Cref{tab:cont} shows results for continuous data. Note that some entries are positive since the
+log-likelihood of continuous variables can be positive. As previously mentioned, reported
+performance of SRBMs, oSLRAU, GBMMs, and \textproc{Prometheus} come from \citet{jaini18a}, while
+iGMM and iSPT reports come from \citet{trapp16}. For comparison, we trained standard GMMs with 5
+Gaussians as components and diagonal covariances through the \texttt{GaussianMixtures.jl}
+library\footnote{Available at \url{https://github.com/davidavdav/GaussianMixtures.jl}.}. Component
+centers were initialized with $k$-means, with GMM weights and Gaussian variances learned through
+EM. Because the evaluated continuous datasets were small in size, we only show results for
+\textproc{LearnRP} under 100 iterations of EM. We also do not run full EM after the batch variant
+as we found performance to degrade after doing so. When constructing the circuit with
+\textproc{LearnRP}, we use mixtures of three Gaussians as input nodes. We run learn both sum
+weights and input GMMs through EM. The last column of \Cref{tab:cont} shows the circuit sizes of
+\textproc{LearnRP}.
+
+We found that \textproc{LearnRP} behaves extremely poorly on continuous datasets. This could
+possibly be due to the smaller number of variables in these datasets (as evidenced by the reduced
 circuit sizes in \Cref{tab:cont}'s last column), causing \textproc{LearnRP} to produce very small
-models; and because of the unpredictability and inconsistency of log-likelihood as a score in the
-continuous.
+models. We also point to the fact that full EM was degrading the performance of \textproc{LearnRP}
+which is a possible indication that our EM implementation may suffer from numerical issues and/or
+perhaps that the learned circuit is overfitting the training data.
+
+\section{Summarizing \textproc{LearnRP}}
+
+By taking inspiration from the decision tree literature, we have proposed in this chapter an
+efficient and effective way of constructing probabilistic circuits through random projections. Our
+approach generates random smooth and structured decomposable PCs in a manner similar to
+\textproc{LearnSPN}. Contrastively to \textproc{LearnSPN}, however, instead of running clustering
+algorithms to divide data instances as a means to learn sum nodes, we resort to a faster and
+simpler alternative: we randomly sample a hyperplane in order to linearly divide the data in two.
+This, coupled with the fact that products are derived from the partitioning induced by a vtree,
+accelerates learning to the point that, even after optimizing weights through minibatch EM, our
+technique is order of magnitude faster than most popular PC learning algorithms.
+
+We summarize \textproc{LearnRP} by adding it as a new entry in \Cref{tab:learning-all}. We note
+that, although the number of projection trials $k$ is set as a parameter, we do not classify it as
+a hyperparameter, as the quality of partitions only increases with a higher valued $k$.
+
+\begin{sidewaystable}
+  \resizebox{\textheight}{!}{
+    \begin{tabular}{c|clcc|cccc|ccc|c}
+    \hline
+    \textbf{Name} & \textbf{Class} & \multicolumn{1}{c}{\textbf{Time Complexity}} & \textbf{\# hyperparams}
+    & \textbf{Accepts logic?} & \textbf{Smooth?} & \textbf{Dec?} & \textbf{Det?} & \textbf{Str Dec?} &
+    \textbf{$\mathbf{\{0,1\}}$?} & $\mathbb{N}$\textbf{?} & $\mathbb{R}$\textbf{?} & \textbf{Reference}\\
+    \hline
+    \textproc{LearnSPN} & \divclass{} & $
+    \begin{cases}
+      \bigo\left(nkmc\right) & \text{, if sum}\\
+      \bigo\left(nm^3\right) & \text{, if product}
+    \end{cases}
+    $ & $\geq 2$ & \xmark & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:learnspn}\\
+    \textproc{ID-SPN} & \divclass{} & $
+    \begin{cases}
+      \bigo\left(nkmc\right) & \text{, if sum}\\
+      \bigo\left(nm^3\right) & \text{, if product}\\
+      \bigo\left(ic(rn+m)\right)  & \text{, if input}
+    \end{cases}
+    $ & $\geq 2+3$ & \xmark & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \xmark & \Cref{sec:idspn}\\
+    \textproc{Prometheus} & \divclass{} & $
+    \begin{cases}
+      \bigo\left(nkmc\right) & \text{, if sum}\\
+      \bigo\left(m(\log m)^2\right) & \text{, if product}
+    \end{cases}
+    $ & $\geq 1$ & \xmark & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:prometheus}\\
+    \hline
+    \textproc{LearnPSDD} & \incrclass{} & $
+    \begin{cases}
+      \bigo\left(m^2\right) & \text{, top-down vtree}\\
+      \bigo\left(m^4\right) & \text{, bottom-up vtree}\\
+      \bigo\left(i|\mathcal{C}|^2\right) & \text{, circuit structure}
+    \end{cases}
+    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:learnpsdd}\\
+    \textproc{Strudel} & \incrclass{} & $
+    \begin{cases}
+      \bigo\left(m^2 n\right) & \text{, CLT + vtree}\\
+      \bigo\left(i\left(|\mathcal{C}|n+m^2\right)\right) & \text{, circuit structure}
+    \end{cases}
+    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:strudel}\\
+    \hline
+    & & & & & & & & & & & & \\
+    \textproc{RAT-SPN} & \randclass{} & $\phantom{\{}\bigo\left(rd(s+l)\right)$ & $4$ & \xmark & \cmark & \cmark
+                       & \xmark & \xmark & \cmark & \cmark & \cmark & \Cref{sec:ratspn}\\
+    & & & & & & & & & & & & \\
+    \textproc{XPC} & \randclass{} & $\phantom{\{}\bigo\left(i(t+kn)+ikm^2n\right)$ & $3$ & \xmark &\cmark & \cmark
+                   & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:xpcs}\\
+    & & & & & & & & & & & & \\
+    \hline
+    \textproc{SamplePSDD} & \randclass{} & $
+    \begin{cases}
+      \bigo\left(m\right) & \text{, random vtree}\\
+      \bigo\left(kc\log c+\log_2^2 k\right) & \text{, per call}
+    \end{cases}
+    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{ch:logical}\\
+    \textproc{LearnRP} & \randclass{} & $
+    \begin{cases}
+      \bigo\left(m^2\right) & \text{, top-down vtree}\\
+      \bigo\left(m^4\right) & \text{, bottom-up vtree}\\
+      \bigo\left(knm\right) & \text{, per call}
+    \end{cases}
+    $ & $0$ & \xmark & \cmark & \cmark & \xmark & \cmark & \cmark & \cmark & \cmark & \Cref{ch:data}\\
+    \hline
+  \end{tabular}
+  }
+  \caption{Summary of all structure learning algorithms for probabilistic circuits described so far.}
+  \label{tab:learning-all}
+\end{sidewaystable}

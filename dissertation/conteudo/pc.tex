@@ -367,7 +367,7 @@ any RVs outside of $\Node$'s scope are simply ignored.
     grid = major
   ]
     \addplot3[
-      surf, samples=5,
+      surf, samples=30,
       domain=0.5:6.5,
       y domain=1:6
     ] {((0.3*exp(-((x-\xmone)^2)/(2*\xsone^2))/\xsone+0.7*exp(-((x-\xmtwo)^2)/(2*\xstwo^2))/\xstwo)/2.5066)*(((0.6*exp(-((y-\ymone)^2)/(2*\ysone^2))/\ysone+0.4*exp(-((y-\ymtwo)^2)/(2*\ystwo^2))/\ystwo)/2.5066))};

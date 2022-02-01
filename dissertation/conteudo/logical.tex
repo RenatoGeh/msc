@@ -1245,11 +1245,12 @@ such.
                    & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{sec:xpcs}\\
     & & & & & & & & & & & & \\
     \hline
-    & & & & & & & & & & & & \\
-    \textproc{SamplePSDD} & \randclass{} & $\phantom{\{}\bigo\left(kc\log c+\log_2^2 k\right)$ &
-      $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark &
-      \Cref{ch:logical}\\
-    & & & & & & & & & & & & \\
+    \textproc{SamplePSDD} & \randclass{} & $
+    \begin{cases}
+      \bigo\left(m\right) & \text{, random vtree}\\
+      \bigo\left(kc\log c+\log_2^2 k\right) & \text{, per call}
+    \end{cases}
+    $ & $1$ & \cmark & \cmark & \cmark & \cmark & \cmark & \cmark & \xmark & \xmark & \Cref{ch:logical}\\
     \hline
   \end{tabular}
   }

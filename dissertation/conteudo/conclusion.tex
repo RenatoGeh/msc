@@ -56,6 +56,15 @@ which primes are compressed or merged could provide a better data fit model.
 completely decoupled from the process of learning a vtree. Learning the vtree during sampling could
 potentially provide a better fit to the overall model.
 
+\paragraph{Smooth, structured decomposable and deterministic decompositions.} The exact partitions
+constructed by decomposing formulae as conjunctions of literals and their restriction are, in a
+sense, a generalization of Shannon's decomposition. As discussed in \Cref{ch:logical}, the main
+drawback of this approach is the exponential number of terms required for completely encoding this
+expansion. This kind of decomposition also limits primes to only conjunctions of literals, which
+possibly hinders expressivity. Finding decompositions whose disjunction terms are smooth,
+structured decomposable and deterministic would allow possibly more expressibly PSDDs to be
+sampled.
+
 \subsection{\textproc{LearnRP}}
 
 In this section, we provide a discussion on \textproc{LearnRP} and possible paths from both a
@@ -64,15 +73,15 @@ theoretical as well as a more practical point of view.
 \paragraph{Extending the theoretical works from random projections.} As mentioned in \Cref{sec:rp},
 there are several interesting theoretical results coming primarily from the decision tree
 literature. Now that \citet{correia20} have made clear the connection between decision trees and
-PCs, it would be interesting to understand whether these same results extend to more general PCs.
+PCs, it would be interesting to understand whether the results from \citet{dasgupta08b} also extend
+to more general PCs learned from random projections.
 
 \paragraph{Enforcing determinism.} Random projection trees are naturally deterministic, however
 circuits learned through \textproc{LearnRP} are not. This means \textproc{LearnRP} PCs are not as
 interpretable as, say density estimation trees, where each assignment produces a clear path
-``explaining'' the decisions taken by the model. As far as we know, to retain the same semantics of
-random projections \emph{and} enforce determinism would require explicitly laying out the latent
-variables representing each (hyperplane) rule, effectively creating an exponential number of latent
-variable indicators for each sum node.
+``explaining'' the decisions taken by the model. We thus pose the following question: is it
+possible to enforce determinism to \textproc{LearnRP} while at the same time retaining smoothness
+and decomposability?
 
 \paragraph{Simultaneously learning the vtree.} Similar to \textproc{SamplePSDD}, \textproc{LearnRP}
 fixes a learned vtree and produces a PC from it. The choice of which variables to partition deeply
