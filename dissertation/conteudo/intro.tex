@@ -5,12 +5,12 @@ vehicles to bioinformatics, data-driven models have taken the center stage when 
 state-of-the-art prediction and modeling of real-world tasks \citep{grigorescu20,lan18,li19,khan18,
 sezer20}. In many of these scenarios, such as system diagnosis of automated power plants or
 real-time translation, timely decisions are crucial to the well-functioning of often critical
-systems \citep{enshaei19,niehues18}. In others, agents must be either precise or come with
-approximation guarantees of their estimation, as is the case of decision making in healthcare,
-finance or other sensitive data \citep{lou19}. Even more crucially, these predictive models often
-need to perform complex reasoning tasks over hundreds if not thousands of variables, sometimes
-under known constraints dependent on domain \citep{xu18,marin20,wong12,lu13}; and yet prove
-expressive enough to learn from the possibly enormous quantity of data available.
+systems \citep{enshaei19,niehues18}. In others, such as in medical diagnostic systems or credit
+assessment, conclusions produced by the system must be reliable or come with some measure of error
+of its estimates \citep{lou19,xolani20}. Even more crucially, these predictive models often need to
+perform complex reasoning tasks over hundreds if not thousands of variables, sometimes under known
+constraints dependent on domain \citep{xu18,marin20,wong12,lu13}; and yet prove expressive enough
+to learn from the possibly enormous quantity of data available.
 
 Fulfilling these requirements are Probabilistic Circuits (PCs), a class of probabilistic models
 distinctly specified by recursive compositions of distributions through graphical formalisms.
@@ -47,7 +47,7 @@ case for random algorithms. For the usual data scientist or machine learning pra
 hyperparameter tuning can become time consuming and tedious, especially if the goal is to analyze
 and infer from large data, and not to achieve top tier performance on benchmark datasets.
 
-The objectives of this dissertation are two-fold. First, we seek to provide a concise literature
+The objectives of this research are two-fold. First, we seek to provide a concise literature
 review on structure learning algorithms for probabilistic circuits, describing a few of the most
 popular techniques for learning PCs. This particular contribution comes from a need for a
 systematic comparison of the large body of techniques that have been developed so far, each with
@@ -79,7 +79,7 @@ competitive PC structures in a fraction of the time.
 
 We begin \Cref{ch:pc} by formally defining probabilistic circuits (\Cref{sec:pc}), conducting a
 review of some of the structural constraints that we might impose on PCs, as well as what we may
-gain from them in terms of tractability. This is followed with a description on how to
+gain from them in terms of tractability. This is followed by a description on how to
 algorithmically compute inference queries in PCs. We then list existing formalisms that may be
 viewed as instances of PCs, and what their structure entail in terms of inference power. We finish
 the chapter by looking at a particular class of PCs which allow the embedding of logical formulae

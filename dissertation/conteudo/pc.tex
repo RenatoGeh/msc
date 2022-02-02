@@ -957,14 +957,13 @@ stated otherwise.}
   decision tree below it. Each node in the tree is a (hyper)plane partitioning data, with every
   edge determining which cell the observation falls into.
 
-  Equivalently, an unnormalized, smooth and nondecomposable PC whose sum nodes are followed by
-  products which determine which side of the hyperplane an assignment goes configures the same
-  semantics as a DET decision node. Inputs in this PC act as the leaf nodes in the equivalent DET.
-  The PC on the right translates the DET on top of it, with matching colors in the PC showing the
-  equivalent leaves and decision nodes in the DET. Because the resulting density is
-  constant-piecewise, marginalization is tractable, highlighting the sufficiency but not necessity
-  of smoothness and decomposability. An alternative smooth and decomposable formulation of DETs is
-  given by \citet{correia20}.
+  Equivalently, a smooth and nondecomposable PC whose sum nodes are followed by products which
+  determine which side of the hyperplane an assignment goes configures the same semantics as a DET
+  decision node. Inputs in this PC act as the leaf nodes in the equivalent DET. The PC on the right
+  translates the DET on top of it, with matching colors in the PC showing the equivalent leaves and
+  decision nodes in the DET. Because the resulting density is constant-piecewise, marginalization
+  is tractable, highlighting the sufficiency but not necessity of smoothness and decomposability.
+  An alternative smooth and decomposable formulation of DETs is given by \citet{correia20}.
   \tcblower
   \centering
   \begin{tikzpicture}
@@ -983,43 +982,43 @@ stated otherwise.}
     \node[inner sep=1pt,minimum size=12pt,circle,fill=boxpurple!60] (c) at ($(b) + (1,-1.5)$) {$\set{C}$};
     \node[draw,fill=boxpink!30] (l1) at ($(c) + (-1,-1.5)$) {$L_1$};
     \node[draw,fill=boxgoldenrod!40] (l2) at ($(c) + (1,-1.5)$) {$L_2$};
-    \draw (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}>\set{A}$} ($(a) + (1,-1.5)$);
-    \draw (a) -- node[above left,pos=0.5] {$\set{x}\leq\set{A}$} (b);
+    \draw (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}\in\set{A}^-$} ($(a) + (1,-1.5)$);
+    \draw (a) -- node[above left,pos=0.5] {$\set{x}\in\set{A}^+$} (b);
     \draw[edge,boxdgray] (a) edge[bend left=15] (b);
-    \draw (b) -- node[below,pos=1] {$\vdots$} node[above left,pos=0.5] {$\set{x}\leq\set{B}$} ($(b) + (-1,-1.5)$);
-    \draw (b) -- node[above right,pos=0.5] {$\set{x}>\set{B}$} (c);
+    \draw (b) -- node[below,pos=1] {$\vdots$} node[above left,pos=0.5] {$\set{x}\in\set{B}^-$} ($(b) + (-1,-1.5)$);
+    \draw (b) -- node[above right,pos=0.5] {$\set{x}\in\set{B}^+$} (c);
     \draw[edge,boxdgray] (b) edge[bend right=15] (c);
-    \draw (c) -- node[above left,pos=0.5] {$\set{x}\leq\set{C}$} (l1);
-    \draw (c) -- node[above right,pos=0.5] {$\set{x}>\set{C}$} (l2);
+    \draw (c) -- node[above left,pos=0.5] {$\set{x}\in\set{C}^-$} (l1);
+    \draw (c) -- node[above right,pos=0.5] {$\set{x}\in\set{C}^+$} (l2);
     \draw[edge,boxdgray] (c) edge[bend left=15] (l1);
 
     \newSumNode[fill=boxblue!80,label=above left:{$\set{A}$}]{a}{$(a) + (-0.5,-6.0)$};
     \newProdNode[fill=boxblue!80]{al}{$(a) + (-0.5,-1)$};
     \newProdNode[fill=boxblue!80]{ar}{$(a) + (0.5,-1)$};
-    \newLeafNode[fill=boxblue!80,label=below:{$\left\liv\set{x}\leq\set{A}\right\riv$}]{ai}{$(al) + (-1.0,-1)$};
-    \newLeafNode[fill=boxblue!80,label=below:{$\left\liv\set{x}>\set{A}\right\riv$}]{nai}{$(ar) + (1.0,-1)$};
-    \draw[edge] (a) -- node[left,pos=0.5] {\scriptsize$1$} (al); \draw[edge] (al) -- (ai);
-    \draw[edge] (a) -- node[right,pos=0.5] {\scriptsize$1$} (ar); \draw[edge] (ar) -- (nai);
+    \newLeafNode[fill=boxblue!80,label=below:{$\left\liv\set{x}\in\set{A}^+\right\riv$}]{ai}{$(al) + (-1.0,-1)$};
+    \newLeafNode[fill=boxblue!80,label=below:{$\left\liv\set{x}\in\set{A}^-\right\riv$}]{nai}{$(ar) + (1.0,-1)$};
+    \draw[edge] (a) -- (al); \draw[edge] (al) -- (ai);
+    \draw[edge] (a) -- (ar); \draw[edge] (ar) -- (nai);
     \draw[edge] (ar) -- node[below,pos=1] {$\vdots$} ($(ar) + (0,-1)$);
 
     \newSumNode[fill=boxgreen!80,label=above right:{$\set{B}$}]{b}{$(al) + (0,-1)$};
     \newProdNode[fill=boxgreen!80]{bl}{$(b) + (0,-1)$};
     \newProdNode[fill=boxgreen!80]{br}{$(b) + (1,-1)$};
-    \newLeafNode[fill=boxgreen!80,label=below:{$\left\liv\set{x}\leq\set{B}\right\riv$}]{bi}{$(bl) + (-1.0,-1)$};
-    \newLeafNode[fill=boxgreen!80,label=below:{$\left\liv\set{x}>\set{B}\right\riv$}]{nbi}{$(br) + (1.0,-1)$};
+    \newLeafNode[fill=boxgreen!80,label=below:{$\left\liv\set{x}\in\set{B}^-\right\riv$}]{bi}{$(bl) + (-1.0,-1)$};
+    \newLeafNode[fill=boxgreen!80,label=below:{$\left\liv\set{x}\in\set{B}^+\right\riv$}]{nbi}{$(br) + (1.0,-1)$};
     \draw[edge] (al) -- (b);
-    \draw[edge] (b) -- node[right,pos=0.5] {\scriptsize$1$} (bl); \draw[edge] (bl) -- (bi);
-    \draw[edge] (b) -- node[above right,pos=0.5] {\scriptsize$1$} (br); \draw[edge] (br) -- (nbi);
+    \draw[edge] (b) -- (bl); \draw[edge] (bl) -- (bi);
+    \draw[edge] (b) -- (br); \draw[edge] (br) -- (nbi);
     \draw[edge] (bl) -- node[below,pos=1] {$\vdots$} ($(bl) + (0,-1)$);
 
     \newSumNode[fill=boxpurple!60,label=above left:{$\set{C}$}]{c}{$(br) + (0,-1)$};
     \newProdNode[fill=boxpurple!60]{cl}{$(c) + (-1,-1)$};
     \newProdNode[fill=boxpurple!60]{cr}{$(c) + (0,-1)$};
-    \newLeafNode[fill=boxpurple!60,label=below:{$\left\liv\set{x}\leq\set{C}\right\riv$}]{ci}{$(cl) + (-1.0,-1)$};
-    \newLeafNode[fill=boxpurple!60,label=below:{$\left\liv\set{x}>\set{C}\right\riv$}]{nci}{$(cr) + (1.0,-1)$};
+    \newLeafNode[fill=boxpurple!60,label=below:{$\left\liv\set{x}\in\set{C}^-\right\riv$}]{ci}{$(cl) + (-1.0,-1)$};
+    \newLeafNode[fill=boxpurple!60,label=below:{$\left\liv\set{x}\in\set{C}^+\right\riv$}]{nci}{$(cr) + (1.0,-1)$};
     \draw[edge] (br) -- (c);
-    \draw[edge] (c) -- node[above left,pos=0.5] {\scriptsize$1$} (cl); \draw[edge] (cl) -- (ci);
-    \draw[edge] (c) -- node[left,pos=0.5] {\scriptsize$1$} (cr); \draw[edge] (cr) -- (nci);
+    \draw[edge] (c) -- (cr); \draw[edge] (cl) -- (ci);
+    \draw[edge] (c) -- (cl); \draw[edge] (cr) -- (nci);
     \newGaussNode[label=below:{$\Leaf_1$},fill=boxpink!30]{l1}{$(cl) + (0,-1)$};
     \newGaussNode[label=below:{$\Leaf_2$},fill=boxgoldenrod!40]{l2}{$(cr) + (0,-1)$};
     \draw[edge] (cl) -- (l1);
@@ -1063,7 +1062,7 @@ tractably computing the \map{}.
 
 \begin{definition}[Determinism]
   A probabilistic circuit $\mathcal{C}$ is said to be \emph{deterministic} if for every sum node
-  $\Sum\in\mathcal{C}$ only one child of $\Sum$ has nonnegative value for any complete assignment.
+  $\Sum\in\mathcal{C}$ at most one child of $\Sum$ has nonnegative value for any complete assignment.
 \end{definition}
 
 \begin{restatable}[\cite{peharz16}]{theorem}{det}
