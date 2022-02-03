@@ -425,6 +425,55 @@ ranking, as the rank standard deviation shows. \Cref{fig:learnrp-curves} shows h
 EM improves \textproc{LearnRP} and how many iterations are needed for it to match the performance
 of competitors.
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{bins/all.pdf}
+  \caption{Test log-likelihood performance of \textproc{LearnRP} shown as the curve in
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1); under
+    different iterations of minibatch EM. Each horizontal line shows the performance of a different
+    competitor: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle (0.5,-0.1);
+    for \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3] (0,0)
+    rectangle (0.5,-0.1); for \textproc{Strudel},
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4] (0,0) rectangle (0.5,-0.1); for
+    \textproc{LearnPSDD}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle
+    (0.5,-0.1); for \textproc{XPC} and finally
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots6] (0,0) rectangle (0.5,-0.1); for
+    \textproc{Prometheus}}
+  \label{fig:learnrp-curves}
+\end{figure}
+
+As a superficial ablation study of the impact of random projections on the parameterization of
+probabilistic circuits, we verify and compare the performance of \textproc{LearnRP} under random
+weights without modifying the structure. To be more precise, for each of the structures generated
+in \Cref{fig:learnrp-curves}, we completely randomize all sum node weights without altering the PC
+structure by uniformly sampling numbers in the $\left[0,1\right]\subset\mathbb{R}$, setting these
+as weights, and then normalizing sum edges such that the sum of all weights equal to one. Once all
+weights have been randomized this way, we retrain with minibatch EM for 100 iterations.
+\Cref{fig:learnrp-rand-curves} shows the test log-likelihood curves for this random initialization.
+We found that using the proportions of the random projection splits as the sum weights provided a
+better initial parameterization compared to random weight initialization, with the former
+consistently achieving better final performance after 100 minibatch EM iterations. Notably, in both
+the \textproc{ad} and \textproc{bbc} datasets, initializing weights as random severely crippled the
+EM algorithm, causing it to be stuck at very low quality local maxima.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{bins/all_rand.pdf}
+  \caption{Test log-likelihood curve, shown in
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1);, of
+    \textproc{LearnRP} with randomized weights under different iterations of minibatch EM. Each
+    horizontal line shows the performance of a different competitor:
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle (0.5,-0.1); for
+    \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3] (0,0) rectangle
+    (0.5,-0.1); for \textproc{Strudel}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4]
+    (0,0) rectangle (0.5,-0.1); for \textproc{LearnPSDD},
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle (0.5,-0.1); for
+    \textproc{XPC} and finally \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots6] (0,0)
+    rectangle (0.5,-0.1); for
+    \textproc{Prometheus}}
+  \label{fig:learnrp-rand-curves}
+\end{figure}
+
 \begin{sidewaystable}[ph!]
   \resizebox{\textheight}{!}{
   \begin{tabular}{c|ccccc|ccccc}
@@ -491,23 +540,6 @@ of competitors.
     against the state-of-the-art.}
   \label{tab:binary}
 \end{sidewaystable}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\textwidth]{bins/all.pdf}
-  \caption{Test log-likelihood performance of \textproc{LearnRP} shown as the curve in
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1); under
-    different iterations of minibatch EM. Each horizontal line shows the performance of a different
-    competitor: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle (0.5,-0.1);
-    for \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3] (0,0)
-    rectangle (0.5,-0.1); for \textproc{Strudel},
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4] (0,0) rectangle (0.5,-0.1); for
-    \textproc{LearnPSDD}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle
-    (0.5,-0.1); for \textproc{XPC} and finally
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots6] (0,0) rectangle (0.5,-0.1); for
-    \textproc{Prometheus}}
-  \label{fig:learnrp-curves}
-\end{figure}
 
 \Cref{tab:bintime} shows average running time for each learning algorithm to construct a
 \emph{single} circuit for each dataset. Note that the performance reported in \Cref{tab:binary} for
