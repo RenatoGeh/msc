@@ -446,15 +446,15 @@ As a superficial ablation study of the impact of random projections on the param
 probabilistic circuits, we verify and compare the performance of \textproc{LearnRP} under random
 weights without modifying the structure. To be more precise, for each of the structures generated
 in \Cref{fig:learnrp-curves}, we completely randomize all sum node weights without altering the PC
-structure by uniformly sampling numbers in the $\left[0,1\right]\subset\mathbb{R}$, setting these
-as weights, and then normalizing sum edges such that the sum of all weights equal to one. Once all
-weights have been randomized this way, we retrain with minibatch EM for 100 iterations.
-\Cref{fig:learnrp-rand-curves} shows the test log-likelihood curves for this random initialization.
-We found that using the proportions of the random projection splits as the sum weights provided a
-better initial parameterization compared to random weight initialization, with the former
-consistently achieving better final performance after 100 minibatch EM iterations. Notably, in both
-the \textproc{ad} and \textproc{bbc} datasets, initializing weights as random severely crippled the
-EM algorithm, causing it to be stuck at very low quality local maxima.
+structure by uniformly sampling numbers in the $\left[0,1\right]\subset\mathbb{R}$ interval,
+setting these as weights, and then normalizing sum edges such that the sum of all weights equal to
+one. Once all weights have been randomized this way, we retrain with minibatch EM for 100
+iterations. \Cref{fig:learnrp-rand-curves} shows the test log-likelihood curves for this random
+initialization. We found that using the proportions of the random projection splits as sum weights
+provided a better initial parameterization compared to random weight initialization, with the
+former consistently achieving better final performance after 100 minibatch EM iterations. Notably,
+in both the \textproc{ad} and \textproc{bbc} datasets, initializing weights as random severely
+crippled the EM algorithm, causing it to be stuck at very low quality local maxima.
 
 \begin{figure}[t]
   \centering

@@ -961,9 +961,10 @@ stated otherwise.}
   determine which side of the hyperplane an assignment goes configures the same semantics as a DET
   decision node. Inputs in this PC act as the leaf nodes in the equivalent DET. The PC on the right
   translates the DET on top of it, with matching colors in the PC showing the equivalent leaves and
-  decision nodes in the DET. Because the resulting density is constant-piecewise, marginalization
-  is tractable, highlighting the sufficiency but not necessity of smoothness and decomposability.
-  An alternative smooth and decomposable formulation of DETs is given by \citet{correia20}.
+  decision nodes in the DET. Because products define disjoint restricted regions of the data space,
+  integration can be pushed to the leaves, making marginalization is tractable, highlighting the
+  sufficiency but not necessity of smoothness and decomposability. An alternative smooth and
+  decomposable formulation of DETs is given by \citet{correia20}.
   \tcblower
   \centering
   \begin{tikzpicture}
