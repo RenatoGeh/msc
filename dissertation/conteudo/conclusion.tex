@@ -19,7 +19,7 @@ circuits either from knowledge or completely random (\Cref{sec:random}).
 
 We follow this literature review and taxonomy on structure learning by addressing two cases of
 \randclass{} algorithms, both of which draw inspiration from \divclass{} and \incrclass{}
-(\Cref{ch:logical,ch:data}). Each tackles the problem of learning PCs from distinct point of views:
+(\Cref{ch:logical,ch:data}). Each tackles the problem of learning PCs from two distinct point of views:
 we first propose \textproc{SamplePSDD} to learn a circuit from certain knowledge, constructing a
 smooth, structure decomposable and deterministic PC (i.e.\ a PSDD) from both logical formula and
 data. To scale up to the hundreds of variables we restrict the PSDD's support to only a relaxation
@@ -41,21 +41,6 @@ improvement. We end this dissertation by addressing the flaws of both \textproc{
 We now explore some interesting paths to take for further work on \textproc{SamplePSDD}. We
 summarize them through the topics below, providing a short discussion on future work.
 
-\paragraph{Primes are conjunctions of literals.} Although this is a common assumption, it restricts
-the space of sampled PSDDs to a very specific class of PSDDs. One may draw connections to BDDs and
-argue that this class of PSDDs is a generalization BDDs in the sense that a (PSDD) partition of
-this nature is akin to a more general case of Shannon's decomposition where instead of conditioning
-on a single variable, we (randomly) choose a subset of variables. We suggest possible further work
-on sampling PSDDs from other kinds of decompositions other than Shannon's.
-
-\paragraph{Search-based sampling.} \textproc{SamplePSDD} blindly samples circuits from a logical
-formula regardless of how well it models data. Guiding which variables are sampled as primes and
-which primes are compressed or merged could provide a better data fit model.
-
-\paragraph{Simultaneously learning the vtree.} Our proposed algorithm for \textproc{SamplePSDD} is
-completely decoupled from the process of learning a vtree. Learning the vtree during sampling could
-potentially provide a better fit to the overall model.
-
 \paragraph{Smooth, structured decomposable and deterministic decompositions.} The exact partitions
 constructed by decomposing formulae as conjunctions of literals and their restriction are, in a
 sense, a generalization of Shannon's decomposition. As discussed in \Cref{ch:logical}, the main
@@ -64,6 +49,14 @@ expansion. This kind of decomposition also limits primes to only conjunctions of
 possibly hinders expressivity. Finding decompositions whose disjunction terms are smooth,
 structured decomposable and deterministic would allow possibly more expressibly PSDDs to be
 sampled.
+
+\paragraph{Search-based sampling.} \textproc{SamplePSDD} blindly samples circuits from a logical
+formula regardless of how well it models data. Guiding which variables are sampled as primes and
+which primes are compressed or merged could provide a better data fit model.
+
+\paragraph{Simultaneously learning the vtree.} Our proposed algorithm for \textproc{SamplePSDD} is
+completely decoupled from the process of learning a vtree. Learning the vtree during sampling could
+potentially provide a better fit to the overall model.
 
 \subsection{\textproc{LearnRP}}
 

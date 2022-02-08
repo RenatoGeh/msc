@@ -681,8 +681,8 @@ centers were initialized with $k$-means, with GMM weights and Gaussian variances
 EM. Because the evaluated continuous datasets were small in size, we only show results for
 \textproc{LearnRP} under 100 iterations of EM. We also do not run full EM after the batch variant
 as we found performance to degrade after doing so. When constructing the circuit with
-\textproc{LearnRP}, we use mixtures of three Gaussians as input nodes. We run learn both sum
-weights and input GMMs through EM. The last column of \Cref{tab:cont} shows the circuit sizes of
+\textproc{LearnRP}, we use mixtures of three Gaussians as input nodes. We learn both sum weights
+and input GMMs through EM. The last column of \Cref{tab:cont} shows the circuit sizes of
 \textproc{LearnRP}.
 
 We found that \textproc{LearnRP} behaves extremely poorly on continuous datasets. This could
@@ -702,7 +702,7 @@ algorithms to divide data instances as a means to learn sum nodes, we resort to 
 simpler alternative: we randomly sample a hyperplane in order to linearly divide the data in two.
 This, coupled with the fact that products are derived from the partitioning induced by a vtree,
 accelerates learning to the point that, even after optimizing weights through minibatch EM, our
-technique is order of magnitude faster than most popular PC learning algorithms.
+technique is orders of magnitude faster than most popular PC learning algorithms.
 
 We summarize \textproc{LearnRP} by adding it as a new entry in \Cref{tab:learning-all}. We note
 that, although the number of projection trials $k$ is set as a parameter, we do not classify it as

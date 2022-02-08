@@ -2,11 +2,11 @@
 \label{ch:pc}
 
 As we briefly mentioned in the last chapter, Probabilistic Circuits (PCs) are conceptualized as
-computational graphs under special conditions. In this chapter, \Cref{sec:pc} to be more precise,
-we formally define PCs and give an intuition on their syntax, viewing other probabilistic models
-through the lenses of the PC framework, formalizing the many structural constraints that give
-sufficient conditions for tractable inference. In \Cref{sec:pckb}, we address PCs as knowledge
-bases, representing logic formulae through circuits.
+computational graphs under special conditions. In this chapter, we formally define PCs and give an
+intuition on their syntax, viewing other probabilistic models through the lenses of the PC
+framework and formalizing the many structural constraints that give sufficient conditions for
+tractable inference. We then address PCs as knowledge bases, representing logic formulae through
+circuits.
 
 Before we formally introduce probabilistic circuits, we start with a brief preliminary on notation
 and nomenclature. Call $\set{X}=\{X_1,X_2,\ldots,X_m\}$ a set of random variables (RVs); we denote
@@ -41,8 +41,8 @@ computational units. We start with a broad definition of probabilistic circuits.
   \emph{product node} $\Prod$ multiplies all of its children
   $\Prod(\set{x})=\prod_{\Child\in\Ch(\Prod)} \Child(\set{x})$, and \emph{input nodes}, i.e.\ nodes
   with no outgoing edges, are defined as univariate probability density functions.\label{def:pc}
-  The \emph{size} of $\mathcal{C}$ probabilistic circuit is the number of nodes and edges of its
-  graph, denoted by $|\mathcal{C}|$.
+  The \emph{size} of $\mathcal{C}$ is the number of nodes and edges of its graph, denoted by
+  $|\mathcal{C}|$.
 \end{definition}
 
 In its simplest form, a PC is a single input node annotated with an unnormalized probability
@@ -203,8 +203,8 @@ over Gaussian distributions as inputs.
   the probability of $X=x$ for a GMM $\mathcal{G}$ with three components
   $\gaussian_1(\mu_1=\mone,\sigma_1=\sone)$, $\gaussian_2(\mu_2=\mtwo, \sigma_1=\stwo)$ and
   $\gaussian_3(\mu_3=\mthr,\sigma^2_3=\sthr)$, and suppose we have weights set to
-  $\phi=(0.4,0.25,0.35)$. Computing the probability of $x$ according to $G$ amounts to the weighted
-  summation
+  $\phi=(0.4,0.25,0.35)$. Computing the probability of $x$ according to $\mathcal{G}$ amounts to
+  the weighted summation
   \begin{align*}
     \mathcal{G}(X=x)=&0.4\cdot\gaussian_1(x;\mu_1,\sigma_2)+0.25\cdot\gaussian_2(x;\mu_2,\sigma_2)+\\
                      &0.35\cdot\gaussian_3(x;\mu_3,\sigma_3),
@@ -212,8 +212,9 @@ over Gaussian distributions as inputs.
   which is equivalent to a computational graph (i.e. a PC) with a sum node as root and whose
   weights are set to $\phi$ and children to the components of the mixture. The figure on the right
   shows $\mathcal{G}$ (top) and its corresponding PC (middle). Given $x=1.5$ (in blue), input nodes
-  are computed following the computation flow (bottom, gray edges) up to the root sum node (in
-  red), where a weighted summation is computed to output the probability (in green).
+  are computed following the computation flow (bottom, gray edges) up to the root sum node
+  \inode[fill=boxred!70]{\newSumNode}, where a weighted summation is computed to output the
+  probability (in green).
 
   \tcblower
   \begin{center}
@@ -754,17 +755,17 @@ $\sum_{\set{z}}p(\set{y}, \set{z})$ when in the discrete, and the integral
 $\int_{\set{z}}p(\set{y},\set{z})\dif\set{z}$ in the continuous. Aside from \evi{} and \mar{},
 prediction tasks such as classification often require computing the \emph{conditional probability}
 $p(\set{y}|\set{z})=\frac{p(\set{y},\set{z})}{p(\set{z})}$, which we shall call by the shorthand
-\con{}, of query variables $\set{Y}$ given evidence variables $\set{Z}$ in order to understand, in
-the case of image classification, the probability of a certain label given pixel values. A related
-yet more difficult task is to compute the \emph{maximum a posteriori} probability (\map{}), which
-involves finding the most probable assignment of a set of RVs $\set{Y}$, said to be the query
-variables, conditioned on evidence variables $\set{X}$, say for image reconstruction. To do so, we
-must compute the most probable assignment $\set{y}$ (for instance, the missing pixels to be
-reconstructed) conditioned on evidence $\set{x}$ (for example, values of the known pixels), or more
-formally
+\con{}, of query variables $\set{Y}$ given evidence variables $\set{Z}$ in order to understand, for
+instance in the case of image classification, the probability of a certain label given pixel
+values. A related yet more difficult task is to compute the \emph{maximum a posteriori} probability
+(\map{}), which involves finding the most probable assignment of a set of RVs $\set{Y}$, said to be
+the query variables, conditioned on evidence variables $\set{X}$, say for image reconstruction. To
+do so, we must compute the most probable assignment $\set{y}$ (for instance, the missing pixels to
+be reconstructed) conditioned on evidence $\set{x}$ (for example, values of the known pixels), or
+more formally
 \begin{equation}
   \max_{\set{y}}p(\set{y}|\set{x})=\max_{\set{y}}\frac{p(\set{y},\set{x})}{p(\set{x})}=
-  \frac{\max_{\set{y}}p(\set{y},\set{x})}{p(\set{x})}.
+  \frac{\max_{\set{y}}p(\set{y},\set{x})}{p(\set{x})}=\max_{\set{y}}p(\set{y},\set{x}).
   \label{eq:map}
 \end{equation}
 For this dissertation, we shall only consider the case of \emph{full} \map{}, i.e.\ when
@@ -772,9 +773,9 @@ $\set{x}\cup\set{y}$ forms a complete assignment of the scope, since computing t
 \map{}, i.e.\ when $\set{x}\cup\set{y}$ forms a partial assignment, is hard in most PCs
 \citep{peharz16,decampos11}. Unless explicitly stated, \map{} shall mean full \map{}. Full \map{}
 also goes by the name of \emph{most probable explanation} (MPE, \cite{darwiche09}) in literature.
-Although at first it may seem like \map{} is no harder than computing a \con{}, it turns out that
-for smooth and decomposable PCs \map{} is NP-hard \citep{conaty17,mei18}. Now that we have properly
-defined the queries we are interested in, we begin listing sufficient conditions for their
+Although at first it may seem like \map{} should be no harder than computing a \con{}, it turns out
+that for smooth and decomposable PCs \map{} is NP-hard \citep{conaty17,mei18}. Now that we have
+properly defined the queries we are interested in, we begin listing sufficient conditions for their
 tractability in PCs and the algorithms that compute them.
 
 As we have already (informally) seen in the previous section, computing the probability of evidence
@@ -813,8 +814,8 @@ constraints for probabilistic circuits which, together, enable tractable \mar{} 
 
 \begin{definition}[Decomposability]
   A probabilistic circuit $\mathcal{C}$ is said to be \emph{decomposable} if for every product node
-  $\Prod$ in $\mathcal{C}$, $\Sc(\Child_1)\cap\Sc(\Child_2)=\emptyset$ for $\Child_1,\Child_2\in
-  \Ch(\Prod)$.
+  $\Prod$ in $\mathcal{C}$, $\Sc(\Child_1)\cap\Sc(\Child_2)=\emptyset$ for any two
+  $\Child_1,\Child_2\in \Ch(\Prod)$.
 \end{definition}
 
 When a probabilistic circuit $\mathcal{C}$ is both \emph{smooth} and \emph{decomposable}, any
@@ -849,9 +850,9 @@ stated otherwise.}
     \begin{center}
       \begin{tikzpicture}
         \newSumNode[fill=boxgreen]{r}{0,0};
-        \newProdNode[fill=boxred]{p1}{$(r) + (-1.5,-1)$};
-        \newProdNode[fill=boxred]{p2}{$(r) + (0,-1)$};
-        \newProdNode[fill=boxred]{p3}{$(r) + (1.5,-1)$};
+        \newProdNode[fill=boxred!70]{p1}{$(r) + (-1.5,-1)$};
+        \newProdNode[fill=boxred!70]{p2}{$(r) + (0,-1)$};
+        \newProdNode[fill=boxred!70]{p3}{$(r) + (1.5,-1)$};
         \newGaussNode[fill=boxteal,label=below:{$A$}]{a}{$(p1) + (0,-1)$};
         \newGaussNode[fill=boxorange!80,label=below:{$B$}]{b}{$(p2) + (0,-1)$};
         \newGaussNode[fill=boxpink!50,label=below:{$C$}]{c}{$(p3) + (0,-1)$};
@@ -957,12 +958,12 @@ stated otherwise.}
   decision tree below it. Each node in the tree is a (hyper)plane partitioning data, with every
   edge determining which cell the observation falls into.
 
-  Equivalently, a smooth and nondecomposable PC whose sum nodes are followed by products which
+  Equivalently, a smooth but nondecomposable PC whose sum nodes are followed by products which
   determine which side of the hyperplane an assignment goes configures the same semantics as a DET
   decision node. Inputs in this PC act as the leaf nodes in the equivalent DET. The PC on the right
   translates the DET on top of it, with matching colors in the PC showing the equivalent leaves and
   decision nodes in the DET. Because products define disjoint restricted regions of the data space,
-  integration can be pushed to the leaves, making marginalization is tractable, highlighting the
+  integration can be pushed to the leaves, making marginalization tractable. This highlights the
   sufficiency but not necessity of smoothness and decomposability. An alternative smooth and
   decomposable formulation of DETs is given by \citet{correia20}.
   \tcblower
@@ -983,8 +984,8 @@ stated otherwise.}
     \node[inner sep=1pt,minimum size=12pt,circle,fill=boxpurple!60] (c) at ($(b) + (1,-1.5)$) {$\set{C}$};
     \node[draw,fill=boxpink!30] (l1) at ($(c) + (-1,-1.5)$) {$L_1$};
     \node[draw,fill=boxgoldenrod!40] (l2) at ($(c) + (1,-1.5)$) {$L_2$};
-    \draw (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}\in\set{A}^-$} ($(a) + (1,-1.5)$);
-    \draw (a) -- node[above left,pos=0.5] {$\set{x}\in\set{A}^+$} (b);
+    \draw (a) -- node[below,pos=1] {$\vdots$} node[above right,pos=0.5] {$\set{x}\in\set{A}^+$} ($(a) + (1,-1.5)$);
+    \draw (a) -- node[above left,pos=0.5] {$\set{x}\in\set{A}^-$} (b);
     \draw[edge,boxdgray] (a) edge[bend left=15] (b);
     \draw (b) -- node[below,pos=1] {$\vdots$} node[above left,pos=0.5] {$\set{x}\in\set{B}^-$} ($(b) + (-1,-1.5)$);
     \draw (b) -- node[above right,pos=0.5] {$\set{x}\in\set{B}^+$} (c);
@@ -996,8 +997,8 @@ stated otherwise.}
     \newSumNode[fill=boxblue!80,label=above left:{$\set{A}$}]{a}{$(a) + (-0.5,-6.0)$};
     \newProdNode[fill=boxblue!80]{al}{$(a) + (-0.5,-1)$};
     \newProdNode[fill=boxblue!80]{ar}{$(a) + (0.5,-1)$};
-    \newLeafNode[fill=boxblue!80,label=below:{$\left\liv\set{x}\in\set{A}^+\right\riv$}]{ai}{$(al) + (-1.0,-1)$};
-    \newLeafNode[fill=boxblue!80,label=below:{$\left\liv\set{x}\in\set{A}^-\right\riv$}]{nai}{$(ar) + (1.0,-1)$};
+    \newLeafNode[fill=boxblue!80,label=below:{$\left\liv\set{x}\in\set{A}^-\right\riv$}]{ai}{$(al) + (-1.0,-1)$};
+    \newLeafNode[fill=boxblue!80,label=below:{$\left\liv\set{x}\in\set{A}^+\right\riv$}]{nai}{$(ar) + (1.0,-1)$};
     \draw[edge] (a) -- (al); \draw[edge] (al) -- (ai);
     \draw[edge] (a) -- (ar); \draw[edge] (ar) -- (nai);
     \draw[edge] (ar) -- node[below,pos=1] {$\vdots$} ($(ar) + (0,-1)$);
@@ -1324,14 +1325,14 @@ naïve Bayes model as a probabilistic circuit.
   Suppose we have samples of per capita census measurements on three different features, say age
   $A$, body mass index $B$ and average amount of cheese consumed daily $C$ from three different
   cities $Y$.  Assuming $A$, $B$ and $C$ are independent, given a sample $x=(a,b,c)$ we can use
-  Gaussian naïve Bayes to predict $x$'s class
+  Gaussian naïve Bayes to predict $x$'s city
   \begin{equation}
     p(y|a,b,c)=p(y)p(a|y)p(b|y)p(c|y).
   \end{equation}
   In PC terms, $p(y)$ are the prior probabilities, i.e. sum weights, for each class and $p(z|y)$
   are Gaussian input nodes corresponding to the distributions of each feature in each city. To make
   sure that these are in fact conditional distributions, we introduce indicator variables
-  ``selecting'' $Y$'s state. Since the PC resulting is deterministic, we can compute the \map{} for
+  ``selecting'' $Y$'s state. Since the resulting PC is deterministic, we can compute the \map{} for
   classification in linear time by simply replacing the root node with a max, which is exactly
   equivalent to finding the highest value of $x$ for each city $y$.
   \tcblower
@@ -1417,7 +1418,7 @@ $\Sc(\vtree)$. We are especially interested in the scope partitioning aspect of 
   \Sc(\rch{v})$.
 \end{definition}
 
-Obviously, the above definition is vague with regards to which child (i.e.\ graphically, left or
+Obviously, the above definition is vague with regards to which child (e.g.\ graphically, left or
 right) of $\Prod$ should respect the scope of which $v$ child. We therefore assume a fixed order
 for $\Prod$'s children and say that \textbf{the (graphically) left child is called the \emph{prime}
 and (graphically) right child the \emph{sub}}, and refer to $\Prod$ as an \emph{element}. This
@@ -1549,7 +1550,7 @@ all of its product nodes have exactly two children. Further, we call the $i$-th 
 vtree as the set of all nodes that are at depth $i$ (i.e.\ the shortest connected path from the
 root to the node has size $i$).
 
-\begin{definition}[Structure decomposability]
+\begin{definition}[Structured decomposability]
   \label{def:sdec}%
   Let $\mathcal{C}$ be a 2-standard probabilistic circuit and $\vtree$ a vtree with same scope as
   $\mathcal{C}$. $\mathcal{C}$ is said to be \emph{structured decomposable} if every $i$-th product
@@ -1570,10 +1571,10 @@ $\mathcal{C}_1$ respects $\vtree$, as each \inode[fill=boxred!70]{\newProdNode} 
 at vtree node $1$ (namely $\{A,B\}$). The primes are then \inode[fill=boxpurple!60]{\newSumNode}
 whose scopes are $\{A,B\}$, while the sub is the one with two parents and scope $\{C,D\}$. For each
 of these, their children \inode[fill=boxbrown!60]{\newProdNode} also respect $\vtree$: they either
-encode he same split as $2$ or as $3$, depending on whether they are descendants from the sub or
+encode the same split as $2$ or as $3$, depending on whether they are descendants from the sub or
 prime of $1$. Although $\mathcal{C}_2$ is decomposable, it does \emph{not} respect $\vtree$, as
-\inode[fill=boxred!70]{\newProdNode} encode different variable partionings ($(\{A\},\{B,C,D\})$ and
-$(\{A,B,C\},\{D\}))$. In fact, it is not structured decomposable, as it does not respect any vtree.
+\inode[fill=boxred!70]{\newProdNode} encode different variable partionings: $(\{A\},\{B,C,D\})$ and
+$(\{A,B,C\},\{D\})$. In fact, it is not structured decomposable, as it does not respect any vtree.
 \Cref{eg:hmm} shows a Hidden Markov model as a smooth, deterministic and structured decomposable PC
 whose sums describe the latent variables and products partition observable variables according to
 the vtree.
@@ -1910,8 +1911,9 @@ smooth, structured decomposable and deterministic logic circuit as a BDD. Althou
 constraint is required for model verification in logic circuits, the same properties defined in the
 past section have come up in LCs to enable other more complex queries like equivalence,
 implication, sentential entailment and model counting, as well as transformations such as closed
-conditionings, forgetting, conjunctions and disjunctions \citep{darwiche02}. The succinctness (i.e.
-expressive efficiency) of LCs are also impacted by these structural restrictions
+conditionings, forgetting, and conjunctions and disjunctions of circuits such that some structural
+constraint is preserved during transformation \citep{darwiche02}. The succinctness (i.e. expressive
+efficiency) of LCs are also impacted by these structural restrictions
 \citep{gogic95,papadimitriou94,darwiche02}.  See \citet{darwiche02} and \citet{darwiche20} for more
 on logic circuits.
 

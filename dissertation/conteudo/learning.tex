@@ -214,7 +214,7 @@ component heuristic, and the equivalent product node from this decomposition.
 implementable, intuitive and modular it is. Even more remarkably, it is an empirically competitive
 PC learning algorithm despite its age, serving as a baseline for most subsequent works in PC
 literature. Lastly, the fact that each recursive call from \textproc{LearnSPN} is completely
-independent from each the other makes it an attractive candidate for CPU parallelization.
+independent from each other makes it an attractive candidate for CPU parallelization.
 
 \paragraph{Cons.} Debatably, one of the key weakness of \textproc{LearnSPN} is its tree-shaped
 computational graph, meaning that they are strictly less succint compared to non-tree DAG PCs
@@ -311,7 +311,7 @@ tractable distribution will do. Despite this seemingly small change compared to 
 counterpart most of the time \citep{rooshenas14,jaini18a}, although at a cost to learning speed.
 Further, because of the enormous parameter space brought by having to learn Markov networks as
 inputs \emph{and} perform the optimizations from sums and products, grid search hyperparameter
-tuning is infeasible. \citep{rooshenas14} recommend random search \citep{bergstra12a} as an
+tuning is infeasible. \citet{rooshenas14} recommend random search \citep{bergstra12a} as an
 alternative.
 
 \begin{algorithm}[t]
@@ -652,7 +652,7 @@ sampled variables instead, bringing down complexity to $\bigo(m\left(\log m\righ
 
 The analysis of sum nodes is exactly the same as \textproc{LearnSPN} if we assume the same
 clustering method. If \textproc{Prometheus} is implemented with the same multivariate distributions
-as \textproc{ID-SPN} at the input nodes, the analysis for those also holds.
+as \textproc{ID-SPN} at the input nodes, the analysis for those also hold.
 
 \subsubsection{Pros and Cons}
 
@@ -662,7 +662,7 @@ scalable alternative to partitionings that runs in sub-quadratic time; and (more
 fact that the algorithm produces non-tree shaped computational graphs. Further, since product nodes
 are learned through correlation metrics, \textproc{Prometheus} is easily adaptable to continuous
 data. To some extent, \textproc{Prometheus} also inherits the modularity of $\textproc{LearnSPN}$,
-as the choice of how to cluster and what input nodes to use is open to the the user.
+as the choice of how to cluster and what input nodes to use is open to the user.
 
 \paragraph{Cons.} Although the construction of the correlation graph in \textproc{Prometheus} is
 not done greedily (at least in the quadratic version), selecting the decompositions (i.e.\
@@ -685,8 +685,8 @@ the MST.
 
   As we have previously mentioned, one of the drawbacks of \textproc{LearnSPN} is the possibly
   large number of hyperparameters involved, usually dependent on the methods chosen for clustering
-  and independence testing. \citet{vergari15} suggests simplifying clustering to only binary row
-  splits, while \citet{liu19} proposes clustering methods that automatically decide the number of
+  and independence testing. \citet{vergari15} suggest simplifying clustering to only binary row
+  splits, while \citet{liu19} propose clustering methods that automatically decide the number of
   clusters from data. Together with \textproc{Prometheus}, the space of hyperparameters to tune is
   greatly reduced.
 
@@ -695,11 +695,11 @@ the MST.
   proposing two approximate sub-quadratic methods to producing variable splits: one by randomly
   sampling pairs of variables and running G-test, and the other by a linear time entropy criterion.
 
-  \citet{vergari15} proposes the use of Chow-Liu Trees as input nodes instead of univariate
+  \citet{vergari15} propose the use of Chow-Liu Trees as input nodes instead of univariate
   distributions, while \citet{molina17} recommend Poisson distributions for modeling negative
-  dependence. \citet{bueff18} combines \textproc{LearnSPN} with weighted model integration by
+  dependence. \citet{bueff18} combine \textproc{LearnSPN} with weighted model integration by
   learning polynomials as input nodes for continuous variables and counts for discrete data.
-  \citet{molina18} adapts \textproc{LearnSPN} to hybrid domains by employing the randomized
+  \citet{molina18} adapt \textproc{LearnSPN} to hybrid domains by employing the randomized
   dependence coefficient for both clustering and variable partitioning, with pairwise polynomial
   approximations for input nodes.
 
@@ -725,13 +725,13 @@ look at two examples of \incrclass{} class learning algorithms: \textproc{LearnP
 \subsection{\textproc{LearnPSDD}}
 \label{sec:learnpsdd}
 
-As the name suggests, \textproc{LearnPSDD} \citep{liang17} learns a smooth, structure decomposable
+As the name suggests, \textproc{LearnPSDD} \citep{liang17} learns a smooth, structured decomposable
 and deterministic probabilistic circuit (see \Cref{sec:touncertainty}), meaning its
 computational graph must respect a vtree. We therefore must address the issue of learning the vtree
 before we turn to the PC learning algorithm \emph{per se}.
 
 Recall that for a vtree $\vtree$, every inner node $v\in\vtree$ with $\set{X}=\Sc(v^\gets)$ and
-$\set{Y}=\Sc(v^\to)$ determines that $\set{X}$ and $\set{Y}$ are independent, i.e.\
+$\set{Y}=\Sc(v^\to)$ determines that $\set{X}$ and $\set{Y}$ are context independent, i.e.\
 $p_\mathcal{C}(\set{X},\set{Y})=p_\mathcal{C}(\set{X}) p_\mathcal{C}(\set{Y})$ for a PC
 $\mathcal{C}$. This means that a PC's vtree is pivotal in embedding the independencies of the
 circuit's distribution. With this in mind, \citet{liang17} propose two approaches to inducing
@@ -749,7 +749,7 @@ partitioning down to the unit set. The second learns bottom-up, starting with si
 joining sets of variables up to full scope.
 
 \paragraph{Top-down vtree learning.} Let $\mathcal{G}$ be a fully connected weighted graph where
-variables are nodes. For each edge $\edge{XY}$, attribute its weight as $\mutualinf(X,Y)$.
+variables are nodes. For each edge $\overline{XY}$, attribute its weight as $\mutualinf(X,Y)$.
 Learning the vtree top-down amounts to partitioning $\mathcal{G}$ such that the cut-set that
 divides the two partitions $\set{X}$ and $\set{Y}$ is minimal with respect to $\pairmi$.
 \citet{liang17} further argue that balanced vtrees produce smaller PCs, and so they reduce learning
@@ -1214,11 +1214,11 @@ last remaining deepest nodes similar to what was described for $\Child_1',\ldots
   \end{center}
   \caption{\textproc{Split} (left) and \textproc{Clone} (right) operations for growing a circuit
     when $m=1$. Nodes and edges highlighted in red show the modified structure. In both cases
-  smoothness, (structure) decomposability and determinism are evidently preserved.}
+  smoothness, (structured) decomposability and determinism are evidently preserved.}
   \label{fig:splitclone}
 \end{figure}
 
-It is easy to see that, in both cases, smoothness, structure decomposability and determinism are
+It is easy to see that, in both cases, smoothness, structured decomposability and determinism are
 preserved. In fact, if the original circuit encodes a particular support (i.e.\ a knowledge base),
 the PC resulting from applying any of the two transformations must also encode the same support,
 since we have only made the underlying logic circuit more redundant. Probabilistically though, this
@@ -1270,7 +1270,7 @@ $\score$. Each iteration further increases $|\mathcal{C}|$, slowing down the alg
   \caption{\textproc{LearnPSDD}}\label{alg:learnpsdd}
   \begin{algorithmic}[1]
     \Require Data $\set{D}$, vtree $\vtree$, initial PC $\mathcal{C}$, max depth $m$, scope $\set{X}$
-    \Ensure A smooth, structure decomposable and deterministic PC learned from $\set{D}$
+    \Ensure A smooth, structured decomposable and deterministic PC learned from $\set{D}$
     \While{there is score improvement or has not reached the iteration/time limit}
       \State $s_{\Sum}\gets -\infty$
       \State Let $(\Sum^\ast,\Prod^\ast)$ be the best \textproc{Split} candidate seen so far, initially empty
@@ -1295,7 +1295,7 @@ $\score$. Each iteration further increases $|\mathcal{C}|$, slowing down the alg
 
 \subsubsection{Pros and Cons}
 
-\paragraph{Pros.} The fact that \textproc{LearnPSDD} preserves smoothness, structural
+\paragraph{Pros.} The fact that \textproc{LearnPSDD} preserves smoothness, structured
 decomposability, determinism \emph{and} any logical semantic coming from its underlying LC is
 remarkable. On top of that, in theory and under minor modifications to \textproc{Split} and
 \textproc{Clone}, any PC is eligible as an initial circuit, even ones which do not respect any
@@ -1307,9 +1307,9 @@ attributes non-zero probability only to events where the LC does not return fals
 wastes no mass on impossible events.
 
 \paragraph{Cons.} In practice, \textproc{LearnPSDD} is very slow even with caching; even worse, it
-may take several hours for only a minor (if any) improvement. \citep{liang17} suggests improving
+may take several hours for only a minor (if any) improvement. \citet{liang17} suggest improving
 performance by producing ensembles of \textproc{LearnPSDD}s, although this negates determinism in
-the final model (as well as structure decomposability if different vtrees are used at each
+the final model (as well as structured decomposability if different vtrees are used at each
 component), denying the access to tractably computing queries like divergences, $\mutualinf{}$ and
 entropies, not to mention the time cost to learn all components. Another issue is with the choice
 of the initial circuit. As previously mentioned, any circuit will do, however the performance (and
@@ -1331,7 +1331,7 @@ mainly improves \textproc{LearnPSDD} on two fronts: (1) by providing a simple al
 generating an initial circuit and vtree from data, and (2) proposing a heuristic for efficiently
 searching for good transformation candidates.
 
-We first address how to construct the initial circuit from data. \citeauthor{dang20} suggests doing
+We first address how to construct the initial circuit from data. \citeauthor{dang20} suggest doing
 so by compiling both a vtree and linear sized PC (in the number of variables) from a Chow-Liu Tree
 (CLT, \cite{chow68}). Let $\mathcal{T}$ be a CLT over variables $\set{X}=\{X_1,\ldots,X_m\}$. A vtree
 $\vtree$ is extracted from $\mathcal{T}$ by traversing $\mathcal{T}$ top-down. For each node
@@ -1470,7 +1470,7 @@ shown on the right of \Cref{fig:strudel} show this exact case. The left sum node
 and the right one $p(B|C=0)$. These circuits are then cached by associating them with $v$. When $Y$
 is not a leaf node in $\mathcal{T}$ but $v$ is, we simply return literal nodes. If $v$ is an inner
 node, we must define a scope partition, splitting $\set{X}=\Sc(v^\gets)$ and
-$\set{Y}=\Sc(v^\to)$ into product nodes $\Prod_1,\ldots,\Prod_k$, one for each value cached value
+$\set{Y}=\Sc(v^\to)$ into product nodes $\Prod_1,\ldots,\Prod_k$, one for each cached value
 in $v$. Each prime is set to the cached circuits from $v^\gets$ and each sub the cached circuits
 from $v^\to$. Finally, if two variables $X\in\set{X}$ and $Y\in\set{Y}$ are such that their parents
 are the same variable, say $Z$, then $X$ and $Y$ are independent when $Z$ is given (because of a
@@ -1480,7 +1480,7 @@ of the context-specific independence set by $Z$ \citep{boutilier96}. This is vis
 from $C$, and so $A\indep B\,|\,C$ (redundant sum nodes are added for standardization).
 When the prior situation is not true, then not only $X$ is the only variable in $\set{X}$, but $X$
 must also be the parent of $Y$ and so we must model $p(\set{Y}|X)$. This is the case for
-\inode[fill=boxblue!50]{\newProdNode}, where $C$ is the parent of $B$ and so we have to be join the
+\inode[fill=boxblue!50]{\newProdNode}, where $C$ is the parent of $B$ and so we have to join the
 two by sum nodes attributing the conditional probabilities $p(A,B|C=0)$ for the right-most
 \inode[fill=boxblue!50]{\newProdNode} and $p(A,B|C=1)$ for the left-most sibling. This procedure is
 shown more formally in \Cref{alg:strudelinit}.
@@ -1489,7 +1489,7 @@ shown more formally in \Cref{alg:strudelinit}.
   \caption{\textproc{InitialStrudel}}\label{alg:strudelinit}
   \begin{algorithmic}[1]
     \Require Data $\set{D}$, whose columns are indexed by variables $\set{X}$
-    \Ensure A smooth, structure decomposable and deterministic initial PC and vtree
+    \Ensure A smooth, structured decomposable and deterministic initial PC and vtree
     \State $\mathcal{T}\gets\textproc{LearnCLT}(\set{D},\set{X})$
     \State $\vtree\gets\textproc{CompileVtree}(\mathcal{T})$
     \State Let $\mathcal{M}$ be a hash table for caching circuits, initially empty
@@ -1552,8 +1552,8 @@ log-space is reduced to a vector multiplication
 
 Importantly, by aggregating circuit flows through counting the number of activations of each
 parameter $w_{\Sum,\Child}$ in the entire training dataset $\set{D}$, we get a sense of the number
-of samples $w_{\Sum,\Child}$ impacts over $\set{D}$, and thus a sense of how meaningful is that
-edge on the fitness of data. As we shall see briefly, this aggregated circuit flow shall then be
+of samples $w_{\Sum,\Child}$ impacts over $\set{D}$, and thus a sense of how meaningful that
+edge is on the fitness of data. As we shall see briefly, this aggregated circuit flow shall then be
 used as a score for a greedy search over the space of candidates for local transformations.
 
 To overcome the scalability limitations of \textproc{LearnPSDD}, \textproc{Strudel} proposes using
@@ -1577,7 +1577,7 @@ The entire algorithm for \textproc{Strudel} is showcased in \Cref{alg:strudel}.
   \caption{\textproc{Strudel}}\label{alg:strudel}
   \begin{algorithmic}[1]
     \Require Data $\set{D}$, max depth $m$, scope $\set{X}$
-    \Ensure A smooth, structure decomposable and deterministic PC learned from $\set{D}$
+    \Ensure A smooth, structured decomposable and deterministic PC learned from $\set{D}$
     \State $\mathcal{C},\vtree\gets\textproc{InitialStrudel}(\set{D},\set{X})$
     \While{there is score improvement of has not reached the iteration/time limit}
       \State Compute the aggregate flow over all edges
@@ -1609,7 +1609,7 @@ on \textproc{LearnPSDD}'s scalability. Compared to \textproc{LearnPSDD}, \textpr
 take orders of magnitude less time per iteration, which in practice means a higher number of
 transformations accomplished in the same range of time. In addition, the nature of circuit flows
 allows for easy vectorization and thus CPU or GPU parallelization. In terms of data fitness,
-\citet{dang20} empirically shows that initial circuits constructed from \textproc{StrudelInitial}
+\citet{dang20} empirically show that initial circuits constructed from \textproc{StrudelInitial}
 greatly improve performance compared to fully factorized initial PCs from \textproc{LearnPSDD}.
 Similar to \textproc{LearnPSDD}, one can learn an ensemble of \textproc{Strudel}s to further boost
 performance at the cost of losing determinism. Opposite to \textproc{LearnPSDD} however,
@@ -1638,7 +1638,7 @@ sized datasets; though \textproc{LearnPSDD} much sharper and sooner comparativel
   Just like in probabilistic reasoning, the field of knowledge compilation and symbolic reasoning
   is often interested in finding succinct representations capable of tractably computing queries, a
   subject which we briefly touched in \Cref{sec:fromcertainty}. For this reason, smooth,
-  structure decomposable and deterministic logic circuits, who usually go by the name of Sentential
+  structured decomposable and deterministic logic circuits, who usually go by the name of Sentential
   Decision Diagrams (SDDs, \cite{darwiche11}) have proven to be a useful tool in several
   applications \citep{vlasselaer14,vlasselaer15,lomuscio15,herrmann13}. Fortunately, both
   \textproc{LearnPSDD} and \textproc{Strudel} preserve all the necessary structural constraints for
@@ -1660,14 +1660,14 @@ sized datasets; though \textproc{LearnPSDD} much sharper and sooner comparativel
   \citep{bryant86} are natural initial circuit candidates (see \Cref{sec:samplepsdd}).
 
   We now cover some of the existing literature on producing task specific (P)SDDs. \citet{choi16}
-  analyzes the feasibility of compiling LCs (and subsequently producing a PC by parameterizing
+  analyze the feasibility of compiling LCs (and subsequently producing a PC by parameterizing
   disjunction edges) from tic-tac-toe game traces, and route planning within a city. Both involve
   exhaustively disjoining all permutations of valid conjoined configurations and compiling the
-  resulting DNF through previously cited SDD compilers. \citet{choi17} further studies route
+  resulting DNF through previously cited SDD compilers. \citet{choi17} further study route
   planning by compiling them into SDDs, but analyze the feasibility of (P)SDDs in route planning in
   larger scale maps. \citet{choi15} explore (P)SDDs in preference learning and rankings, providing
   an algorithm for compiling an SDD from total or partial rankings. Similarly, \citet{shen17}
-  investigates (P)SDDs in probabilistic cardinality constraint tasks, also known as subset
+  investigate (P)SDDs in probabilistic cardinality constraint tasks, also known as subset
   selection or $n$-choose-$k$ models.
 \end{remark}
 
@@ -1680,13 +1680,13 @@ either by a completely random procedure (\Cref{sec:ratspn}), or guided by data (
 We first look at \textproc{RAT-SPN} \citep{peharz20a}, a connectionist PC structure learning
 algorithm for randomly generating tensorized smooth and decomposable probabilistic circuits. We
 then address \textproc{XPC} \citep{dimauro21}, a flexible algorithm capable of learning smooth and
-decomposable PCs as well as structure decomposable and/or deterministic circuits through simple
+decomposable PCs as well as structured decomposable and/or deterministic circuits through simple
 modifications to their method.
 
 \subsection{\textproc{RAT-SPN}}
 \label{sec:ratspn}
 
-A key ingredient to \textproc{RAT-SPN} \citep{peharz20a} is the concept of \emph{region graphs}.
+A key ingredient of \textproc{RAT-SPN} \citep{peharz20a} is the concept of \emph{region graphs}.
 First introduced in PC literature in \citet{dennis12}, region graphs are tensorized templates for
 PC construction. Informally, a region graph is composed out of \emph{region nodes} and
 \emph{partition nodes}; the former is a set of sum or input nodes, and the latter of products.
@@ -1792,7 +1792,7 @@ Function \textproc{CreateLayer} in \Cref{alg:ratspn} does exactly that, making s
 decomposes into two distinct variable splits down to leaf region nodes. How deep the region graph
 (and consequentially the resulting PC) goes depends on a parameter $d$, which corresponds to half
 the true depth, as each \textproc{CreateLayer} call produces a partition and their children. After
-the region graph is randomly buily, a PC is then constructed through \textproc{CompileRegionGraph},
+the region graph is randomly built, a PC is then constructed through \textproc{CompileRegionGraph},
 passing the random region graph and number of nodes per region as parameters. The function
 ultimately produces a dense probabilistic circuit from the region graph blueprint, as
 \Cref{fig:ratspn} exemplifies.
@@ -2242,7 +2242,7 @@ partitions are replaced with product nodes.
 \end{figure}
 
 Determinism is not the only constraint that can be enforced. In fact, since every product is by
-construction 2-standardized, the circuit is structure decomposable if not only the scopes of
+construction 2-standardized, the circuit is structured decomposable if not only the scopes of
 $\mathcal{Q}$ regions follow a vtree, but the CLTs in $\mathcal{S}$ regions do as well. This forces
 the sampling done in line \ref{alg:xpcs-expand:line:sample} to instead deterministically assign
 $\set{Y}$ the scope of $\Sc(v^\gets)$, where $v$ is the vtree node associated with the product
@@ -2338,7 +2338,7 @@ shrink considerably at each depth.
 \subsubsection{Pros and Cons}
 
 \paragraph{Pros.} \textproc{XPC} is flexible in the sense that it can produce both deterministic
-and structure decomposable circuits with little change to the algorithm. More importantly, because
+and structured decomposable circuits with little change to the algorithm. More importantly, because
 it essentially divides data in a \divclass{} approach, the most costly operation, i.e.\ learning
 CLTs at the leaves, is done extremely fast, since the optimization is done only on a fraction of
 the data and scope. As an example, learning \textproc{XPC}s from binary datasets of hundreds of
@@ -2349,28 +2349,30 @@ merely aggregating sampled circuits into a simple mixture boosts performance con
 competitive results.
 
 \paragraph{Cons.} When it comes to circuit size, although a single \textproc{XPC} generated circuit
-has comparable size to other state-of-the-art structure learning competitors, for these to be
-competitive requires ensembles of a few dozens of components, meaning that in its final form, these
-can be tens of times the size of other structure learners. Moreover, because of the number of
+has comparable size to other state-of-the-art structure learning competitors, only when a few
+dozens of these single circuits are ensembled together into a mixture do they become competitive
+against state-of-the-art, meaning that in their final form, they can be tens of times the size of
+PCs generated from other structure learning algorithms. Moreover, because of the number of
 parameters involved in sampling these PCs ($\delta$, $k$, $t$, number of components per ensemble,
-and whether to produce deterministic and/or structure decomposable PCs), a grid-search over
+and whether to produce deterministic and/or structured decomposable PCs), a grid-search over
 parameters is necessary to produce optimal results. Although this is generally faster than other
 structure learning algorithms, the sheer size of all generated circuits from every hyperparameter
 combination can easily overwhelm memory space.
 
 \section{A Summary}
+\label{sec:summary}
 
 We finish this review of structure learning algorithms in probabilistic circuits by summarizing
-some of the more important points raised throughout this chapter in \Cref{tab:learning}. We list
-each algorithm seen in \Cref{ch:learning}, describing their class, time complexity of learning the
-probabilistic circuit and any other auxiliary data structure, number of hyperparameters needed
-during learning, whether they accept any kind of expert knowledge in the form of logical
-constraints, which structural constraints are guaranteed to hold in the resulting PCs, and
-which data (binary $\{0,1\}$, discrete $\mathbb{N}$ or continuous $\mathbb{R}$) are supported. We
-use the same notation used throughout this section for data dimensions: $n$ is the number of
-examples in a dataset and $m$ is the number of variables of dataset. Other variable names differ in
-their meaning depending on each learning technique. We next describe some of the assumptions made
-in order to more concisely summarize the information set in \Cref{tab:learning}.
+some of the more important points raised throughout this chapter. We list each algorithm seen in
+\Cref{ch:learning}, describing their class, time complexity of learning the probabilistic circuit
+and any other auxiliary data structure, number of hyperparameters needed during learning, whether
+they accept any kind of expert knowledge in the form of logical constraints, which structural
+constraints are guaranteed to hold in the resulting PCs, and which data (binary $\{0,1\}$, discrete
+$\mathbb{N}$ or continuous $\mathbb{R}$) are supported. We use the same notation used throughout
+this section for data dimensions: $n$ is the number of examples in a dataset and $m$ is the number
+of variables of dataset. Other variable names differ in their meaning depending on each learning
+technique. We next describe some of the assumptions made in order to more concisely summarize the
+information set in \Cref{tab:learning}.
 
 For \textproc{LearnSPN}, we assume sums to be learned by $c$ iterations of $k$-means and products
 through the G-test. We call $k$ the number of clusters to be learned, and only assume the bare
