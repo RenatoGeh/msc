@@ -404,7 +404,7 @@ probabilities provide an upper bound independent of the actual probabilities.
     \State Sample an ordering $X_1,\ldots,X_m$ of $\Sc(v^\gets)\cap\Sc(\phi)$
     \State Let $\set{Q}$ be a queue initially containing $(\phi,1,\{\})$
     \State $j\gets 1$\Comment{Counter of sampled elements}
-    \While{$|\set{E}<k|$}\label{alg:samplepartial:line:while}
+    \While{$|\set{E}|<k$}\label{alg:samplepartial:line:while}
       \State Pop top item $(\psi,i,p)$ from $\set{Q}$
       \If{$j\geq k$ \textbf{or} $i>m$ \textbf{or} $\psi\equiv\top$}
         \State Add $(p,\Forget(\phi|_p,\Sc(v^\gets)))$ to $\set{E}$
