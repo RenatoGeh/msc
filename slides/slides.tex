@@ -145,6 +145,7 @@
 \newcommand{\newNamedOrNode}[4][]{\node[#1,or gate,fill=blue!50!green!30,inner sep=0pt,scale=0.75,minimum size=12pt,thick,point up,#1] (#2) at (#3) {\rotatebox{-90}{#4}}}
 \newcommand{\newAndNode}[3][]{\node[#1,and gate,fill=blue!50!red!30,thick,inner sep=0pt,scale=0.75,minimum size=12pt,point up,#1] (#2) at (#3) {}}
 \newcommand{\newOrNode}[3][]{\node[#1,or gate,fill=blue!50!green!30,thick,inner sep=0pt,scale=0.75,minimum size=12pt,point up,#1] (#2) at (#3) {}}
+\newcommand{\newLitNode}[4][]{\node[#1,minimum size=17pt,label=center:{#4}] (#2) at (#3) {}}
 \tikzset{circuit logic US}
 
 \newcommand{\newSumNode}[3][]{\node[circle,draw,inner sep=0pt,minimum size=12pt,thick,fill=blue!50!green!30,#1] (#2) at (#3) {$\bm{+}$}}
@@ -307,7 +308,7 @@ in
 
 % Slide: PC - Inputs
 
-\newtitle{Probabilistic Circuits}
+\newtitle{Probabilistic Circuits -- Inputs}
 \vspace*{0.5cm}
 
 \begin{center}
@@ -369,7 +370,7 @@ in
 
 \newpage
 
-\newtitle{Probabilistic Circuits}
+\newtitle{Probabilistic Circuits -- Sums}
 \vspace*{0.5cm}
 
 \begin{center}
@@ -473,7 +474,7 @@ in
 
 \newpage
 
-\newtitle{Probabilistic Circuits}
+\newtitle{Probabilistic Circuits -- Smoothness}
 \vspace*{0.5cm}
 
 \begin{center}
@@ -583,7 +584,7 @@ in
 
 \newpage
 
-\newtitle{Probabilistic Circuits}
+\newtitle{Probabilistic Circuits -- Determinism}
 \vspace*{0.5cm}
 
 \begin{center}
@@ -694,7 +695,7 @@ in
 
 \newpage
 
-\newtitle{Probabilistic Circuits}
+\newtitle{Probabilistic Circuits -- Products}
 \vspace*{0.25cm}
 
 \begin{center}
@@ -884,7 +885,7 @@ in
 
 \newpage
 
-\newtitle{Probabilistic Circuits}
+\newtitle{Probabilistic Circuits -- Decomposability}
 \vspace*{0.25cm}
 
 \begin{center}
@@ -1043,35 +1044,199 @@ in
 \end{minipage}
 \end{center}
 
-\newpage
-
-%\newtitle{Double}
-%\vspace*{0.5cm}
-
-%\begin{center}
-%\begin{minipage}[t][0.8\textheight][t]{0.45\textwidth}
-  %\begin{vhcenterb}
-    %\begin{tikzpicture}
-      %\newSumNode[fill=boxgreen,
-    %\end{tikzpicture}
-  %\end{vhcenterb}
-%\end{minipage}
-%\begin{minipage}[t][0.8\textheight][t]{0.45\textwidth}
-  %\begin{vhcenterb}
-  %\end{vhcenterb}
-%\end{minipage}
-%\end{center}
-
-% Slide: PC - Structure Decomposability
+% Slide: PC - Structured Decomposability
 
 \newpage
 
-\newtitle{Double}
+\newtitle{Probabilistic Circuits -- Structured Decomposability}
+\vspace*{1cm}
+
+\begin{center}
+  \resizebox{!}{0.65\textheight}{
+  \centering
+  \begin{tikzpicture}
+    \newSumNode[fill=boxgreen]{r}{0,0};
+    \newProdNode[fill=boxred!70]{p1}{$(r) + (-0.5,-1)$};
+    \newProdNode[fill=boxred!70]{p2}{$(r) + (0.5,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxteal}{\color{white}$X$}},fill=boxteal]{x1}{$(p1) + (-1.5,0.5)$};
+    \newGaussNode[label=below:{\colorbox{boxpink!70}{\color{white}$Z$}},fill=boxpink!70]{z1}{$(p2) + (1.5,0.5)$};
+    \newSumNode[label=left:{\colorbox{boxpurple!70}{\color{white}$\{Y,Z\}$}},fill=boxpurple!70]{s1}{$(p1) + (0,-1)$};
+    \newSumNode[label=right:{\colorbox{boxpurple!70}{\color{white}$\{X,Y\}$}},fill=boxpurple!70]{s2}{$(p2) + (0,-1)$};
+    \newProdNode[fill=boxorange]{q1}{$(s1) + (-1,-1)$};
+    \newProdNode[fill=boxorange]{q2}{$(s1) + (0,-1)$};
+    \newProdNode[fill=boxorange]{q3}{$(s2) + (0,-1)$};
+    \newProdNode[fill=boxorange]{q4}{$(s2) + (1,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxgoldenrod}{\color{white}$Y$}},fill=boxgoldenrod]{y1}{$(q1) + (-0.5,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxpink!70}{\color{white}$Z$}},fill=boxpink!70]{z2}{$(q2) + (-0.5,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxgoldenrod}{\color{white}$Y$}},fill=boxgoldenrod]{y2}{$(q3) + (-0.5,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxteal}{\color{white}$X$}},fill=boxteal]{x2}{$(q4) + (-0.5,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxgoldenrod}{\color{white}$Y$}},fill=boxgoldenrod]{y3}{$(q4) + (0.5,-1)$};
+    \draw[edge] (r) -- (p1);
+    \draw[edge] (r) -- (p2);
+    \draw[edge] (p1) -- (x1);
+    \draw[edge] (p1) -- (s1);
+    \draw[edge] (p2) -- (z1);
+    \draw[edge] (p2) -- (s2);
+    \draw[edge] (s1) -- (q1);
+    \draw[edge] (s1) -- (q2);
+    \draw[edge] (s2) -- (q3);
+    \draw[edge] (s2) -- (q4);
+    \draw[edge] (q1) -- (y1);
+    \draw[edge] (q2) -- (z2);
+    \draw[edge] (q3) -- (y2);
+    \draw[edge] (q4) -- (y3);
+    \draw[edge] (q1) -- (z2);
+    \draw[edge] (q2) -- (y2);
+    \draw[edge] (q3) -- (x2);
+    \draw[edge] (q4) -- (x2);
+
+    \newVtreeNode[label={[xshift=-0.35cm]above right:{\colorbox{boxred!70}{\color{white}$(X,\{Y,Z\})$}}},fill=boxred!70]{r}{3.85,-1.5}{1};
+    \newVtreeNode[label={[xshift=-0.35cm]above right:{\colorbox{boxorange}{\color{white}$(Y,Z)$}}},fill=boxorange]{c}{$(r) + (0.5,-1)$}{2};
+    \newVtreeNode[fill=boxteal]{x}{$(r) + (-0.5,-1)$}{$X$};
+    \newVtreeNode[fill=boxgoldenrod]{y}{$(c) + (-0.5,-1)$}{$Y$};
+    \newVtreeNode[fill=boxpink!70]{z}{$(c) + (0.5,-1)$}{$Z$};
+    \node at ($(c) + (-0.25,-1.75)$) {vtree};
+    \draw (r) -- (c) -- (y); \draw (c) -- (z); \draw (r) -- (x);
+
+    \newSumNode[fill=boxgreen]{r}{9,0};
+    \newProdNode[fill=boxred!70]{p1}{$(r) + (-0.5,-1)$};
+    \newProdNode[fill=boxred!70]{p2}{$(r) + (0.5,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxteal}{\color{white}$X$}},fill=boxteal]{x1}{$(p1) + (-1.5,0.5)$};
+    \newGaussNode[label=below:{\colorbox{boxteal}{\color{white}$X$}},fill=boxteal]{z1}{$(p2) + (1.5,0.5)$};
+    \newSumNode[label=left:{\colorbox{boxpurple!70}{\color{white}$\{Y,Z\}$}},fill=boxpurple!70]{s1}{$(p1) + (0,-1)$};
+    \newSumNode[label=right:{\colorbox{boxpurple!70}{\color{white}$\{Y,Z\}$}},fill=boxpurple!70]{s2}{$(p2) + (0,-1)$};
+    \newProdNode[fill=boxorange]{q1}{$(s1) + (-1,-1)$};
+    \newProdNode[fill=boxorange]{q2}{$(s1) + (0,-1)$};
+    \newProdNode[fill=boxorange]{q3}{$(s2) + (0,-1)$};
+    \newProdNode[fill=boxorange]{q4}{$(s2) + (1,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxgoldenrod}{\color{white}$Y$}},fill=boxgoldenrod]{y1}{$(q1) + (-0.5,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxpink!70}{\color{white}$Z$}},fill=boxpink!70]{z2}{$(q2) + (-0.5,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxgoldenrod}{\color{white}$Y$}},fill=boxgoldenrod]{y2}{$(q3) + (-0.5,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxpink!70}{\color{white}$Z$}},fill=boxpink!70]{x2}{$(q4) + (-0.5,-1)$};
+    \newGaussNode[label=below:{\colorbox{boxgoldenrod}{\color{white}$Y$}},fill=boxgoldenrod]{y3}{$(q4) + (0.5,-1)$};
+    \draw[edge] (r) -- (p1);
+    \draw[edge] (r) -- (p2);
+    \draw[edge] (p1) -- (x1);
+    \draw[edge] (p1) -- (s1);
+    \draw[edge] (p2) -- (z1);
+    \draw[edge] (p2) -- (s2);
+    \draw[edge] (s1) -- (q1);
+    \draw[edge] (s1) -- (q2);
+    \draw[edge] (s2) -- (q3);
+    \draw[edge] (s2) -- (q4);
+    \draw[edge] (q1) -- (y1);
+    \draw[edge] (q2) -- (z2);
+    \draw[edge] (q3) -- (y2);
+    \draw[edge] (q4) -- (y3);
+    \draw[edge] (q1) -- (z2);
+    \draw[edge] (q2) -- (y2);
+    \draw[edge] (q3) -- (x2);
+    \draw[edge] (q4) -- (x2);
+  \end{tikzpicture}
+  }
+  \vskip 1cm
+  \resizebox{\textwidth}{!}{\begin{minipage}{0.675\textwidth}
+    \begin{definition}[Structured decomposability]
+      \centering
+      Every product node follows a vtree decomposition.
+    \end{definition}
+  \end{minipage}}
+\end{center}
+
+% Slide: PC - Logic Circuits
+
+\newpage
+
+\newtitle{Probabilistic Circuits -- Logic Circuits}
 \vspace*{0.5cm}
 
 \begin{center}
 \begin{minipage}[t][0.8\textheight][t]{0.45\textwidth}
   \begin{vhcenterb}
+    \resizebox{!}{0.2\textheight}{
+    \begin{tabular}{ccc|c}
+      \hline
+      $A$ & $B$ & $C$ & $\phi(\set{x})$\\
+      \hline
+      0 & 0 & 0 & 1 \\
+      1 & 0 & 0 & 1 \\
+      0 & 1 & 0 & 0 \\
+      1 & 1 & 0 & 0 \\
+      0 & 0 & 1 & 1 \\
+      1 & 0 & 1 & 1 \\
+      0 & 1 & 1 & 0 \\
+      1 & 1 & 1 & 1 \\
+      \hline
+    \end{tabular}
+    }
+
+    \vskip 0.25cm
+    \resizebox{0.8\textwidth}{!}{
+    \begin{tikzpicture}
+      \node at (0,0) {$\phi(A,B,C)=(A\vee B)\wedge(\neg B\vee C)$};
+      \newVtreeNode[fill=boxred!70]{vr}{0,-0.75}{1};
+      \newVtreeNode[fill=boxblue!80]{vc}{$(vr) + (0.5,-1)$}{2};
+      \newVtreeNode[fill=boxpink!50]{a}{$(vr) + (-0.5,-1)$}{$A$};
+      \newVtreeNode[fill=boxgoldenrod!60]{b}{$(vc) + (-0.5,-1)$}{$B$};
+      \newVtreeNode[fill=boxpurple!50]{c}{$(vc) + (0.5,-1)$}{$C$};
+      \draw (vr) -- (vc) -- (b); \draw (vr) -- (a);
+      \draw (vc) -- (c);
+    \end{tikzpicture}
+    }
+  \end{vhcenterb}
+\end{minipage}
+\begin{minipage}[t][0.8\textheight][t]{0.45\textwidth}
+  \begin{vhcenterb}
+    \resizebox{0.7\textwidth}{!}{
+    \begin{tikzpicture}
+      \newOrNode[inputs=nn,fill=boxgreen]{r}{0,0};
+      \newAndNode[inputs=nn,fill=boxred!70]{p1}{$(r) + (-1,-1)$};
+      \newAndNode[inputs=nn,fill=boxred!70]{p2}{$(r) + (1.5,-1)$};
+      \newLitNode[fill=boxpink!50]{a}{$(p1) + (-0.5,-1)$}{$A$};
+      \newOrNode[inputs=nn,fill=boxpurple!60]{s1}{$(p1) + (0.5,-1.45)$};
+      \newLitNode[fill=boxpink!50]{na}{$(p2) + (0.5,-1)$}{$\neg A$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q1}{$(s1) + (-0.75,-1)$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q2}{$(s1) + (0.75,-1)$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q3}{$(p2.input 1) + (0,-2.2)$};
+      \newLitNode[fill=boxgoldenrod!60]{b}{$(q1) + (-0.5,-1)$}{$B$};
+      \newLitNode[fill=boxpurple!50]{c1}{$(q1) + (0.5,-1)$}{$C$};
+      \newOrNode[inputs=nn,fill=boxorange!80]{z1}{$(q2.input 1) + (0,-1.2)$};
+      \newLitNode[fill=boxgoldenrod!60]{nb}{$(q3.input 2) + (0,-1.2)$}{$\neg B$};
+      \newLitNode[fill=boxpurple!50]{c}{$(z1) + (-0.5,-1)$}{$C$};
+      \newLitNode[fill=boxpurple!50]{nc}{$(z1) + (0.5,-1)$}{$\neg C$};
+      \draw[edge] (r.input 1) -- ++(0,-0.2) -| (p1);
+      \draw[edge] (r.input 2) -- ++(0,-0.2) -|  (p2);
+      \draw[edge] (s1.input 1) -- ++(0,-0.2) -| (q1);
+      \draw[edge] (s1.input 2) -- ++(0,-0.2) -| (q2);
+      \draw[edge] (p1.input 1) -- ++(0,-0.2) -| (a.north);
+      \draw[edge] (p1.input 2) -- ++(0,-0.2) -| (s1);
+      \draw[edge] (p2.input 1) -- (q3);
+      \draw[edge] (p2.input 2) -- ++(0,-0.2) -| (na.north);
+      \draw[edge] (q1.input 1) -- ++(0,-0.2) -| (b.north);
+      \draw[edge] (q1.input 2) -- ++(0,-0.2) -| (c1.north);
+      \draw[edge] (q2.input 1) -- (z1.east);
+      \draw[edge] (q2.input 2) -- (nb.north);
+      \draw[edge] (q3.input 1) -- (z1.east);
+      \draw[edge] (q3.input 2) -- (nb.north);
+      \draw[edge] (z1.input 1) -- ++(0,-0.2) -| (c);
+      \draw[edge] (z1.input 2) -- ++(0,-0.2) -| (nc);
+    \end{tikzpicture}
+    }
+  \end{vhcenterb}
+\end{minipage}
+\end{center}
+
+% Slide: PC - Support
+
+\newpage
+
+\newtitle{Probabilistic Circuits -- Support}
+\vspace*{0.5cm}
+
+\begin{center}
+\begin{minipage}[t][0.8\textheight][t]{0.45\textwidth}
+  \begin{vhcenterb}
+    \resizebox{!}{0.2\textheight}{
     \begin{tabular}{ccc|cc}
       \hline
       $A$ & $B$ & $C$ & $\phi(\set{x})$ & $p(\set{x})$\\
@@ -1086,36 +1251,52 @@ in
       1 & 1 & 1 & 1 & 0.180\\
       \hline
     \end{tabular}
+    }
+
+    \vskip 0.25cm
+    \resizebox{0.8\textwidth}{!}{
+    \begin{tikzpicture}
+      \node at (0,0) {$\phi(A,B,C)=(A\vee B)\wedge(\neg B\vee C)$};
+      \newVtreeNode[fill=boxred!70]{vr}{0,-0.75}{1};
+      \newVtreeNode[fill=boxblue!80]{vc}{$(vr) + (0.5,-1)$}{2};
+      \newVtreeNode[fill=boxpink!50]{a}{$(vr) + (-0.5,-1)$}{$A$};
+      \newVtreeNode[fill=boxgoldenrod!60]{b}{$(vc) + (-0.5,-1)$}{$B$};
+      \newVtreeNode[fill=boxpurple!50]{c}{$(vc) + (0.5,-1)$}{$C$};
+      \draw (vr) -- (vc) -- (b); \draw (vr) -- (a);
+      \draw (vc) -- (c);
+    \end{tikzpicture}
+    }
   \end{vhcenterb}
 \end{minipage}
 \begin{minipage}[t][0.8\textheight][t]{0.45\textwidth}
   \begin{vhcenterb}
+    \resizebox{0.7\textwidth}{!}{
     \begin{tikzpicture}
       \newOrNode[inputs=nn,fill=boxgreen]{r}{0,0};
       \newAndNode[inputs=nn,fill=boxred!70]{p1}{$(r) + (-1,-1)$};
       \newAndNode[inputs=nn,fill=boxred!70]{p2}{$(r) + (1.5,-1)$};
-      \node (a) at ($(p1) + (-0.5,-1)$) {$A$};
-      \newOrNode[inputs=nn,fill=boxpurple!60]{s1}{$(p1) + (0.5,-1.25)$};
-      \node (na) at ($(p2) + (0.5,-1)$) {$\neg A$};
+      \newLitNode[fill=boxpink!50]{a}{$(p1) + (-0.5,-1)$}{$A$};
+      \newOrNode[inputs=nn,fill=boxpurple!60]{s1}{$(p1) + (0.5,-1.45)$};
+      \newLitNode[fill=boxpink!50]{na}{$(p2) + (0.5,-1)$}{$\neg A$};
       \newAndNode[inputs=nn,fill=boxblue!80]{q1}{$(s1) + (-0.75,-1)$};
       \newAndNode[inputs=nn,fill=boxblue!80]{q2}{$(s1) + (0.75,-1)$};
-      \newAndNode[inputs=nn,fill=boxblue!80]{q3}{$(p2.input 1) + (0,-2.0)$};
-      \node (b) at ($(q1) + (-0.5,-1)$) {$B$};
-      \node (c1) at ($(q1) + (0.5,-1)$) {$C$};
-      \newOrNode[inputs=nn,fill=boxorange!80]{z1}{$(q2.input 1) + (0,-1.0)$};
-      \node (nb) at ($(q3.input 2) + (0,-1.0)$) {$\neg B$};
-      \node (c) at ($(z1) + (-0.5,-1)$) {$C$};
-      \node (nc) at ($(z1) + (0.5,-1)$) {$\neg C$};
+      \newAndNode[inputs=nn,fill=boxblue!80]{q3}{$(p2.input 1) + (0,-2.2)$};
+      \newLitNode[fill=boxgoldenrod!60]{b}{$(q1) + (-0.5,-1)$}{$B$};
+      \newLitNode[fill=boxpurple!50]{c1}{$(q1) + (0.5,-1)$}{$C$};
+      \newOrNode[inputs=nn,fill=boxorange!80]{z1}{$(q2.input 1) + (0,-1.2)$};
+      \newLitNode[fill=boxgoldenrod!60]{nb}{$(q3.input 2) + (0,-1.2)$}{$\neg B$};
+      \newLitNode[fill=boxpurple!50]{c}{$(z1) + (-0.5,-1)$}{$C$};
+      \newLitNode[fill=boxpurple!50]{nc}{$(z1) + (0.5,-1)$}{$\neg C$};
       \draw[edge] (r.input 1) -- ++(0,-0.2) -| node[near start,above left] {$0.3$} (p1);
       \draw[edge] (r.input 2) -- ++(0,-0.2) -| node[near start,above right] {$0.7$} (p2);
       \draw[edge] (s1.input 1) -- ++(0,-0.2) -| node[near start,above left] {$0.6$} (q1);
       \draw[edge] (s1.input 2) -- ++(0,-0.2) -| node[near start,above right] {$0.4$} (q2);
-      \draw[edge] (p1.input 1) -- ++(0,-0.2) -| (a);
+      \draw[edge] (p1.input 1) -- ++(0,-0.2) -| (a.north);
       \draw[edge] (p1.input 2) -- ++(0,-0.2) -| (s1);
       \draw[edge] (p2.input 1) -- (q3);
-      \draw[edge] (p2.input 2) -- ++(0,-0.2) -| (na);
-      \draw[edge] (q1.input 1) -- ++(0,-0.2) -| (b);
-      \draw[edge] (q1.input 2) -- ++(0,-0.2) -| (c1);
+      \draw[edge] (p2.input 2) -- ++(0,-0.2) -| (na.north);
+      \draw[edge] (q1.input 1) -- ++(0,-0.2) -| (b.north);
+      \draw[edge] (q1.input 2) -- ++(0,-0.2) -| (c1.north);
       \draw[edge] (q2.input 1) -- (z1.east);
       \draw[edge] (q2.input 2) -- (nb.north);
       \draw[edge] (q3.input 1) -- (z1.east);
@@ -1123,6 +1304,7 @@ in
       \draw[edge] (z1.input 1) -- ++(0,-0.2) -| node[near start,above left] {$0.8$} (c);
       \draw[edge] (z1.input 2) -- ++(0,-0.2) -| node[near start,above right] {$0.2$} (nc);
     \end{tikzpicture}
+    }
   \end{vhcenterb}
 \end{minipage}
 \end{center}
