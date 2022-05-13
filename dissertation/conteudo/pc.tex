@@ -1044,7 +1044,8 @@ $p(\set{X})$.
 
 Besides smoothness and decomposability, another structural constraint of interest is
 \emph{determinism}. Together with the first two, determinism provides sufficient conditions for
-tractably computing the \map{}.
+tractably computing the \map{}. \Cref{fig:determinism} shows an example of a deterministic Gaussian
+mixture model.
 
 \begin{algorithm}[t]
   \caption{\textproc{MaxProduct}}\label{alg:map}
@@ -1064,7 +1065,7 @@ tractably computing the \map{}.
 
 \begin{definition}[Determinism]
   A probabilistic circuit $\mathcal{C}$ is said to be \emph{deterministic} if for every sum node
-  $\Sum\in\mathcal{C}$ at most one child of $\Sum$ has nonnegative value for any complete assignment.
+  $\Sum\in\mathcal{C}$ at most one child of $\Sum$ has positive value for any complete assignment.
 \end{definition}
 
 \begin{restatable}[\cite{peharz16}]{theorem}{det}
@@ -1073,6 +1074,118 @@ tractably computing the \map{}.
   \textup{\textproc{MaxProduct}} computes the \map{} in $\mathcal{C}$ in linear time (on the size
   of $\mathcal{C}$).
 \end{restatable}
+
+\begin{figure}[t]
+  \begin{subfigure}[t]{0.39\textwidth}
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \pgfplotsset{
+        every axis/.append style={
+          axis line style={->},
+          tick label style={font={\scriptsize\bfseries}},
+          x tick label style={color=white,below},
+          y tick label style={color=white,left},
+          grid style={black,dashed},
+        }
+      }
+      \begin{axis}[
+        no markers, domain=-1:6, samples=100,
+        height=3.75cm, width=5cm,
+        xtick={1.5}, ytick={0.07753},
+        xticklabels={\colorbox{boxblue}{\textbf{1.5}}},
+        yticklabels={\colorbox{boxgreen}{\textbf{0.07}}},
+        axis lines*=left, xlabel=$x$, ylabel=$p(x)$,
+        every axis y label/.style={font=\scriptsize,at={(axis description cs:-0.1,0.9)},anchor=south},
+        every axis x label/.style={font=\scriptsize,at=(current axis.right of origin),anchor=west},
+        enlargelimits=false, clip=false, axis on top,
+        grid = major
+      ]
+        \path[name path=axis] (axis cs:0,0) -- (axis cs:5,0);
+        \addplot[domain=-1:1.25,very thick,boxteal,name path=g1] {gauss(\mone,\sone)};
+        \draw[very thick,boxteal] (1.25,0.572) -- (1.25,0.1591);
+        \addplot[domain=1.25:3.25,very thick,boxorange,name path=g2] {gauss(\mtwo,\stwo)};
+        \addplot[domain=3.25:6,very thick,boxpurple,name path=g3] {gauss(\mthr,\sthr)};
+        \addplot[very thick,boxred] {mixgauss3t(\mone,\sone,\mtwo,\stwo,\mthr,\sthr,0.4,0.25,0.35)};
+        \addplot[boxteal!60] fill between [of=g1 and axis, soft clip={domain=-1:1.25}];
+        \addplot[boxorange!50] fill between [of=g2 and axis, soft clip={domain=1.25:3.25}];
+        \addplot[boxpurple!40] fill between [of=g3 and axis, soft clip={domain=3.25:6}];
+      \end{axis}
+    \end{tikzpicture}
+    }
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.29\textwidth}
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \newSumNode[fill=boxred!70]{s}{0,0};
+      \newGaussNode[fill=boxteal]{g1}{$(s) + (-1.5,-1.0)$};
+      \newGaussNode[fill=boxorange!80]{g2}{$(s) + (0,-1.0)$};
+      \newGaussNode[fill=boxpurple!60]{g3}{$(s) + (1.5,-1.0)$};
+      \draw[edge] (s) edge (g1);
+      \draw[edge] (s) edge (g2);
+      \draw[edge] (s) edge (g3);
+      \node at ($(s) + (-1.2,-0.35)$) {\scriptsize$.40$};
+      \node at ($(s) + (-0.3,-0.5)$) {\scriptsize$.25$};
+      \node at ($(s) + (1,-0.35)$) {\scriptsize$.35$};
+      \node (l1) at ($(g1) + (0,-0.5)$) {\scriptsize$\Psi_1(\mone,\sone)$};
+      \node (l2) at ($(g2) + (0,-0.5)$) {\scriptsize$\Psi_2(\mtwo,\stwo)$};
+      \node (l3) at ($(g3) + (0,-0.5)$) {\scriptsize$\Psi_3(\mthr,\sthr)$};
+      \node (inp) at ($(g2) + (0,-1.5)$) {};
+      \node (out) at ($(s) + (0,1.0)$) {};
+    \end{tikzpicture}
+    }
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.25\textwidth}
+    \resizebox{\textwidth}{!}{
+    \begin{tikzpicture}
+      \newSumNode[fill=boxred!70]{s}{0,0};
+      \newGaussNode[fill=boxteal]{g1}{$(s) + (-1.5,-1)$};
+      \newGaussNode[fill=boxorange!80]{g2}{$(s) + (0,-1)$};
+      \newGaussNode[fill=boxpurple!60]{g3}{$(s) + (1.5,-1)$};
+      \draw[edge] (s) edge[bend right=5] (g1);
+      \draw[edge] (s) edge[bend right=5] (g2);
+      \draw[edge] (s) edge[bend right=5] (g3);
+      \node at ($(s) + (-1.2,-0.35)$) {\scriptsize$.40$};
+      \node at ($(s) + (-0.3,-0.5)$) {\scriptsize$.25$};
+      \node at ($(s) + (1,-0.35)$) {\scriptsize$.35$};
+      \node (inp) at ($(g2) + (0,-1.5)$) {\scriptsize\colorbox{boxblue}{\color{white}$\mathbf{1.5}$}};
+      \node (out) at ($(s) + (0,1.0)$) {\scriptsize\colorbox{boxgreen}{\color{white}$\mathbf{0.07}$}};
+      \draw[edge,boxdgray] (s) -- (out);
+      \node (l1) at ($(g1) + (0,-0.5)$) {\scriptsize\colorbox{boxteal}{\color{white}$\mathbf{0.00}$}};
+      \node (l2) at ($(g2) + (0,-0.5)$) {\scriptsize\colorbox{boxorange}{\color{white}$\mathbf{0.31}$}};
+      \node (l3) at ($(g3) + (0,-0.5)$) {\scriptsize\colorbox{boxpurple!80}{\color{white}$\mathbf{0.00}$}};
+      \draw[edge,boxdgray] (inp) edge (l1);
+      \draw[edge,boxdgray] (inp) edge (l2);
+      \draw[edge,boxdgray] (inp) edge (l3);
+      \draw[edge,boxdgray] (g1) edge[bend left=-5] (s);
+      \draw[edge,boxdgray] (g2) edge[bend left=-5] (s);
+      \draw[edge,boxdgray] (g3) edge[bend left=-5] (s);
+    \end{tikzpicture}
+    }
+    \caption{}
+  \end{subfigure}
+  \caption{A Gaussian mixture model is deterministic if the components do not overlap. Graph
+    \uncaption{(a)} shows a deterministic Gaussian mixture model represented as a PC in
+    \uncaption{(b)} and whose components $\psi_1$, $\psi_2$ and $\psi_3$ are Gaussians truncated in
+    a way that they do not overlap. Given any valuation, at most one of the components (sum node's
+    children) must have a positive value \uncaption{(c)}.}
+  \label{fig:determinism}
+\end{figure}
+
+As \Cref{thm:det}'s proof on \cpageref{proof:det} suggests, the \map{} on a smooth, decomposable
+and deterministic PC can be easily computed by simply replacing sum nodes with a max operation and
+performing a bottom-up \evi{} pass. This is commonly called the Max-Product algorithm, shown more
+formally in \Cref{alg:map} and visually exemplified in \Cref{fig:map}. To find the assignment
+$\set{y}$ that maximizes \Cref{eq:map} in a given circuit $\mathcal{C}$, we first compute the
+\map{} probabilities through the usual bottom-up pass, and then find the maximum (in terms of
+probability) induced tree $\mathcal{M}$ rooted at $\mathcal{C}$ by backtracking the graph to the
+most probable assignments. This maximum induced tree can be retrieved by a top-down pass selecting
+the most probable sum child nodes according to the probabilities set by \map{}. Since $\mathcal{C}$
+is decomposable, there cannot exist a node in $\mathcal{M}$ with more than one parent, meaning it
+is by construction a tree whose leaves are input nodes with scopes whose union is the scope of
+$\mathcal{C}$. This reduces the problem to a divide-and-conquer approach where each input node is
+individually maximized.
 
 \begin{figure}[t]
   \begin{subfigure}[t]{0.32\textwidth}
@@ -1302,24 +1415,32 @@ tractably computing the \map{}.
   \label{fig:map}
 \end{figure}
 
-As \Cref{thm:det}'s proof on \cpageref{proof:det} suggests, the \map{} on a smooth, decomposable
-and deterministic PC can be easily computed by simply replacing sum nodes with a max operation and
-performing a bottom-up \evi{} pass. This is commonly called the Max-Product algorithm, shown more
-formally in \Cref{alg:map} and visually exemplified in \Cref{fig:map}. To find the assignment
-$\set{y}$ that maximizes \Cref{eq:map} in a given circuit $\mathcal{C}$, we first compute the
-\map{} probabilities through the usual bottom-up pass, and then find the maximum (in terms of
-probability) induced tree $\mathcal{M}$ rooted at $\mathcal{C}$ by backtracking the graph to the
-most probable assignments. This maximum induced tree can be retrieved by a top-down pass selecting
-the most probable sum child nodes according to the probabilities set by \map{}. Since $\mathcal{C}$
-is decomposable, there cannot exist a node in $\mathcal{M}$ with more than one parent, meaning it
-is by construction a tree whose leaves are input nodes with scopes whose union is the scope of
-$\mathcal{C}$. This reduces the problem to a divide-and-conquer approach where each input node is
-individually maximized.
-
 Many known probabilistic models can be subsumed as smooth, decomposable and deterministic PCs, such
 Markov networks \citep{lowd13a}, naïve Bayes, thin junction trees \citep{bach01}, and more
 generally low-treewidth Bayesian networks \citep{darwiche03}. \Cref{eg:nbayes} shows a Gaussian
 naïve Bayes model as a probabilistic circuit.
+
+Although we have only covered the most basic queries so far, more complex tasks involving
+information-theoretic measures, logical queries or distributional divergences are also (tractably)
+computable in PCs under the right conditions. Particularly, we are interested in a key component
+for tractability in all these tasks: the notion of \emph{vtrees} and \emph{structured
+decomposability}, a stronger variant of decomposability where variable partitionings on product
+nodes follow a hierarchy. This hierarchy is easily visualized through a \emph{vtree} (variable
+tree), a data structure that defines a (partial) ordering of variables.
+
+\begin{definition}[Vtree]
+  A variable tree $\vtree=(\mathcal{B},\phi)$, or \emph{vtree}, over a set of variables $\set{X}$
+  is a pair made out of a binary tree $\mathcal{B}$ whose number of leaf nodes is $|\set{X}|$, and
+  a one-to-one and onto mapping $\phi$ of leaves of $\mathcal{B}$ with variables $\set{X}$.
+\end{definition}
+
+We shall adopt the same scope definition and notation $\Sc(\cdot)$ for vtrees as in PCs. Let $v$ be
+a vtree node from a vtree $\vtree$. If $v$ is a leaf node of $\vtree$, its scope is
+$\phi_{\vtree}(v)$, i.e.\ the leaf's assigned variable; otherwise its scope is the union of the
+scope of its children. For an inner node $v$, we shall call its left child $\lch{v}$ and right
+child $\rch{v}$. Every inner node $v$ of a vtree $\vtree$ defines a variable \emph{partitioning} of
+the scope $(\Sc(\lch{v}), \Sc(\rch{v}))$, while the leaves of $\vtree$ define a partial ordering of
+$\Sc(\vtree)$. We are especially interested in the scope partitioning aspect of vtrees.
 
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Naïve Bayes as probabilistic circuits}{nbayes}
   Suppose we have samples of per capita census measurements on three different features, say age
@@ -1389,28 +1510,6 @@ naïve Bayes model as a probabilistic circuit.
   Equivalent PC
   \end{center}
 \end{example}
-
-Although we have only covered the most basic queries so far, more complex tasks involving
-information-theoretic measures, logical queries or distributional divergences are also (tractably)
-computable in PCs under the right conditions. Particularly, we are interested in a key component
-for tractability in all these tasks: the notion of \emph{vtrees} and \emph{structured
-decomposability}, a stronger variant of decomposability where variable partitionings on product
-nodes follow a hierarchy. This hierarchy is easily visualized through a \emph{vtree} (variable
-tree), a data structure that defines a (partial) ordering of variables.
-
-\begin{definition}[Vtree]
-  A variable tree $\vtree=(\mathcal{B},\phi)$, or \emph{vtree}, over a set of variables $\set{X}$
-  is a pair made out of a binary tree $\mathcal{B}$ whose number of leaf nodes is $|\set{X}|$, and
-  a one-to-one and onto mapping $\phi$ of leaves of $\mathcal{B}$ with variables $\set{X}$.
-\end{definition}
-
-We shall adopt the same scope definition and notation $\Sc(\cdot)$ for vtrees as in PCs. Let $v$ be
-a vtree node from a vtree $\vtree$. If $v$ is a leaf node of $\vtree$, its scope is
-$\phi_{\vtree}(v)$, i.e.\ the leaf's assigned variable; otherwise its scope is the union of the
-scope of its children. For an inner node $v$, we shall call its left child $\lch{v}$ and right
-child $\rch{v}$. Every inner node $v$ of a vtree $\vtree$ defines a variable \emph{partitioning} of
-the scope $(\Sc(\lch{v}), \Sc(\rch{v}))$, while the leaves of $\vtree$ define a partial ordering of
-$\Sc(\vtree)$. We are especially interested in the scope partitioning aspect of vtrees.
 
 \begin{definition}
   A product node $\Prod$ \emph{respects} a vtree node $v$ if $\Prod$ contains only two children
@@ -1579,24 +1678,6 @@ $(\{A,B,C\},\{D\})$. In fact, it is not structured decomposable, as it does not 
 whose sums describe the latent variables and products partition observable variables according to
 the vtree.
 
-Despite our structured decomposability definition relying on a vtree, there is at least one
-alternative definition that defines it in terms of \emph{circuit compatibility}. Essentially, a
-circuit $\mathcal{C}_1$ is \emph{compatible} with $\mathcal{C}_2$ if they can be 2-standardized (in
-polynomial time) in such a way that any two products with same scope, one from $\mathcal{C}_1$ and
-the other $\mathcal{C}_2$, partition the scope into the same decompositions \citep{vergari21}. A
-structured decomposable PC is then defined as a PC that is compatible with a copy of itself. In
-summary, the two definitions of structured decomposability are equivalent, except compatibility
-implicitly assumes an arrangement of product scopes that is analogous to a vtree.
-
-Probabilistic circuits appear in literature under many names. A PC which is both smooth and
-decomposable is often referred to as a Sum-Product Network (SPN, \cite{poon11}), although
-definitions vary around the presence of the two structural constraints as a requirement, with SPNs
-sometimes used as a synonym for probabilistic circuits. Smooth, decomposable and deterministic PCs
-often appear as Arithmetic Circuits (ACs, \cite{darwiche03}) or Cutset Networks (CNets,
-\cite{rahman14}). Probabilistic Sentential Decision Diagrams (PSDDs, \cite{kisa14}), Probabilistic
-Decision Graphs (PDGs, \cite{jaeger04}) and And/Or-Graphs (AOGs, \cite{dechter07}) can all be
-described as smooth, deterministic and structured decomposable PCs.
-
 \begin{example}[sidebyside,lefthand width=0.55\textwidth]{Hidden Markov models as probabilistic circuits}{hmm}
   Say we wish to model a sequential structured dependence between three latent binary variables, for
   example the presence of a subject $X_1$, verb $X_2$ and object $X_3$ in a natural language
@@ -1678,6 +1759,24 @@ described as smooth, deterministic and structured decomposable PCs.
     Vtree
   \end{center}
 \end{example}
+
+Despite our structured decomposability definition relying on a vtree, there is at least one
+alternative definition that defines it in terms of \emph{circuit compatibility}. Essentially, a
+circuit $\mathcal{C}_1$ is \emph{compatible} with $\mathcal{C}_2$ if they can be 2-standardized (in
+polynomial time) in such a way that any two products with same scope, one from $\mathcal{C}_1$ and
+the other $\mathcal{C}_2$, partition the scope into the same decompositions \citep{vergari21}. A
+structured decomposable PC is then defined as a PC that is compatible with a copy of itself. In
+summary, the two definitions of structured decomposability are equivalent, except compatibility
+implicitly assumes an arrangement of product scopes that is analogous to a vtree.
+
+Probabilistic circuits appear in literature under many names. A PC which is both smooth and
+decomposable is often referred to as a Sum-Product Network (SPN, \cite{poon11}), although
+definitions vary around the presence of the two structural constraints as a requirement, with SPNs
+sometimes used as a synonym for probabilistic circuits. Smooth, decomposable and deterministic PCs
+often appear as Arithmetic Circuits (ACs, \cite{darwiche03}) or Cutset Networks (CNets,
+\cite{rahman14}). Probabilistic Sentential Decision Diagrams (PSDDs, \cite{kisa14}), Probabilistic
+Decision Graphs (PDGs, \cite{jaeger04}) and And/Or-Graphs (AOGs, \cite{dechter07}) can all be
+described as smooth, deterministic and structured decomposable PCs.
 
 The notion of structured decomposability (or compatibility for that matter) is key to more complex
 queries. For instance, given two probabilistic circuits $\mathcal{C}_1$ and $\mathcal{C}_2$,
@@ -1892,15 +1991,15 @@ $X$ and $\neg X$ for literal nodes.
 \end{definition}
 
 Evidently, logic circuits are closely related to probabilistic circuits. The strikingly similar
-definitions are not coincidence: much of the literature on PCs have their origins on LCs. In fact,
-most structural constraints in PCs are the exact same (up to even their names\footnote{There are
-some exceptions. Smoothness is sometimes referred to as \emph{completeness} in PCs, while
-determinism has the alternative name of \emph{selectivity}.}) as their LC analogues. In this
-dissertation, we are particularly interested in the specific subset of smooth, structured
-decomposable and deterministic LCs, known as Sentential Decision Diagrams (SDDs,
-\cite{darwiche11}). \Cref{fig:logic} shows two SDDs encoding the same knowledge base but under
-different vtrees. The one on the left respects a balanced vtree and the one on the right a
-right-linear vtree.
+definitions are not a product of coincidence: much of the literature on PCs have their origins on
+LCs. In fact, most structural constraints in PCs are the exact same (up to even their
+names\footnote{There are some exceptions. Smoothness is sometimes referred to as
+\emph{completeness} in PCs, while determinism has the alternative name of \emph{selectivity}.})
+as their LC analogues. In this dissertation, we are particularly interested in a specific
+subset of smooth, structured decomposable and deterministic LCs, known as Sentential Decision
+Diagrams (SDDs, \cite{darwiche11}). \Cref{fig:logic} shows two SDDs encoding the same knowledge
+base but under different vtrees. The one on the left respects a balanced vtree and the one on the
+right a right-linear vtree.
 
 Logic circuits have appeared in computer science literature under many names, more closely to the
 knowledge compilation community under the title of Negated Normal Form (NNF)

@@ -63,6 +63,7 @@
 \definecolor{jplots14}{rgb}{0.942181647954218,    0.37516423354097583,0.4518168202944593}
 \definecolor{jplots15}{rgb}{0.8684020893043971,   0.3959893639954845, 0.7135147524811879}
 \definecolor{jplots16}{rgb}{0.42314674364630817,  0.6224954944199981, 0.1987706025213046}
+\definecolor{jplotsgray}{rgb}{0.502,0.502,0.502}
 
 \newcommand{\newSharpBox}[3]{
   \begin{tcolorbox}[colback=#1!5!white,colframe=#1!75!black,title=#2,sharp corners=northwest]
@@ -91,3 +92,6 @@
   colback=boxpurple!20,
   colframe=boxpurple
 }{rem}
+
+\newenvironment{vcenterb}{\vspace*{\fill}}{\vspace*{\fill}}
+\newenvironment{vhcenterb}{\vspace*{\fill}\begin{center}}{\end{center}\vspace*{\fill}}

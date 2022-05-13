@@ -303,6 +303,83 @@ learned structure to a vtree, effectively constructing smooth and structured dec
   \end{algorithmic}
 \end{algorithm}
 
+\begin{figure}[t]
+  \def\points{(2.3,4.38),(1.8,4.0),(2.8,4.0),(1.6,3.3),(2.5,3),(3.1,2.8),(3.8,3.1),(4.3,3.3),(4,2.6),(4.5,2.4),(3.3,2.3),(2.1,2.0),(3.1,1.8),(2.4,1.6),(2.9,1.5),(2.5,1.3),(3.1,1.1),(3.1,0.6),(2.7,0.8),(1.5,0.8),(1.7,1.3),(1.2,1.5),(3.6,0.5),(4,0.3),(4.1,0.6),(3.8,0.8),(4.4,0.8),(4,1.1),(4.3,1.1),(4.6,1),(3.6,1.2),(3.9,1.4),(4.2,1.4),(4.6,1.4),(4.4,1.7),(3.8,1.7)}
+  \begin{minipage}[t][0.25\textheight][t]{0.45\textwidth}
+    \begin{vhcenterb}
+      \def\prx{-0.31}
+      \def\pry{-0.4}
+      \def\prz{0.85}
+      \def\prtheta{-1}
+      \resizebox{0.7\textwidth}{!}{
+      \begin{tikzpicture}
+        \begin{axis}[
+          xmin=0,xmax=5,ymin=0,ymax=5,zmin=0,zmax=5,
+          xlabel=$X$,ylabel=$Y$,zlabel=$Z$,zlabel style={rotate=-90},
+          xtick={0,1,...,5},ytick={1,...,5},ztick={1,...,5},
+          grid=major,
+        ]
+
+          \addplot3+[only marks,mark options={boxblue,fill=boxblue}] table {../slides/data/cloud_pos.dat};
+          \addplot3+[only marks,mark options={boxred,fill=boxred}] table {../slides/data/cloud_neg.dat};
+          \addplot3[colormap={bgreen}{color=(boxgreen),color=(boxgreen)},surf,color=boxgreen,
+            point meta=1,z buffer=sort,shader=interp,opacity=0.6]
+            {-(\prx*x+\pry*y+\prtheta)/\prz};
+          \node at (5,3.5,3) {\color{boxgreen}$\set{A}$};
+        \end{axis}
+      \end{tikzpicture}
+      }
+      \begin{equation*}
+        \textcolor{boxgreen}{\set{A}}(x,y,z)=\begin{bmatrix} x & y &
+          z\\\end{bmatrix}\cdot\underbrace{\scalebox{0.75}{$\begin{bmatrix*}[r]
+          -0.31\\ -0.40\\ 0.85 \end{bmatrix*}$}}_{\textcolor{boxorange}{a}}+\underbrace{1}_{
+        \textcolor{boxpink}{\theta}}
+      \end{equation*}
+    \end{vhcenterb}
+  \end{minipage}
+  \begin{minipage}[t][0.25\textheight][t]{0.45\textwidth}
+    \begin{vhcenterb}
+      \resizebox{0.3\textwidth}{!}{
+      \begin{tikzpicture}
+        \newVtreeNode[double color fill={boxblue}{boxred},shading angle=45]{v}{0,0}{1};
+        \newVtreeNode{z}{$(v) + (-0.5,-1)$}{$Z$};
+        \newVtreeNode{r}{$(v) + (0.5,-1)$}{2};
+        \newVtreeNode{y}{$(r) + (-0.5,-1)$}{$Y$};
+        \newVtreeNode{x}{$(r) + (0.5,-1)$}{$X$};
+        \draw (v) -- (z); \draw (v) -- (r);
+        \draw (r) -- (y);
+        \draw (r) -- (x);
+      \end{tikzpicture}
+      }
+      \vskip 0.5cm
+      \resizebox{0.5\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen,label=above left:{\color{boxgreen}$\set{A}$}]{r}{0,0};
+        \newProdNode[label=below:{$\textcolor{boxgreen}{\set{A}}(\set{x})>0$},fill=boxblue]{p1}{$(r) + (-1,-1)$};
+        \newProdNode[label=below:{$\textcolor{boxgreen}{\set{A}}(\set{x})\leq 0$},fill=boxred]{p2}{$(r) + (1,-1)$};
+        \draw[edge] (r) -- node[pos=0.5,above left] {$w_{\textcolor{boxgreen}{\set{A}}}=\frac{16}{36}$} (p1);
+        \draw[edge] (r) -- node[pos=0.5,above right] {$w_{\textcolor{boxgreen}{\overline{\set{A}}}}=\frac{20}{36}$} (p2);
+      \end{tikzpicture}
+      }
+      \small
+      \begin{equation*}
+        w_{\textcolor{boxgreen}{\set{A}}}\text{:\, probability of }\textcolor{boxgreen}{\set{A}}(\set{x})>0
+      \end{equation*}
+    \end{vhcenterb}
+  \end{minipage}
+  \caption{Given a cloud of points, \textproc{LearnRP} samples a hyperplane
+    $\textcolor{boxgreen}{\set{A}}(x,y,z)$ (here shown as the
+    \colorbox{boxgreen}{\color{white}green} plane on the left), dividing the dataset into two
+    subsets (in \colorbox{boxblue}{\color{white}blue} and \colorbox{boxred}{\color{white}red}). A
+    unit vector $\textcolor{boxorange}{a}$ is uniformly sampled and the threshold
+    $\textcolor{boxpink}{\theta}$ is found by either \textproc{SplitMax} or
+    \textproc{SplitSID}. The resulting partition is represented in the circuit as a sum node
+    \inode[fill=boxgreen]{\newSumNode} with two product nodes \inode[fill=boxblue]{\newProdNode}
+    and \inode[fill=boxred]{\newProdNode}. Weights are then initialized as the proportions of each
+    subset.}
+  \label{fig:learnrp-1}
+\end{figure}
+
 Of note is the fact that DETs are deterministic by nature, as the leaves of the binary tree are
 constrained to the corresponding cells, meaning that only one path from leaf to root is active at a
 time. Determinism could be enforced in RPTrees if, for every input node (line
@@ -320,6 +397,140 @@ a_i>\theta\right\riv$ with $\Sc(f)=\Sc(v)$, where $v$ is the vtree node of line
 \ref{alg:learnrp:line:vtree}. Further, because each variable $X\in\Sc(v)$ contributes (linearly) to
 $f$, marginalization in this multivariate distribution is not as straightforward. We therefore
 choose not to constraint inputs.
+
+\textproc{LearnRP} constructs the circuit recursively. At each call, it samples a hyperplane
+$f(\set{x})$ which then produces a sum node \inode[fill=boxgreen]{\newSumNode} encoding the
+partitioning of the data $\set{D}$ by $f(\set{x})$; it then creates two product nodes
+\inode[fill=boxblue]{\newProdNode} and \inode[fill=boxred]{\newProdNode}, which are set as
+\inode[fill=boxgreen]{\newSumNode}'s children and who are semantically linked to the dataset
+partitions $\set{S}_1=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x})=1\}$ and
+$\set{S}_2=\{\set{x}\,|\,\forall\set{x}\in\set{D}\wedge f(\set{x})=0\}$ respectively. Children
+nodes of both \inode[fill=boxblue]{\newProdNode} and \inode[fill=boxred]{\newProdNode} are then
+constructed by recursively calling \textproc{LearnRP} over their corresponding subdata, each
+following the right scope decomposition according to the vtree. \Cref{fig:learnrp-1} and
+\Cref{fig:learnrp-2} show the first and second recursive calls to \textproc{LearnRP}.
+
+\begin{figure}[t]
+  \input{../slides/data/cloud_pos_xy.tex}
+  \begin{minipage}[t][0.35\textheight][t]{0.45\textwidth}
+    \begin{vhcenterb}
+      \def\prx{-0.31}
+      \def\pry{-0.4}
+      \def\prz{0.85}
+      \def\prtheta{-1}
+      \resizebox{0.6\textwidth}{!}{
+      \begin{tikzpicture}
+        \begin{axis}[
+          xmin=0,xmax=5,ymin=0,ymax=5,zmin=0,zmax=5,
+          xlabel=$X$,ylabel=$Y$,zlabel=$Z$,zlabel style={rotate=-90},
+          xtick={0,1,...,5},ytick={1,...,5},ztick={1,...,5},
+          grid=major,
+        ]
+          \addplot3+[only marks,ycomb,color=boxblue,mark options={boxblue,fill=boxblue}] table
+            {../slides/data/cloud_pos.dat};
+          \addplot3+[only marks,mark options={boxred,fill=boxred},opacity=0.5] table {../slides/data/cloud_neg.dat};
+          \addplot3+[only marks,mark options={boxdgray,fill=boxdgray},mark size=1] table[z expr=0]
+            {../slides/data/cloud_pos.dat};
+          \addplot3+[only marks,mark options={boxorange,fill=boxorange},mark size=2,mark=triangle*]
+            table[x expr=0] {../slides/data/cloud_pos.dat};
+          \addplot3[colormap={bgreen}{color=(boxgreen),color=(boxgreen)},surf,color=boxgreen,
+            point meta=1,z buffer=sort,shader=interp,opacity=0.6]
+            {-(\prx*x+\pry*y+\prtheta)/\prz};
+          \node at (5,3.5,3) {\color{boxgreen}$\set{A}$};
+          \draw[very thick,boxpink,dashed] (2.2,0,0) coordinate (b1) -- node[above left,pos=0.9] {\color{boxpink}$\set{B}$} (5,3.1,0) coordinate (b2);
+          \begin{scope}[on background layer]
+            \fill[boxblue!50] (0,0,0) -- (b1) -- (b2) -- (5,5,0) -- (0,5,0) -- cycle;
+            \fill[boxred!50] (b1) -- (5,0,0) -- (b2) -- cycle;
+          \end{scope}
+        \end{axis}
+      \end{tikzpicture}
+      }
+      \vskip 0.1cm
+      \resizebox{0.95\textwidth}{!}{
+        \begin{tikzpicture}
+          \coordinate (b1) at (2.2,0);
+          \coordinate (b2) at (5,3.1);
+          \fill[boxblue!50] (0,0) -- (b1) -- (b2) -- (5,5) -- (0,5) -- cycle;
+          \fill[boxred!50] (b1) -- (5,0) -- (b2) -- cycle;
+          \foreach \p in \points {
+            \node[circle,inner sep=0pt,minimum size=2pt,fill=boxdgray] at \p {};
+          }
+          \draw[very thick,boxpink,dashed] (b1) -- node[left,pos=0.9] {\color{boxpink}$\set{B}$} (b2);
+          \draw[very thick] (0,0) rectangle (5, 5);
+
+          \begin{axis}[
+            xshift=6cm,
+            samples=30,domain=0:7, axis lines*=left,
+            every axis x label/.style={at=(current axis.right of origin),anchor=west},
+            every axis y label/.style={at={(axis description cs:0,1)},anchor=south},
+            enlargelimits=false, clip=false, axis on top,
+            xmin=0,xmax=7,ymin=0,ymax=1,
+            xlabel=$Z$,ylabel=$p(Z)$,,xtick={1,...,7},
+            grid=major,height=6.45cm,
+          ]
+            \addplot[only marks,mark options={boxorange,fill=boxorange},mark=triangle*,mark size=4]
+              table[x={z},y expr=0] {../slides/data/cloud_pos.dat};
+            \path[name path=axis] (axis cs:0,0) -- (axis cs:5,0);
+            \addplot[very thick,boxorange,name path=g1] {gauss(3.76,0.95)};
+            \addplot[boxorange!60] fill between [of=g1 and axis];
+            \node at (3.76,0.5) {$\mathcal{N}(\mu=3.76,\sigma=0.95)$};
+          \end{axis}
+          \node at (12,0) {};
+        \end{tikzpicture}
+      }
+      \begin{equation*}
+        \textcolor{boxpink}{\set{B}}(x,y)=\begin{bmatrix} x & y\end{bmatrix}\cdot
+        \underbrace{\scalebox{0.75}{$\begin{bmatrix*}[r] 1.10\\ -1.00
+        \end{bmatrix*}$}}_{\textcolor{boxpink}{b}}-\underbrace{2.43}_{\gamma}
+      \end{equation*}
+    \end{vhcenterb}
+  \end{minipage}
+  \begin{minipage}[t][0.35\textheight][t]{0.45\textwidth}
+    \begin{vhcenterb}
+      \resizebox{0.3\textwidth}{!}{
+      \begin{tikzpicture}
+        \newVtreeNode[fill=boxgreen]{v}{0,0}{1};
+        \newVtreeNode[fill=boxorange]{z}{$(v) + (-0.5,-1)$}{$Z$};
+        \newVtreeNode[double color fill={boxblue}{boxred},shading angle=45]{r}{$(v) + (0.5,-1)$}{2};
+        \newVtreeNode{y}{$(r) + (-0.5,-1)$}{$Y$};
+        \newVtreeNode{x}{$(r) + (0.5,-1)$}{$X$};
+        \draw (v) -- (z); \draw (v) -- (r);
+        \draw (r) -- (y);
+        \draw (r) -- (x);
+      \end{tikzpicture}
+      }
+      \vskip 1cm
+      \resizebox{0.7\textwidth}{!}{
+      \begin{tikzpicture}
+        \newSumNode[fill=boxgreen,label=above left:{\color{boxgreen}$\set{A}$}]{r}{0,0};
+        \newProdNode[label=above left:{$\textcolor{boxgreen}{\set{A}}(\set{x})>0$},fill=boxblue]{p1}{$(r) + (-1,-1)$};
+        \newProdNode[label=above right:{$\textcolor{boxgreen}{\set{A}}(\set{x})\leq 0$},fill=boxred]{p2}{$(r) + (1,-1)$};
+        \newSumNode[fill=boxpink,label=above left:{\color{boxpink}$\set{B}$}]{b1}{$(p1) + (-1,-1)$};
+        \newGaussNode[label=below:{\scriptsize$\mathcal{N}(3.76,0.95)$},fill=boxorange]{b2}{$(p1) + (1,-1)$};
+        \newColoredProdNode[fill=boxblue,label=below:{$\textcolor{boxpink}{\set{B}}(\set{x})>0$}]{q1}{$(b1) + (-1,-1)$}{white};
+        \newColoredProdNode[fill=boxred,label=below:{$\textcolor{boxpink}{\set{B}}(\set{x})\leq 0$}]{q2}{$(b1) + (1,-1)$}{white};
+        \node at ($(p2) + (0,-0.5)$) {$\vdots$};
+        \draw[edge] (r) -- node[pos=0.5,above left] {$\frac{16}{36}$} (p1);
+        \draw[edge] (r) -- node[pos=0.5,above right] {$\frac{20}{36}$} (p2);
+        \draw[edge] (p1) -- (b1);
+        \draw[edge] (p1) -- (b2);
+        \draw[edge] (b1) -- node[pos=0.5,above left] {$\frac{8}{16}$} (q1);
+        \draw[edge] (b1) -- node[pos=0.5,above right] {$\frac{8}{16}$} (q2);
+      \end{tikzpicture}
+      }
+    \end{vhcenterb}
+  \end{minipage}
+  \caption{Products in \textproc{LearnRP} decompose according to a given vtree, meaning subsequent
+    recursive calls require projecting the data onto the space of relevant variables. The
+    subcircuit rooted at \inode[fill=boxblue]{\newProdNode} decomposes into $\{Z\}$ and $\{Y,X\}$,
+    and so projects the \colorbox{boxblue}{\color{white}blue} datapoints first onto the $Z$ line,
+    resulting in the $\gaussian(3.76,0.95)$ distribution in
+    \colorbox{boxorange}{\color{white}orange}; and then onto the $XY\!$-plane. As $|\{Y,X\}|>1$,
+    \textproc{LearnRP} then recurses on \inode[fill=boxpink]{\newSumNode}, producing a new
+    hyperplane $\textcolor{boxpink}{\set{B}}(x,y)$ (in this case a line) to partition the projected
+    points.}
+  \label{fig:learnrp-2}
+\end{figure}
 
 \subsection{Complexity}
 
@@ -393,16 +604,18 @@ EM. Experiments were carried out on a single computer with a 12-core Intel i7 3.
 64GB RAM.
 
 \textproc{LearnRP} was implemented in Julia\footnote{The source code can be found at
-\url{https://github.com/RenatoGeh/RPCircuits.jl}.}, separately from \textproc{Strudel}'s and
-\textproc{LearnPSDD}'s implementations found in the Juice package \citep{dang21}. For fairness,
-when comparing runtimes for speed benchmarking we reran the same or similar setups as originally
-reported for \textproc{XPC}, \textproc{Strudel} and \textproc{LearnPSDD} in the same machine used
-for \textproc{LearnRP}, setting the number of iterations to 1000 for the two last \incrclass{}
-algorithms. Similarly, we compare runtimes of a Rust implementation\footnote{Source code found at
-\url{https://gitlab.com/marcheing/spn-rs}.} of \textproc{LearnSPN} on the same machine; we use
-$k$-means for learning sums and G-test for products, setting $k=2$ for a shorter learning time. We
-do not report running times for the original \textproc{Prometheus} code since, as far as we know,
-the source was not made public and no working implementation was found.
+\url{https://github.com/RenatoGeh/RPCircuits.jl}.}. Measurements for both
+\textproc{Strudel}\footnote{https://github.com/UCLA-StarAI/Strudel} and
+\textproc{LearnPSDD}\footnote{https://github.com/YitaoLiang/Scala-LearnPsdd} were based on the
+original code repositories. For fairness, when comparing runtimes for speed benchmarking we reran
+the same or similar setups as originally reported for \textproc{XPC}, \textproc{Strudel} and
+\textproc{LearnPSDD} in the same machine used for \textproc{LearnRP}, setting the number of
+iterations to 1000 for the two last \incrclass{} algorithms. Similarly, we compare runtimes of a
+Rust implementation\footnote{Source code found at \url{https://gitlab.com/marcheing/spn-rs}.} of
+\textproc{LearnSPN} on the same machine; we use $k$-means for learning sums and G-test for
+products, setting $k=2$ for a shorter learning time. We do not report running times for the
+original \textproc{Prometheus} code since, as far as we know, the source was not made public and no
+working implementation was found.
 
 \subsection{Binary data}
 
@@ -422,15 +635,18 @@ and later 30 iterations of full EM, was able to reach competitive results agains
 state-of-the-art, reaching second place overall in terms of average rank, with
 \textproc{LearnRP}-100 closely behind. We also note how \textproc{LearnRP} is consistent in its
 ranking, as the rank standard deviation shows. \Cref{fig:learnrp-curves} shows how much minibatch
-EM improves \textproc{LearnRP} and how many iterations are needed for it to match the performance
-of competitors.
+and full EM improve \textproc{LearnRP} and how many iterations are needed for it to match the
+performance of competitors. Notably, it also shows how full EM may degrade the model's performance
+depending on the dataset.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\textwidth]{bins/all.pdf}
+  \def\svgwidth{\textwidth}\input{bins/all.pdf_tex}
   \caption{Test log-likelihood performance of \textproc{LearnRP} shown as the curve in
     \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1); under
-    different iterations of minibatch EM. Each horizontal line shows the performance of a different
+    different iterations of minibatch EM, with the remaining curve in
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots14] (0,0) rectangle (0.5,-0.1);
+    corresponding to full EM iterations. Each horizontal line shows the performance of a different
     competitor: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle (0.5,-0.1);
     for \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3] (0,0)
     rectangle (0.5,-0.1); for \textproc{Strudel},
@@ -452,25 +668,24 @@ one. Once all weights have been randomized this way, we retrain with minibatch E
 iterations. \Cref{fig:learnrp-rand-curves} shows the test log-likelihood curves for this random
 initialization. We found that using the proportions of the random projection splits as sum weights
 provided a better initial parameterization compared to random weight initialization, with the
-former consistently achieving better final performance after 100 minibatch EM iterations. Notably,
-in both the \textproc{ad} and \textproc{bbc} datasets, initializing weights as random severely
-crippled the EM algorithm, causing it to be stuck at very low quality local maxima.
+former getting a significant boost to performance when compared to the randomized approach.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\textwidth]{bins/all_rand.pdf}
+  \def\svgwidth{\textwidth}\input{bins/all_rand.pdf_tex}
   \caption{Test log-likelihood curve, shown in
     \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1);, of
-    \textproc{LearnRP} with randomized weights under different iterations of minibatch EM. Each
-    horizontal line shows the performance of a different competitor:
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle (0.5,-0.1); for
-    \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3] (0,0) rectangle
-    (0.5,-0.1); for \textproc{Strudel}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4]
-    (0,0) rectangle (0.5,-0.1); for \textproc{LearnPSDD},
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle (0.5,-0.1); for
-    \textproc{XPC} and finally \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots6] (0,0)
-    rectangle (0.5,-0.1); for
-    \textproc{Prometheus}}
+    \textproc{LearnRP} with randomized weights under different iterations of minibatch EM, with the
+    remaining curve in \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots14] (0,0) rectangle
+    (0.5,-0.1); corresponding to full EM iterations. Each horizontal line shows the performance of
+    a different competitor: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle
+    (0.5,-0.1); for \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3]
+    (0,0) rectangle (0.5,-0.1); for \textproc{Strudel},
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4] (0,0) rectangle (0.5,-0.1); for
+    \textproc{LearnPSDD}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle
+    (0.5,-0.1); for \textproc{XPC} and finally
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots6] (0,0) rectangle (0.5,-0.1); for
+  \textproc{Prometheus}}
   \label{fig:learnrp-rand-curves}
 \end{figure}
 
@@ -483,29 +698,29 @@ crippled the EM algorithm, causing it to be stuck at very low quality local maxi
     \textbf{\textproc{LearnRP}-F} & \textbf{\textproc{LearnRP}-100} & \textbf{\textproc{LearnRP}-30} &
     \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-10}\\
     \hline
-    \textsc{accidents } & -30.03 & $|$-28.73$|$ & -30.16 & -31.02 & \textbf{-27.91} & \underline{-28.65} & -28.87 & -29.38 & -29.58 & -29.99\\
-    \textsc{ad        } & -19.73 & \underline{-16.38} & -31.78 & \textbf{-15.50} & -23.96 & $|$-19.20$|$ & -20.32 & -21.42 & -21.44 & -21.94\\
-    \textsc{audio     } & -40.50 & -41.50 & \underline{-39.94} & -40.91 & \textbf{-39.80} & $|$-40.18$|$ & -40.23 & -40.46 & -40.63 & -40.94\\
-    \textsc{bbc       } & $|$-250.68$|$ & -254.41 & -253.19 & \textbf{-248.34} & \underline{-248.50} & -254.97 & -255.55 & -262.35 & -257.67 & -262.39\\
-    \textsc{netflix   } & $|$-57.02$|$ & -58.69 & \textbf{-55.71} & -57.58 & \underline{-56.47} & -57.07 & -57.05 & -57.29 & -57.48 & -57.66\\
-    \textsc{book      } & -35.88 & -34.99 & -34.97 & -34.75 & -34.40 & \underline{-33.57} & \textbf{-33.52} & -34.34 & $|$-34.24$|$ & -34.73\\
-    \textsc{20-newsgrp} & -155.92 & -154.47 & -155.97 & $|$-153.75$|$ & -154.17 & \underline{-152.78} & \textbf{-152.76} & -154.32 & -155.03 & -156.26\\
-    \textsc{reuters-52} & $|$-85.06$|$ & -86.22 & -89.61 & \underline{-84.70} & \textbf{-84.59} & -85.73 & -85.47 & -87.41 & -87.05 & -89.26\\
-    \textsc{webkb     } & -158.20 & -155.33 & -161.09 & \underline{-153.67} & -155.21 & -154.43 & \textbf{-152.60} & -154.83 & $|$-154.33$|$ & -158.01\\
-    \textsc{dna       } & \textbf{-82.52} & -86.22 & -88.01 & -86.61 & -84.45 & \underline{-83.03} & $|$-83.85$|$ & -84.77 & -84.98 & -85.40\\
-    \textsc{jester    } & -75.98 & -55.03 & \textbf{-51.29} & -53.43 & \underline{-52.80} & -52.92 & $|$-52.89$|$ & -53.23 & -53.22 & -53.54\\
-    \textsc{kdd       } & -2.18 & $|$-2.13$|$ & \textbf{-2.11} & -2.15 & \underline{-2.12} & $|$-2.13$|$ & -2.14 & -2.17 & -2.16 & -2.20\\
-    \textsc{kosarek   } & -10.98 & -10.68 & \textbf{-10.52} & -10.77 & \underline{-10.59} & $|$-10.65$|$ & -10.67 & -10.79 & -10.86 & -11.00\\
-    \textsc{msnbc     } & \underline{-6.11} & \textbf{-6.04} & \textbf{-6.04} & $|$-6.18$|$ & \textbf{-6.04} & -6.31 & -6.36 & -6.40 & -6.41 & -6.44\\
-    \textsc{msweb     } & -10.25 & \textbf{-9.71} & -9.89 & -9.93 & $|$-9.86$|$ & \underline{-9.85} & -9.97 & -10.06 & -10.21 & -10.27\\
-    \textsc{nltcs     } & -6.11 & -6.06 & \textbf{-5.99} & $|$-6.05$|$ & \underline{-6.01} & -6.35 & -6.23 & -6.25 & -6.27 & -6.32\\
-    \textsc{plants    } & \underline{-12.97} & $|$-12.98$|$ & -13.02 & -14.19 & \textbf{-12.81} & -13.68 & -14.00 & -14.26 & -14.40 & -14.70\\
-    \textsc{pumsb-star} & $|$-24.78$|$ & \underline{-24.12} & -26.12 & -26.06 & \textbf{-22.75} & -25.88 & -26.19 & -26.36 & -26.54 & -27.17\\
-    \textsc{eachmovie } & -52.48 & -53.67 & -58.01 & -54.82 & $|$-51.49$|$ & \underline{-51.37} & \textbf{-51.06} & -51.55 & -52.86 & -52.21\\
-    \textsc{retail    } & -11.04 & \underline{-10.81} & \textbf{-10.72} & -10.94 & -10.87 & $|$-10.85$|$ & -10.86 & -10.93 & -10.97 & -11.04\\
+    \textsc{accidents } & -30.03 & $|$-28.73$|$ & -30.16 & -31.02 & \textbf{-27.91} & \underline{-28.66} & -28.81 & -29.27 & -29.44 & -29.99\\
+    \textsc{ad        } & -19.73 & \underline{-16.38} & -31.78 & \textbf{-15.50} & -23.96 & $|$-19.26$|$ & -19.99 & -20.40 & -20.68 & -21.71\\
+    \textsc{audio     } & -40.50 & -41.50 & \underline{-39.94} & -40.91 & \textbf{-39.80} & $|$-40.27$|$ & -40.30 & -40.47 & -40.57 & -40.89\\
+    \textsc{bbc       } & $|$-250.68$|$ & -254.41 & -253.19 & \textbf{-248.34} & \underline{-248.50} & -254.15 & -251.57 & -253.73 & -256.47 & -254.60\\
+    \textsc{netflix   } & $|$-57.02$|$ & -58.69 & \textbf{-55.71} & -57.58 & \underline{-56.47} & -57.02 & -57.03 & -57.26 & -57.47 & -57.72\\
+    \textsc{book      } & -35.88 & -34.99 & -34.97 & -34.75 & -34.40 & \underline{-33.56} & \textbf{-33.41} & $|$-33.91$|$ & -34.29 & -34.63\\
+    \textsc{20-newsgrp} & -155.92 & -154.47 & -155.97 & $|$-153.75$|$ & -154.17 & \underline{-152.63} & \textbf{-152.34} & -153.82 & -154.64 & -156.52\\
+    \textsc{reuters-52} & $|$-85.06$|$ & -86.22 & -89.61 & \underline{-84.70} & \textbf{-84.59} & -85.69 & -85.76 & -87.24 & -87.04 & -88.15\\
+    \textsc{webkb     } & -158.20 & -155.33 & -161.09 & -153.67 & -155.21 & $|$-153.52$|$ & \textbf{-151.80} & \underline{-152.76} & -153.86 & -154.48\\
+    \textsc{dna       } & \textbf{-82.52} & -86.22 & -88.01 & -86.61 & -84.45 & \underline{-83.57} & $|$-83.62$|$ & -83.92 & -85.24 & -85.13\\
+    \textsc{jester    } & -75.98 & -55.03 & \textbf{-51.29} & -53.43 & \underline{-52.80} & -52.92 & $|$-52.86$|$ & -53.05 & -53.20 & -53.45\\
+    \textsc{kdd       } & -2.18 & $|$-2.13$|$ & \textbf{-2.11} & -2.15 & \underline{-2.12} & -2.14 & -2.14 & -2.19 & -2.16 & -2.20\\
+    \textsc{kosarek   } & -10.98 & -10.68 & \textbf{-10.52} & -10.77 & \underline{-10.59} & $|$-10.62$|$ & -10.66 & -10.80 & -10.84 & -11.02\\
+    \textsc{msnbc     } & \underline{-6.11} & \textbf{-6.04} & \textbf{-6.04} & $|$-6.18$|$ & \textbf{-6.04} & -6.33 & -6.35 & -6.35 & -6.40 & -6.48\\
+    \textsc{msweb     } & -10.25 & \textbf{-9.71} & $|$-9.89$|$ & -9.93 & \underline{-9.86} & -9.90 & -9.93 & -10.03 & -10.11 & -10.21\\
+    \textsc{nltcs     } & -6.11 & -6.06 & \textbf{-5.99} & $|$-6.05$|$ & \underline{-6.01} & -6.22 & -6.27 & -6.25 & -6.26 & -6.31\\
+    \textsc{plants    } & \underline{-12.97} & $|$-12.98$|$ & -13.02 & -14.19 & \textbf{-12.81} & -13.77 & -13.81 & -14.01 & -14.18 & -14.46\\
+    \textsc{pumsb-star} & $|$-24.78$|$ & \underline{-24.12} & -26.12 & -26.06 & \textbf{-22.75} & -26.12 & -26.33 & -26.99 & -27.14 & -27.60\\
+    \textsc{eachmovie } & -52.48 & -53.67 & -58.01 & -54.82 & $|$-51.49$|$ & \underline{-51.41} & \textbf{-50.95} & -54.43 & -57.49 & -62.44\\
+    \textsc{retail    } & -11.04 & \underline{-10.81} & \textbf{-10.72} & -10.94 & -10.87 & $|$-10.84$|$ & -10.86 & -10.94 & -10.97 & -11.08\\
     \hline
-    \multirow{2}{*}[-0.15em]{\textbf{Avg. Rank}} & $6.08\pm 3.03$ & $5.28\pm 2.97$ & $5.20\pm 3.86$ & $5.55\pm 2.76$ & \textbf{2.90}$\bm{\pm}$\textbf{2.07} & \underline{$3.83\pm 1.98$} & $|4.15\pm 2.03|$ & $6.35\pm 1.50$ & $6.95\pm 1.70$ & $8.72\pm 1.50$ \\
-                                                 & $4.80\pm 1.91$ & $4.22\pm 1.81$ & $|4.05\pm 2.56|$ & $4.60\pm 1.93$ & \textbf{2.55}$\bm{\pm}$\textbf{1.43} & \underline{$3.62\pm 1.56$} & $4.15\pm 2.03$ \\
+    \multirow{2}{*}[-0.15em]{\textbf{Avg. Rank}} & 5.97 $\pm$ 3.03 & 5.30 $\pm$ 3.03 & 5.12 $\pm$ 3.81 & 5.65 $\pm$ 2.72 & \textbf{3.00} $\pm$ \textbf{2.25} & \underline{3.73 $\pm$ 1.53} & $|$4.22 $\pm$ 2.21$|$ & 5.95 $\pm$ 1.77 & 7.30 $\pm$ 1.38 & 8.75 $\pm$ 1.48 \\
+                                                 & 4.83 $\pm$ 1.89 & 4.30$ \pm$ 1.92 & $|$4.03$ \pm$ 2.57$|$ & 4.62 $\pm$ 1.88 & \textbf{2.50 $\pm$ 1.43} & \underline{3.62 $\pm$ 1.47} & 4.10 $\pm$ 1.98 \\
     \hline
   \end{tabular}
   }
@@ -541,20 +756,64 @@ crippled the EM algorithm, causing it to be stuck at very low quality local maxi
   \label{tab:binary}
 \end{sidewaystable}
 
-\Cref{tab:bintime} shows average running time for each learning algorithm to construct a
-\emph{single} circuit for each dataset. Note that the performance reported in \Cref{tab:binary} for
-\textproc{Strudel}, \textproc{LearnPSDD} and \textproc{XPC} correspond to ensemble results, meaning
-that in all but \textproc{Strudel} (where a shared-structure mixture was learned) one has to
-multiply the averages in \Cref{tab:bintime} with the number of components in the ensemble to get a
-better picture of the speed difference. We note how, despite having competitive performance,
-\textproc{LearnRP}-100 is orders of magnitude faster compared to \textproc{LearnSPN},
-\textproc{Strudel} and \textproc{LearnPSDD}. When put against \textproc{XPC}, we note that
-\textproc{LearnRP}-100 is consistently slower, albeit with better overall log-likelihood
-performance as evidenced in \Cref{tab:binary}. Further, running 30 iterations of full EM boosted
-performance considerably, although at the cost of having an overall learning time comparable to
-more sophisticated algorithms. We also bring attention to the fact that, even though our EM
+\Cref{tab:bintime} shows average running times for each learning algorithm to construct either a
+\emph{single} circuit (as is the case for \textproc{LearnSPN}, \textproc{LearnPSDD} and
+\textproc{LearnRP}) or an \emph{ensemble} (mixtures of 10 circuits in the case of
+\textproc{Strudel} and \textproc{XPC}) for each dataset. \Cref{fig:time-linear} provides a more
+visual comparison for the orders of magnitude difference between learning times. \Cref{fig:time-log}
+shows the same data but at log scale for better visualization. As average log-likelihoods for
+\textproc{Strudel}, \textproc{LearnPSDD} and \textproc{XPC} as reported in \Cref{tab:binary} are a
+result of an extensive grid-search on the number of components in the ensemble (among other
+hyperparameters), our measurement of their running time performance is surely inaccurate. Instead
+of attempting to accurately quantify their learning time, we instead claim that the measurements we
+take are a rough experimental lower bound on their running time performance, as we fix and run only
+for a relatively small number of components per ensemble. We also draw attention to the fact that,
+not only does \textproc{LearnRP}-100 have a very competitive performance, but it is also orders of
+magnitude faster when compared to \textproc{LearnSPN}, \textproc{Strudel} or \textproc{LearnPSDD},
+even if we were to consider the values reported here as their true running time benchmarks instead
+of lower bounds. When put against \textproc{XPC}, we note that \textproc{LearnRP}-100 is
+consistently slower, albeit with better overall log-likelihood performance as evidenced in
+\Cref{tab:binary}. Further, running 30 iterations of full EM sometimes provided a small boost to
+performance at a mild cost to learning time, putting \textproc{LearnRP} in a competitive place
+compared to more sophisticated learning algorithms. We also note that, even though our EM
 implementation makes use of CPU parallelization, there is much room for improvement, such as
 bringing most of the computations to the GPU.
+
+%\newcommand{\learnspnbullet}{\tikz[baseline=-0.75ex]{\node[circle,fill=jplots1,inner sep=2pt,
+  %minimum size=13pt] at (0,0) {}}}
+%\newcommand{\strudelbullet}{\tikz[baseline=-0.75ex]{\node[rectangle,fill=jplots1,inner sep=2pt,
+  %rotate=45,minimum size=13pt] at (0,0) {}}}
+%\newcommand{\learnpsddbullet}{\tikz[baseline=-0.75ex]{\node[rectangle,fill=jplots1,inner sep=2pt,
+  %minimum size=13pt] at (0,0) {}}}
+%\newcommand{\xpcbullet}{\tikz[baseline=-0.75ex]{\node[rectangle,fill=jplots1,inner sep=2pt,
+  %rotate=45,minimum size=13pt] at (0,0) {}}}
+%\newcommand{\learnrpfbullet}{\tikz[baseline=-0.75ex]{\node[rectangle,fill=jplots1,inner sep=2pt,
+  %rotate=45,minimum size=13pt] at (0,0) {}}}
+%\newcommand{\learnrp100bullet}{\tikz[baseline=-0.75ex]{\node[rectangle,fill=jplots1,inner sep=2pt,
+  %rotate=45,minimum size=13pt] at (0,0) {}}}
+%\newcommand{\learnrp0bullet}{\tikz[baseline=-0.75ex]{\node[rectangle,fill=jplots1,inner sep=2pt,
+  %rotate=45,minimum size=13pt] at (0,0) {}}}
+
+\begin{figure}[t]
+  \def\svgwidth{\textwidth}\input{figuras/time.pdf_tex}
+  \caption{\Cref{tab:bintime} benchmarks graphically visualized. Each datapoint corresponds to an
+    entry in \Cref{tab:bintime}. The abscissa shows the dataset complexity, here defined as
+    $\log(n\cdot m)$, where $n$ and $m$ are the number of variables and assignments in the dataset
+    respectively; while the ordinate quantifies, in seconds, how much time a learning algorithm
+    took to produce a model. The \colorbox{jplotsgray}{\color{white}gray} line at the top signals a
+    24 hours limit, in which case the job that exceeds it is terminated. Competitors (in
+    \colorbox{jplots2}{\color{white}orange}) were often orders of magnitude slower compared to
+    \textproc{LearnRP}.}
+  \label{fig:time-linear}
+\end{figure}
+
+\begin{figure}[t]
+  \def\svgwidth{\textwidth}\input{figuras/time_log.pdf_tex}
+  \caption{\Cref{fig:time-linear} when transforming the ordinate to log scale, where the difference
+    between \textproc{XPC}, \textproc{LearnRP} and the other more costly algorithms becomes
+    clearer.}
+  \label{fig:time-log}
+\end{figure}
 
 \Cref{tab:binsize} shows circuit sizes for each learning algorithm. All except for
 \textproc{LearnSPN} are reported as in their original works to better reflect the log-likelihood
@@ -562,82 +821,93 @@ results shown in \Cref{tab:binary}. Because \citet{gens13} do not report circuit
 values from our own runs. We do not show circuit sizes for \textproc{Prometheus} since we could not
 find the source code and \citet{jaini18a} do not report circuit sizes.
 
-\begin{table}[t]
+\begin{sidewaystable}[ph!]
   \resizebox{\textwidth}{!}{
-  \begin{tabular}{c|cccc|ccccc}
+  \begin{tabular}{c|cccc|cccccc}
     \hline
-    \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
-    \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} & \textbf{\textproc{LearnRP}-F} &
-    \textbf{\textproc{LearnRP}-100} & \textbf{\textproc{LearnRP}-30} &
-    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-10}\\
+    \textbf{Dataset} & \textbf{\textsc{LearnSPN}} & \textbf{\textsc{Strudel}} & \textbf{\textsc{LearnPSDD}} & \textbf{\textsc{XPC}} & \textbf{\textsc{LearnRP-F}} & \textbf{\textsc{LearnRP-100}} & \textbf{\textsc{LearnRP-30}} & \textbf{\textsc{LearnRP-20}} & \textbf{\textsc{LearnRP-10}} & \textbf{\textsc{LearnRP-0}}\\
     \hline
-    \textsc{nltcs}     & 7m   & 3m  & 6m    & 17s   & 3m19s & 15s    & 5s     & 3s     & 2s    \\
-    \textsc{plants}    & 50m  & 41m & 26m   & 1m3s  & 26m   & 2m7s   & 41s    & 28s    & 15s   \\
-    \textsc{audio}     & 2h   & 33m & 51m   & 1m58s & 37m   & 4m3s   & 1m16s  & 52s    & 28s   \\
-    \textsc{jester}    & 52m  & 24m & 37m   & 1m20s & 29m   & 4m48s  & 1m29s  & 1m1s   & 31s   \\
-    \textsc{netflix}   & 1h   & 14m & 33m   & 2m8s  & 46m   & 4m36s  & 1m28s  & 1m     & 32s   \\
-    \textsc{accidents} & 47m  & 20m & 41m   & 1m47s & 33m   & 4m     & 1m20s  & 55s    & 31s   \\
-    \textsc{book}      & >3h  & 8m  & 1h22m & 2m26s & 2h    & 25m13s & 7m55s  & 5m10s  & 2m43s \\
-    \textsc{dna}       & >3h  & >3h & >3h   & 17s   & 11m   & 7m38s  & 2m20s  & 1m33s  & 49s   \\
+    \textsc{accidents} & 49m27s & 2h46m3s & 4h14m21s & 1m47s & 7m19s & 2m16s & 1m0s & 45s & 30s & 10s\\
+    \textsc{ad} & 1h6m30s & 1h3m32s & 36m34s & 3m15s & 29m14s & 18m27s & 6m3s & 4m8s & 2m16s & 21s\\
+    \textsc{audio} & 1h46m38s & 8h18m48s & 6h53m9s & 1m58s & 6m35s & 2m9s & 52s & 36s & 19s & 4s\\
+    \textsc{bbc} & 39m16s & 3h17m36s & 35m5s & 4m0s & 57m22s & 37m34s & 11m37s & 7m37s & 3m59s & 33s\\
+    \textsc{netflix} & 50m1s & 5h48m37s & 10h33m38s & 2m8s & 7m11s & 2m25s & 1m0s & 42s & 23s & 4s\\
+    \textsc{book} & 4h57m57s & 3h9m9s & 3h34m6s & 2m26s & 32m43s & 14m47s & 5m4s & 3m22s & 1m45s & 11s\\
+    \textsc{20news} & 24h0m0s & 4h33m10s & 3h35m27s & 39m39s & 4h32m26s & 1h5m36s & 26m26s & 17m38s & 9m38s & 52s\\
+    \textsc{reut52} & 3h53m31s & 3h34m1s & 24h0m0s & 7m26s & 1h25m12s & 46m33s & 17m39s & 12m44s & 8m40s & 3m35s\\
+    \textsc{webkb} & 1h43m33s & 2h47m53s & 49m41s & 3m21s & 1h1m48s & 37m46s & 13m20s & 9m30s & 6m24s & 2m34s\\
+    \textsc{dna} & 6m11s & 1h0m47s & 1h2m23s & 17s & 6m47s & 4m31s & 1m19s & 53s & 29s & 0s\\
+    \textsc{jester} & 33m51s & 10h19m33s & 4h39m17s & 1m20s & 6m24s & 3m6s & 1m2s & 42s & 23s & 2s\\
+    \textsc{kdd} & 24h0m0s & 3h30m3s & 23m58s & 7m16s & 13m33s & 1m1s & 1m8s & 54s & 39s & 25s\\
+    \textsc{kosarek} & 8h28m46s & 4h48m16s & 5h52m22s & 2m12s & 21m59s & 4m45s & 2m6s & 1m25s & 49s & 15s\\
+    \textsc{msnbc} & 24h0m0s & 5h19m51s & 2h28m57s & 6m46s & 3m10s & 15s & 18s & 15s & 14s & 9s\\
+    \textsc{msweb} & 7h44m5s & 10m31s & 23h12m58s & 4m50s & 32m59s & 7m26s & 2m53s & 2m4s & 1m12s & 18s\\
+    \textsc{nltcs} & 8m28s & 1h40m36s & 2m5s & 17s & 17s & 3s & 2s & 1s & 1s & 0s\\
+    \textsc{plants} & 38m14s & 23h8m40s & 5h12m47s & 1m3s & 4m58s & 1m40s & 30s & 21s & 12s & 3s\\
+    \textsc{pumsb-star} & 39m32s & 3h20m24s & 7h24m0s & 1m39s & 10m15s & 4m17s & 1m22s & 58s & 32s & 5s\\
+    \textsc{eachmovie} & 30m57s & 2h51m17s & 2h2m55s & 2m38s & 17m35s & 10m23s & 3m10s & 2m8s & 1m7s & 5s\\
+    \textsc{retail} & 3h9m8s & 33m46s & 3h7m44s & 1m30s & 13m0s & 3m25s & 1m13s & 51s & 31s & 7s\\
     \hline
   \end{tabular}
   }
-  \caption{Learning time benchmark for a single circuit of \textproc{LearnSPN}, \textproc{Strudel},
-    \textproc{LearnPSDD}, \textproc{XPC} and \textproc{LearnRP}.}
+  \caption{Learning time benchmarks for \textproc{LearnSPN}, \textproc{Strudel},
+    \textproc{LearnPSDD}, \textproc{XPC} and \textproc{LearnRP}. We signal as
+    \textproc{LearnRP}-$k$ the process of running \textproc{LearnRP} and then running $k$
+    iterations of minibatch EM.}
   \label{tab:bintime}
-\end{table}
+\end{sidewaystable}
 
 \begin{table}[t]
-  \resizebox{\textwidth}{!}{
-  \begin{tabular}{c|cccc|ccccc}
+  \begin{tabular}{c|cccc|c}
     \hline
     \textbf{Dataset} & \textbf{\textproc{LearnSPN}} & \textbf{\textproc{Strudel}} &
-    \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} &
-    \textbf{\textproc{LearnRP}-F} & \textbf{\textproc{LearnRP}-100} & \textbf{\textproc{LearnRP}-30} &
-    \textbf{\textproc{LearnRP}-20} & \textbf{\textproc{LearnRP}-10}\\
+    \textbf{\textproc{LearnPSDD}} & \textbf{\textproc{XPC}} & \textbf{\textproc{LearnRP}}\\
     \hline
-    \textsc{accidents } & 32708   & 75363   & 8418  & 11921   &  18619 &   19086 &  19053 &  18498 &  18555 \\
-    \textsc{ad        } & 40901   & 13152   & 12238 & 22093   & 100429 &   99807 &  98949 & 101471 & 100435 \\
-    \textsc{audio     } & 50130   & 55675   & 18208 & 29317   &  19233 &   19463 &  19467 &  19249 &  19357 \\
-    \textsc{bbc       } & 39389   & 29532   & 12335 & 14578   & 232199 &  234295 & 233743 & 230965 & 232541 \\
-    \textsc{netflix   } & 36286   & 27173   & 10997 & 39868   &  21731 &   21675 &  21715 &  21719 &  21731 \\
-    \textsc{book      } & 51493   & 54839   & 10978 & 13678   & 118811 &  119847 & 119491 & 118427 & 119511 \\
-    \textsc{20-newsgrp} & 119060  & 58749   & 15793 & 65881   & 532657 &  534801 & 531615 & 536115 & 536709 \\
-    \textsc{reuters-52} & 155191  & 36343   & 10410 & 36440   & 321594 &  320201 & 322981 & 320715 & 321095 \\
-    \textsc{webkb     } & 223847  & 25406   & 11033 & 17122   & 251801 &  256322 & 256033 & 254797 & 256713 \\
-    \textsc{dna       } & 12180   & 17507   & 3068  & 2616    &  37607 &   37399 &  37423 &  37515 &  37741 \\
-    \textsc{jester    } & 25076   & 27713   & 11322 & 20273   &  23275 &   23111 &  23239 &  23363 &  23219 \\
-    \textsc{kdd       } & 8755    & 6572    & 2915  & 13040   &   5251 &    5299 &   5353 &   5399 &   5265 \\
-    \textsc{kosarek   } & 19512   & 37583   & 7173  & 20938   &  34013 &   33379 &  33167 &  33157 &  32865 \\
-    \textsc{msnbc     } & 11606   & 20795   & 5465  & 4887    &    785 &     789 &    781 &    777 &    785 \\
-    \textsc{msweb     } & 10743   & 2347    & 6581  & 12135   &  51239 &   51015 &  51911 &  51197 &  51009 \\
-    \textsc{nltcs     } & 1855    & 4373    & 1304  & 4401    &    531 &     515 &    519 &    535 &    523 \\
-    \textsc{plants    } & 36596   & 119194  & 11583 & 13960   &  10443 &   10711 &  10759 &  10779 &  10213 \\
-    \textsc{pumsb-star} & 26206   & 108876  & 8298  & 8866    &  32332 &   30401 &  32102 &  31429 &  31856 \\
-    \textsc{eachmovie } & 54184   & 123996  & 20648 & 21369   &  77839 &   80189 &  80073 &  78237 &  81705 \\
-    \textsc{retail    } & 2158    & 3979    & 2989  & 6651    &  25578 &   24686 &  25081 &  25174 &  24844 \\
+    \textsc{accidents } & 32708   & 75363   & 8418  & 11921   &  19077 \\
+    \textsc{ad        } & 40901   & 13152   & 12238 & 22093   & 100939 \\
+    \textsc{audio     } & 50130   & 55675   & 18208 & 29317   &  19283 \\
+    \textsc{bbc       } & 39389   & 29532   & 12335 & 14578   & 236973 \\
+    \textsc{netflix   } & 36286   & 27173   & 10997 & 39868   &  21879 \\
+    \textsc{book      } & 51493   & 54839   & 10978 & 13678   & 101331 \\
+    \textsc{20-newsgrp} & 119060  & 58749   & 15793 & 65881   & 471609 \\
+    \textsc{reuters-52} & 155191  & 36343   & 10410 & 36440   & 288638 \\
+    \textsc{webkb     } & 223847  & 25406   & 11033 & 17122   & 239006 \\
+    \textsc{dna       } & 12180   & 17507   & 3068  & 2616    &  37971 \\
+    \textsc{jester    } & 25076   & 27713   & 11322 & 20273   &  23347 \\
+    \textsc{kdd       } & 8755    & 6572    & 2915  & 13040   &   4343 \\
+    \textsc{kosarek   } & 19512   & 37583   & 7173  & 20938   &  28729 \\
+    \textsc{msnbc     } & 11606   & 20795   & 5465  & 4887    &    789 \\
+    \textsc{msweb     } & 10743   & 2347    & 6581  & 12135   &  46535 \\
+    \textsc{nltcs     } & 1855    & 4373    & 1304  & 4401    &    511 \\
+    \textsc{plants    } & 36596   & 119194  & 11583 & 13960   &  10423 \\
+    \textsc{pumsb-star} & 26206   & 108876  & 8298  & 8866    &  31779 \\
+    \textsc{eachmovie } & 54184   & 123996  & 20648 & 21369   &  70325 \\
+    \textsc{retail    } & 2158    & 3979    & 2989  & 6651    &  21747 \\
     \hline
   \end{tabular}
-  }
   \caption{Circuit size (in the number of nodes) comparison between \textproc{LearnRP} and the
     state-of-the-art in the twenty binary datasets for density estimation.}
   \label{tab:binsize}
 \end{table}
 
 Overall, we found \textproc{LearnRP} to be competitive against the state-of-the-art, often
-reaching second or first place in the case of \textproc{LearnRP}-F and \textproc{LearnRP}-100. As
-expected for such a simple learning algorithm, it was hardly the best, although even under few EM
-iterations it was capable of producing somewhat competitive models. Arguably, \textproc{LearnRP}'s
-strengths come from its speed, learning circuits via minibatch EM in a fraction of the time when
-compared to \textproc{LearnSPN}, \textproc{Strudel} and \textproc{LearnPSDD}. Perhaps the more
-direct competitor of \textproc{LearnRP} in terms of scalability is \textproc{XPC}, showing the
-strengths of \randclass{}-type learners when it comes to speed. Recall from \Cref{sec:xpcs},
-however that \textproc{XPC} requires an extensive grid search on the hyperparameters, while the
-performance of \textproc{LearnRP} mainly depends on how much time one is willing to spend to
-fine-tune weights with parameter learning. Notably, we found that \textproc{LearnRP} performs worse
-on data with fewer variables (e.g.\ \textsc{nltcs}, \textsc{msnbc}, \textsc{kdd}) and better on
-data with more variables (e.g.\ \textsc{20-newsgrp}, \textsc{book}, \textsc{webkb}), which is
-perhaps correlated with the smaller, and respectively larger, circuits from \Cref{tab:binsize}.
+reaching second or first place in the case of \textproc{LearnRP}-F and \textproc{LearnRP}-100. Even
+though it is such a simple learning algorithm, it was capable of, on average, outperforming all
+other structured-decomposable learning algorithms, even producing somewhat competitive models under
+few EM iterations. \textproc{LearnRP} came only behind \textproc{Prometheus}, a sophisticated
+learning algorithm for producing a more relaxed kind of (non tree-shaped) circuit that only depends
+on decomposability, as opposed to the stronger restrictions imposed by structured-decomposability.
+Arguably, \textproc{LearnRP}'s strengths come from its speed, learning circuits via minibatch EM in
+a fraction of the time when compared to \textproc{LearnSPN}, \textproc{Strudel} and
+\textproc{LearnPSDD}. Perhaps the more direct competitor of \textproc{LearnRP} in terms of
+scalability is \textproc{XPC}, showing the power of \randclass{}-type learners when it comes to
+speed. Recall from \Cref{sec:xpcs}, however that \textproc{XPC} requires an extensive grid search
+on the hyperparameters, while the performance of \textproc{LearnRP} mainly depends on how much time
+one is willing to spend to fine-tune weights with parameter learning. Notably, we found that
+\textproc{LearnRP} performs worse on data with fewer variables (e.g.\ \textsc{nltcs},
+\textsc{msnbc}, \textsc{kdd}) and better on data with more variables (e.g.\ \textsc{20-newsgrp},
+\textsc{book}, \textsc{webkb}), which is perhaps correlated with the smaller, and respectively
+larger, circuits from \Cref{tab:binsize}.
 
 \subsection{Continuous data}
 \label{sec:continuous}
@@ -650,16 +920,26 @@ perhaps correlated with the smaller, and respectively larger, circuits from \Cre
     \textbf{GMMs} & \textbf{\textproc{Prometheus}} & \textbf{iSPTs} & \textbf{\textproc{LearnRP}} &
     \textbf{Size} \\
     \hline
-    \textsc{abalone}    & 8  & -2.28  & $|$-0.94$|$  & -1.17  & ---   & \textbf{-0.59}   & \underline{-0.85}   & ---   & -6.13  & 317   \\
-    \textsc{ca}         & 22 & -4.95  & \underline{21.19}  & $|$3.42$|$   & ---   & -1.08   & \textbf{27.82}   & ---   & -5.84  & 2765  \\
-    \textsc{quake}      & 4  & -2.38  & \underline{-1.21}  & -3.76  & ---   & \textbf{-0.58}   & $|$-1.50$|$   & ---   & -3.76  & 79    \\
-    \textsc{sensorless} & 48 & -26.91 & \underline{60.72}  & $|$8.56$|$   & ---   & -1.39   & \textbf{62.03}   & ---   & -38.46 & 12589 \\
-    \textsc{banknote}   & 4  & -2.76  & \underline{-1.39}  & -4.64  & ---   & \textbf{-1.05}   & $|$-1.96$|$   & ---   & -6.06  & 79    \\
-    \textsc{flowsize}   & 3  & -0.79  & \underline{15.32}  & $|$5.72$|$   & ---   & -36.50  & \textbf{18.03}   & ---   & 2.20   & 49    \\
-    \textsc{kinematics} & 8  & \textbf{-5.55}  & -11.13 & -11.20 & ---   & \underline{-6.11}   & -11.12  & ---   & $|$-11.02$|$ & 319   \\
-    \textsc{iris}       & 4  & ---    & ---    & ---    & -3.94 & \textbf{0.20}    & \underline{-1.06}   & -3.74 & $|$-3.47$|$  & 79    \\
-    \textsc{oldfaith}   & 2  & ---    & ---    & ---    & $|$-1.73$|$ & -2.09   & \textbf{-1.48}   & \underline{-1.70} & -4.33  & 19    \\
-    \textsc{chemdiabet} & 3  & ---    & ---    & ---    & -3.02 & \textbf{-0.58}   & \underline{-2.59}   & $|$-2.88$|$ & -18.68 & 48    \\
+    %\textsc{abalone}    & 8  & -2.28  & $|$-0.94$|$  & -1.17  & ---   & \textbf{-0.59}   & \underline{-0.85}   & ---   & -6.13  & 317   \\
+    %\textsc{ca}         & 22 & -4.95  & \underline{21.19}  & $|$3.42$|$   & ---   & -1.08   & \textbf{27.82}   & ---   & -5.84  & 2765  \\
+    %\textsc{quake}      & 4  & -2.38  & \underline{-1.21}  & -3.76  & ---   & \textbf{-0.58}   & $|$-1.50$|$   & ---   & -3.76  & 79    \\
+    %\textsc{sensorless} & 48 & -26.91 & \underline{60.72}  & $|$8.56$|$   & ---   & -1.39   & \textbf{62.03}   & ---   & -38.46 & 12589 \\
+    %\textsc{banknote}   & 4  & -2.76  & \underline{-1.39}  & -4.64  & ---   & \textbf{-1.05}   & $|$-1.96$|$   & ---   & -6.06  & 79    \\
+    %\textsc{flowsize}   & 3  & -0.79  & \underline{15.32}  & $|$5.72$|$   & ---   & -36.50  & \textbf{18.03}   & ---   & 2.20   & 49    \\
+    %\textsc{kinematics} & 8  & \textbf{-5.55}  & -11.13 & -11.20 & ---   & \underline{-6.11}   & -11.12  & ---   & $|$-11.02$|$ & 319   \\
+    %\textsc{iris}       & 4  & ---    & ---    & ---    & -3.94 & \textbf{0.20}    & \underline{-1.06}   & -3.74 & $|$-3.47$|$  & 79    \\
+    %\textsc{oldfaith}   & 2  & ---    & ---    & ---    & $|$-1.73$|$ & -2.09   & \textbf{-1.48}   & \underline{-1.70} & -4.33  & 19    \\
+    %\textsc{chemdiabet} & 3  & ---    & ---    & ---    & -3.02 & \textbf{-0.58}   & \underline{-2.59}   & $|$-2.88$|$ & -18.68 & 48    \\
+    \textsc{abalone}    & 8  & -2.28  & \underline{-0.94}  & $|$-1.17$|$  & ---   & -4.65    & \textbf{-0.85}   & ---   & -3.58  & 317   \\
+    \textsc{banknote}   & 4  & $|$-2.76$|$  & \textbf{-1.39}  & -4.64  & ---   & -4.32    & \underline{-1.96}   & ---   & -4.27  & 79    \\
+    \textsc{ca}         & 22 & -4.95  & \underline{21.19}  & 3.42   & ---   & -7.33    & \textbf{27.82}   & ---   & $|$9.48$|$   & 2675  \\
+    \textsc{kinematics} & 8  & \textbf{-5.55}  & -11.13 & -11.20 & ---   & -11.15   & $|$-11.12$|$  & ---   & \underline{-10.16} & 319   \\
+    \textsc{quake}      & 4  & -2.38  & \textbf{-1.21}  & -3.76  & ---   & -4.09    & \underline{-1.50}   & ---   & $|$-1.63$|$  & 79    \\
+    \textsc{sensorless} & 48 & -26.91 & \underline{60.72}  & 8.56   & ---   & -34.14   & \textbf{62.03}   & ---   & $|$17.52$|$  & 12650 \\
+    \textsc{chemdiabet} & 3  & ---    & ---    & ---    & $|$-3.02$|$ & -18.49   & \textbf{-2.59}   & \underline{-2.88} & -19.06 & 47    \\
+    \textsc{flowsize}   & 3  & -0.79  & \underline{15.32}  & $|$5.72$|$   & ---   & 2.27     & \textbf{18.03}   & ---   & 2.83   & 49    \\
+    \textsc{oldfaith}   & 2  & ---    & ---    & ---    & $|$-1.73$|$ & -4.18    & \textbf{-1.48}   & \underline{-1.70} & -4.26  & 19    \\
+    \textsc{iris}       & 4  & ---    & ---    & ---    & -3.94 & \underline{-2.26}    & \textbf{-1.06}   & -3.74 & $|$-3.14$|$  & 79    \\
     \hline
   \end{tabular}
   }

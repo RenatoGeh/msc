@@ -335,7 +335,7 @@
     local .value_required:n = true,
     direitos .tl_gset:N = \@license,
     direitos .value_required:n = true,
-    fichacatalografica .tl_gset:N = \@catalogindata,
+    fichacatalografica .tl_gset:N = \@catalogingData,
     fichacatalografica .value_required:n = true,
     membrobanca .code:n = {\seq_gput_right:Nn \@committeeMembers {#1}},
     membrobanca .value_required:n = true,
@@ -749,21 +749,39 @@
     \item
       \@license
 
-      \ifcsvoid{@catalogingData} {} {
-        \vspace*{3cm plus 3cm minus 1cm}
-        \setlength{\fboxsep}{20pt}
-        \begin{Center}
-        \fbox{
-          \begin{minipage}[t]{120mm}
-            \setlength\parskip{1em}
+      \vspace*{3cm plus 3cm minus 1cm}
+      \setlength{\fboxsep}{20pt}
+      \begin{Center}
+      \fbox{
+        \begin{minipage}[t]{120mm}
+          \setlength\parskip{0em}
+          \setlength\parindent{1.5em}
+          \ttfamily\small
 
-            \@catalogingData
+          \noindent Geh, Renato Lui\\
+          Scalable Learning of Probabilistic Circuits / Renato Lui Geh; orientador, Denis Deratani Mauá.
+          - São Paulo, 2022.\\
+          144 p.: il.
+          \vskip 1em
 
-          \end{minipage}
-        }
-        \end{Center}
+          Dissertação (Mestrado) - Programa de Pós-Graduação em Ciência da Computação / Instituto
+          de Matemática e Estatística / Universidade de São Paulo.\\
+          Bibliografia\\
+          Versão corrigida
+          \vskip 1em
+
+          1. Circuitos probabilísticos. 2. Aprendizado de máquina. 3. Modelos
+          probabilísticos. 4. Inteligência Artificial. I. Mauá, Denis Deratani. II. Título.
+        \end{minipage}
       }
+      \end{Center}
+      \vspace*{3cm plus 3cm minus 1cm}
   \end{list}
+
+  Bibliotecárias do Serviço de Informação e Biblioteca Carlos Benjamin de Lyra do IME-USP,
+  responsáveis pela estrutura de catalogação da publicação de acordo com a AACR2: Maria Lúcia
+  Ribeiro CRB-8/2766; Stela do Nascimento Madruga CRB 8/7534.
+
   \egroup
 }
 

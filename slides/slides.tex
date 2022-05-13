@@ -310,7 +310,7 @@ in
 \newtheorem{corollary}{Corollary}
 \newtheorem{definition}{Definition}
 
-\pagenumbering{gobble}
+%\pagenumbering{gobble}
 
 \renewcommand{\familydefault}{\sfdefault}
 
@@ -3280,10 +3280,10 @@ in
 \begin{center}
   \resizebox{0.5\textwidth}{!}{
   \begin{tikzpicture}
-    \newVtreeNode{root}{6,0}{1};
+    \newVtreeNode[fill=boxgreen]{root}{6,0}{1};
     \node at ($(root) + (-6,-1.5)$) {\Large{}Now all \textcolor{pviolet}{$s_i$} respect $\set{S}$};
-    \newVtreeNode{n1}{$(root) + (-1.0,-1.25)$}{2};
-    \newVtreeNode{nr}{$(root) + (1.0,-1.25)$}{3};
+    \newVtreeNode[fill=pviolet!70]{n1}{$(root) + (-1.0,-1.25)$}{2};
+    \newVtreeNode[fill=psandy!70]{nr}{$(root) + (1.0,-1.25)$}{3};
     \newVtreeNode{n2}{$(nr) + (-0.5,-1.25)$}{$D$};
     \newVtreeNode{ne}{$(nr) + (0.5,-1.25)$}{$E$};
     \newVtreeNode{n3}{$(n1) + (-0.5,-1.25)$}{4};
@@ -4893,7 +4893,7 @@ in
     \textsc{retail    } & -11.04 & \underline{-10.81} & \textbf{-10.72} & -10.94 & -10.87 & $|$-10.84$|$ & -10.86\\
     \hline
     %\textbf{Avg. Rank} & 4.80 $\pm$ 1.91 & 4.22 $\pm$ 1.81 & $|$4.05 $\pm$ 2.56$|$ & 4.60 $\pm$ 1.93 & \textbf{2.55} $\bm{\pm}$ \textbf{1.43} & \underline{3.62 $\pm$ 1.56} & 4.15 $\pm$ 2.03 \\
-    \textbf{Avg. Rank} & 4.83$\pm$ 1.89 & 4.30$\pm$ 1.92 & $|$4.03$\pm$ 2.57$|$ & 4.62$\pm$ 1.88 & \textbf{2.50$\pm$ 1.43} & \underline{3.62$\pm$ 1.47} & 4.10$\pm$ 1.98 \\
+    \textbf{Avg. Rank} & 4.83 $\pm$ 1.89 & 4.30$ \pm$ 1.92 & $|$4.03$ \pm$ 2.57$|$ & 4.62 $\pm$ 1.88 & \textbf{2.50 $\pm$ 1.43} & \underline{3.62 $\pm$ 1.47} & 4.10 $\pm$ 1.98 \\
     \hline
     \textbf{Pos. (mean)} & 7th & 5th & $|$3rd$|$ & 6th & \textbf{1st} & \underline{2nd} & 4th \\
     \hline
