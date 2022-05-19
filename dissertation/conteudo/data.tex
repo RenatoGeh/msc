@@ -271,7 +271,7 @@ performance in binary benchmark datasets.
 
 \section{\textproc{LearnRP}}
 
-A random projection (RP) naturally induces a clustering of data: given a rule $f$, two clusters are
+A random projection (RP) naturally induces clusterings of data: given a rule $f$, two clusters are
 formed from the partitions induced by $f$'s hyperplane. We use this simple yet extremely fast
 clustering method to replace clustering techniques in \textproc{LearnSPN}. We justify this move
 from a theoretical and practical aspect. From a theoretical perspective, every sum node created
@@ -383,20 +383,20 @@ learned structure to a vtree, effectively constructing smooth and structured dec
 Of note is the fact that DETs are deterministic by nature, as the leaves of the binary tree are
 constrained to the corresponding cells, meaning that only one path from leaf to root is active at a
 time. Determinism could be enforced in RPTrees if, for every input node (line
-\ref{alg:learnrp:line:input} in \Cref{alg:learnrp}) its support is truncated to the cell induced by
-all random projections above it, similar to what is done when representing DETs as PCs. For the
-discrete case, we might attribute zero mass to assignments outside its cell, normalizing the
+\ref{alg:learnrp:line:input} in \Cref{alg:learnrp}) their support were truncated to the cells induced by
+all random projections above them, similar to what is done when representing DETs as PCs. For the
+discrete case, we might attribute zero mass to assignments outside their cell, normalizing the
 distribution with the remaining mass. However, apart from the fact that doing so is not so trivial
 in the general case (i.e.\ in continuous domains) as the projections are oblique and the resulting
-truncated distributions must have tractable marginalization, this process also violates
-decomposability: by truncating inputs, we are essentially turning the previously univariate inputs
-from line \ref{alg:learnrp:line:input} into multivariate distributions covering the entire scope,
-making products learned in line \ref{alg:learnrp:line:prod} nondecomposable. This comes from the
-fact that each hyperplane is a function $f(\set{x})=\left\liv\sum_{i=1}^d x_i\cdot
-a_i>\theta\right\riv$ with $\Sc(f)=\Sc(v)$, where $v$ is the vtree node of line
-\ref{alg:learnrp:line:vtree}. Further, because each variable $X\in\Sc(v)$ contributes (linearly) to
-$f$, marginalization in this multivariate distribution is not as straightforward. We therefore
-choose not to constraint inputs.
+truncated distributions (essentially polytopes of possibly high dimension) must have tractable
+marginalization, this process also violates decomposability: by truncating inputs, we are
+essentially turning the previously univariate inputs from line \ref{alg:learnrp:line:input} into
+multivariate distributions covering the entire scope, making products learned in line
+\ref{alg:learnrp:line:prod} nondecomposable. This comes from the fact that each hyperplane is a
+function $f(\set{x})=\left\liv\sum_{i=1}^d x_i\cdot a_i>\theta\right\riv$ with $\Sc(f)=\Sc(v)$,
+where $v$ is the vtree node of line \ref{alg:learnrp:line:vtree}. Further, because each variable
+$X\in\Sc(v)$ contributes (linearly) to $f$, marginalization in this multivariate distribution is
+not as straightforward. We therefore choose not to constraint inputs.
 
 \textproc{LearnRP} constructs the circuit recursively. At each call, it samples a hyperplane
 $f(\set{x})$ which then produces a sum node \inode[fill=boxgreen]{\newSumNode} encoding the
@@ -608,88 +608,18 @@ EM. Experiments were carried out on a single computer with a 12-core Intel i7 3.
 \textproc{Strudel}\footnote{https://github.com/UCLA-StarAI/Strudel} and
 \textproc{LearnPSDD}\footnote{https://github.com/YitaoLiang/Scala-LearnPsdd} were based on the
 original code repositories. For fairness, when comparing runtimes for speed benchmarking we reran
-the same or similar setups as originally reported for \textproc{XPC}, \textproc{Strudel} and
-\textproc{LearnPSDD} in the same machine used for \textproc{LearnRP}, setting the number of
-iterations to 1000 for the two last \incrclass{} algorithms. Similarly, we compare runtimes of a
-Rust implementation\footnote{Source code found at \url{https://gitlab.com/marcheing/spn-rs}.} of
+similar setups as originally reported for \textproc{XPC}, \textproc{Strudel} and
+\textproc{LearnPSDD} in the same machine used for running \textproc{LearnRP}, setting the number of
+iterations to 1000 for the two \incrclass{} algorithms. Similarly, we compare runtimes of a Rust
+implementation\footnote{Source code found at \url{https://gitlab.com/marcheing/spn-rs}.} of
 \textproc{LearnSPN} on the same machine; we use $k$-means for learning sums and G-test for
 products, setting $k=2$ for a shorter learning time. We do not report running times for the
-original \textproc{Prometheus} code since, as far as we know, the source was not made public and no
-working implementation was found.
+original \textproc{Prometheus} code since, as far as we know, the source code was not made public
+and no working implementation could be found.
 
 \subsection{Binary data}
 
-\Cref{tab:binary} shows benchmark results for binary data. For fairness, we report results for best
-ensembles of \textproc{XPC}, \textproc{Strudel} and \textproc{LearnPSDD} so that all models
-compared are smooth and structured decomposable (with the exception of \textproc{LearnSPN} and
-\textproc{Prometheus} which are only decomposable) but nondeterministic. Columns
-\textproc{LearnRP}-10, \textproc{LearnRP}-20, \textproc{LearnRP}-30, \textproc{LearnRP}-100 and
-\textproc{LearnRP}-F correspond to runs of a single \textproc{LearnRP} circuit where we optimize
-the learned structure with 10, 20, 30, and for the last two, 100 iterations of minibatch EM with a
-batch size of 500 instances. After this, for \textproc{LearnRP}-F, we proceed to run 30 iterations
-of full EM, a regularization strategy suggested by \citet{liu21}. The last two rows of
-\Cref{tab:binary} correspond to the average rank of each algorithm followed by their standard
-deviation, with the last row ignoring the ranks for \textproc{LearnRP}-10, \textproc{LearnRP}-20
-and \textproc{LearnRP}-30. We note that our approach, when run with 100 iterations of minibatch EM
-and later 30 iterations of full EM, was able to reach competitive results against the
-state-of-the-art, reaching second place overall in terms of average rank, with
-\textproc{LearnRP}-100 closely behind. We also note how \textproc{LearnRP} is consistent in its
-ranking, as the rank standard deviation shows. \Cref{fig:learnrp-curves} shows how much minibatch
-and full EM improve \textproc{LearnRP} and how many iterations are needed for it to match the
-performance of competitors. Notably, it also shows how full EM may degrade the model's performance
-depending on the dataset.
-
-\begin{figure}[t]
-  \centering
-  \def\svgwidth{\textwidth}\input{bins/all.pdf_tex}
-  \caption{Test log-likelihood performance of \textproc{LearnRP} shown as the curve in
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1); under
-    different iterations of minibatch EM, with the remaining curve in
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots14] (0,0) rectangle (0.5,-0.1);
-    corresponding to full EM iterations. Each horizontal line shows the performance of a different
-    competitor: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle (0.5,-0.1);
-    for \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3] (0,0)
-    rectangle (0.5,-0.1); for \textproc{Strudel},
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4] (0,0) rectangle (0.5,-0.1); for
-    \textproc{LearnPSDD}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle
-    (0.5,-0.1); for \textproc{XPC} and finally
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots6] (0,0) rectangle (0.5,-0.1); for
-    \textproc{Prometheus}}
-  \label{fig:learnrp-curves}
-\end{figure}
-
-As a superficial ablation study of the impact of random projections on the parameterization of
-probabilistic circuits, we verify and compare the performance of \textproc{LearnRP} under random
-weights without modifying the structure. To be more precise, for each of the structures generated
-in \Cref{fig:learnrp-curves}, we completely randomize all sum node weights without altering the PC
-structure by uniformly sampling numbers in the $\left[0,1\right]\subset\mathbb{R}$ interval,
-setting these as weights, and then normalizing sum edges such that the sum of all weights equal to
-one. Once all weights have been randomized this way, we retrain with minibatch EM for 100
-iterations. \Cref{fig:learnrp-rand-curves} shows the test log-likelihood curves for this random
-initialization. We found that using the proportions of the random projection splits as sum weights
-provided a better initial parameterization compared to random weight initialization, with the
-former getting a significant boost to performance when compared to the randomized approach.
-
-\begin{figure}[t]
-  \centering
-  \def\svgwidth{\textwidth}\input{bins/all_rand.pdf_tex}
-  \caption{Test log-likelihood curve, shown in
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1);, of
-    \textproc{LearnRP} with randomized weights under different iterations of minibatch EM, with the
-    remaining curve in \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots14] (0,0) rectangle
-    (0.5,-0.1); corresponding to full EM iterations. Each horizontal line shows the performance of
-    a different competitor: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle
-    (0.5,-0.1); for \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3]
-    (0,0) rectangle (0.5,-0.1); for \textproc{Strudel},
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4] (0,0) rectangle (0.5,-0.1); for
-    \textproc{LearnPSDD}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle
-    (0.5,-0.1); for \textproc{XPC} and finally
-    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots6] (0,0) rectangle (0.5,-0.1); for
-  \textproc{Prometheus}}
-  \label{fig:learnrp-rand-curves}
-\end{figure}
-
-\begin{sidewaystable}[ph!]
+\begin{sidewaystable}
   \resizebox{\textheight}{!}{
   \begin{tabular}{c|ccccc|ccccc}
     \hline
@@ -756,11 +686,81 @@ former getting a significant boost to performance when compared to the randomize
   \label{tab:binary}
 \end{sidewaystable}
 
+\Cref{tab:binary} shows benchmark results for binary data. For fairness, we report results for best
+ensembles of \textproc{XPC}, \textproc{Strudel} and \textproc{LearnPSDD} so that all models
+compared are smooth and structured decomposable (with the exception of \textproc{LearnSPN} and
+\textproc{Prometheus} which are only decomposable) but nondeterministic. Columns
+\textproc{LearnRP}-10, \textproc{LearnRP}-20, \textproc{LearnRP}-30, \textproc{LearnRP}-100 and
+\textproc{LearnRP}-F correspond to runs of a single \textproc{LearnRP} circuit where we optimize
+the learned structure with 10, 20, 30, and for the last two, 100 iterations of minibatch EM with a
+batch size of 500 instances. After this, for \textproc{LearnRP}-F, we proceed to run 30 iterations
+of full EM, a regularization strategy suggested by \citet{liu21}. The last two rows of
+\Cref{tab:binary} correspond to the average rank of each algorithm followed by their standard
+deviation, with the last row ignoring the ranks for \textproc{LearnRP}-10, \textproc{LearnRP}-20
+and \textproc{LearnRP}-30. We note that our approach, when run with 100 iterations of minibatch EM
+and later 30 iterations of full EM, was able to reach competitive results against the
+state-of-the-art, reaching second place overall in terms of average rank, with
+\textproc{LearnRP}-100 closely behind. We also note how \textproc{LearnRP} is consistent in its
+ranking, as the rank standard deviation shows. \Cref{fig:learnrp-curves} shows how much minibatch
+and full EM improve \textproc{LearnRP} and how many iterations are needed for it to match the
+performance of competitors. Notably, it also shows how full EM may degrade the model's performance
+depending on the dataset.
+
+\begin{figure}[t]
+  \centering
+  \def\svgwidth{\textwidth}\input{bins/all.pdf_tex}
+  \caption{Test log-likelihood performance of \textproc{LearnRP} shown as the curve in
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1); under
+    different iterations of minibatch EM, with the remaining curve in
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots14] (0,0) rectangle (0.5,-0.1);
+    corresponding to full EM iterations. Each horizontal line shows the performance of a different
+    competitor: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle (0.5,-0.1);
+    for \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3] (0,0)
+    rectangle (0.5,-0.1); for \textproc{Strudel},
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4] (0,0) rectangle (0.5,-0.1); for
+    \textproc{LearnPSDD}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle
+    (0.5,-0.1); for \textproc{XPC} and finally
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots6] (0,0) rectangle (0.5,-0.1); for
+    \textproc{Prometheus}}
+  \label{fig:learnrp-curves}
+\end{figure}
+
+As a superficial ablation study of the impact of random projections on the initial parameterization of
+probabilistic circuits, we verify and compare the performance of \textproc{LearnRP} under random
+weights without modifying the structure. To be more precise, for each of the structures generated
+in \Cref{fig:learnrp-curves}, we completely randomize all sum node weights without altering the PC
+structure by uniformly sampling numbers in the $\left[0,1\right]\subset\mathbb{R}$ interval,
+setting these as weights, and then normalizing sum edges such that the sum of all weights equal to
+one. Once all weights have been randomized this way, we retrain with minibatch EM for 100
+iterations. \Cref{fig:learnrp-rand-curves} shows the test log-likelihood curves for this random
+initialization. We found that using the proportions of the random projection splits as sum weights
+provided a better initial parameterization compared to random weight initialization, with the
+former getting a significant boost to performance when compared to the randomized approach.
+
+\begin{figure}[t]
+  \centering
+  \def\svgwidth{\textwidth}\input{bins/all_rand.pdf_tex}
+  \caption{Test log-likelihood curve, shown in
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots1] (0,0) rectangle (0.5,-0.1);, of
+    \textproc{LearnRP} with randomized weights under different iterations of minibatch EM, with the
+    remaining curve in \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots14] (0,0) rectangle
+    (0.5,-0.1); corresponding to full EM iterations. Each horizontal line shows the performance of
+    a different competitor: \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots2] (0,0) rectangle
+    (0.5,-0.1); for \textproc{LearnSPN}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots3]
+    (0,0) rectangle (0.5,-0.1); for \textproc{Strudel},
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots4] (0,0) rectangle (0.5,-0.1); for
+    \textproc{LearnPSDD}, \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots5] (0,0) rectangle
+    (0.5,-0.1); for \textproc{XPC} and finally
+    \protect\tikz\protect\fill[baseline=0.5ex,fill=jplots6] (0,0) rectangle (0.5,-0.1); for
+  \textproc{Prometheus}}
+  \label{fig:learnrp-rand-curves}
+\end{figure}
+
 \Cref{tab:bintime} shows average running times for each learning algorithm to construct either a
 \emph{single} circuit (as is the case for \textproc{LearnSPN}, \textproc{LearnPSDD} and
 \textproc{LearnRP}) or an \emph{ensemble} (mixtures of 10 circuits in the case of
 \textproc{Strudel} and \textproc{XPC}) for each dataset. \Cref{fig:time-linear} provides a more
-visual comparison for the orders of magnitude difference between learning times. \Cref{fig:time-log}
+visual comparison on the orders of magnitude difference between learning times. \Cref{fig:time-log}
 shows the same data but at log scale for better visualization. As average log-likelihoods for
 \textproc{Strudel}, \textproc{LearnPSDD} and \textproc{XPC} as reported in \Cref{tab:binary} are a
 result of an extensive grid-search on the number of components in the ensemble (among other
@@ -965,12 +965,13 @@ as we found performance to degrade after doing so. When constructing the circuit
 and input GMMs through EM. The last column of \Cref{tab:cont} shows the circuit sizes of
 \textproc{LearnRP}.
 
-We found that \textproc{LearnRP} behaves extremely poorly on continuous datasets. This could
-possibly be due to the smaller number of variables in these datasets (as evidenced by the reduced
-circuit sizes in \Cref{tab:cont}'s last column), causing \textproc{LearnRP} to produce very small
-models. We also point to the fact that full EM was degrading the performance of \textproc{LearnRP}
-which is a possible indication that our EM implementation may suffer from numerical issues and/or
-perhaps that the learned circuit is overfitting the training data.
+We found that \textproc{LearnRP} behaves poorly on continuous datasets, which goes against our
+intuition of random projections. This could possibly be due to the smaller number of variables in
+these datasets (as evidenced by the reduced circuit sizes in \Cref{tab:cont}'s last column),
+causing \textproc{LearnRP} to produce very small models. We also point to the fact that full EM was
+degrading the performance of \textproc{LearnRP} which is a possible indication that our EM
+implementation may suffer from numerical issues and/or perhaps that the learned circuit is
+overfitting the training data.
 
 \section{Summarizing \textproc{LearnRP}}
 
